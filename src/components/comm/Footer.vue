@@ -12,6 +12,11 @@
 <script>
 export default {
   name: 'comm-footer',
+  data () {
+    return {
+      curPageIndex: 0
+    }
+  },
   mounted () {
     var currentRouterName = this.$router.currentRoute.name
     var indicatorElem = document.getElementById('fooer').getElementsByClassName('footer-indicator')[0]
@@ -31,7 +36,7 @@ export default {
   },
   methods: {
     toPage: function (pageTo, pageIndex) {
-      this.$router.push(pageTo)
+      this.$router.replace(pageTo)
       this.curPageIndex = pageIndex - 1
       var indicatorElem = document.getElementById('fooer').getElementsByClassName('footer-indicator')[0]
       if (pageIndex < 3) {
@@ -39,11 +44,6 @@ export default {
       } else if (pageIndex > 3) {
         indicatorElem.style.transform = `translateX(calc(100vw - (100vw - 80px - 10px) / 4 * ${5 - (pageIndex - 1)}))`
       }
-    }
-  },
-  data () {
-    return {
-      curPageIndex: 0
     }
   }
 }
@@ -69,12 +69,20 @@ export default {
   height: 1px;
 }
 
+.footerIndex {
+  background: rgba(0, 0, 0, 0);
+}
+
 .footerIndex::before {
   background: rgba(53, 68, 82, 0.2);
 }
 
+.footerNotIndex {
+  background: rgb(17, 12, 29);
+}
+
 .footerNotIndex::before {
-  background: rgba(35, 51, 66, 0.6);
+  background: rgba(17, 12, 29, 0.8);
 }
 
 span {
@@ -88,7 +96,7 @@ span {
   display: inline-block;
   width: 80px;
   height: 30px;
-  background-image: url('./../../assets/add.png');
+  background-image: url('./../../assets/video-add.png');
   background-repeat: no-repeat;
   background-position: center;
   background-size: auto 100%;

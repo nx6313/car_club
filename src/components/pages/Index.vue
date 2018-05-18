@@ -15,7 +15,7 @@ export default {
   data () {
     return {
       curVideo: 'http://l.dachangjr.com/video/4.mp4',
-      userHead: 'http://img4.duitang.com/uploads/item/201602/07/20160207151120_zj5ES.jpeg'
+      userHead: ''
     }
   },
   created: function () {

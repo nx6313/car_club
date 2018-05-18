@@ -4,7 +4,7 @@
       <source :src="src" :type="type">
     </video>
     <div :class="['videoDo', full ? 'videoDoFull' : 'videoDoNotFull']">
-      <span :style="{ 'background-image': 'url(' + userHead + ')' }">
+      <span :style="userHead ? { 'background-image': 'url(' + userHead + ')' } : ''">
         <img v-if="!hasAttention" class="attention" src="./../../assets/attention.png">
       </span>
       <span>
@@ -45,6 +45,26 @@ export default {
   overflow: hidden;
 }
 
+#video::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 60px;
+  width: 100%;
+  background: linear-gradient(rgba(30, 20, 54, .6), rgba(0, 0, 0, 0));
+}
+
+#video::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 60px;
+  width: 100%;
+  background: linear-gradient(to top, rgba(30, 20, 54, .6), rgba(0, 0, 0, 0));
+}
+
 video {
   width: 100%;
   height: 100%;
@@ -75,6 +95,7 @@ video {
 }
 
 .videoDo>span:nth-of-type(1) {
+  background-color: #ffffff;
   background-image: url('./../../assets/add.png');
   margin-bottom: 36px;
   width: 40px;
@@ -93,8 +114,9 @@ video {
 }
 
 .videoDo>span:nth-of-type(2) {
-  background-image: url('./../../assets/add.png');
+  background-image: url('./../../assets/support.png');
   margin-bottom: 30px;
+  opacity: .8;
 }
 
 .videoDo>span:nth-of-type(2)>span{
@@ -106,11 +128,13 @@ video {
   bottom: -15px;
   text-align: center;
   font-weight: bold;
+  text-shadow: 0px 0px 4px rgba(41, 41, 41, 0.4);
 }
 
 .videoDo>span:nth-of-type(3) {
-  background-image: url('./../../assets/add.png');
+  background-image: url('./../../assets/comment.png');
   margin-bottom: 30px;
+  opacity: .8;
 }
 
 .videoDo>span:nth-of-type(3)>span{
@@ -122,10 +146,12 @@ video {
   bottom: -15px;
   text-align: center;
   font-weight: bold;
+  text-shadow: 0px 0px 4px rgba(41, 41, 41, 0.4);
 }
 
 .videoDo>span:nth-of-type(4) {
-  background-image: url('./../../assets/add.png');
+  background-image: url('./../../assets/transpond.png');
   margin-bottom: 20px;
+  opacity: .8;
 }
 </style>
