@@ -1,0 +1,42 @@
+<template>
+  <div id="app">
+    <transition name="fade" mode="out-in">
+      <router-view id="content-wrap"/>
+    </transition>
+    <comm-footer></comm-footer>
+  </div>
+</template>
+
+<script>
+import Footer from '@/components/comm/Footer'
+
+export default {
+  name: 'App',
+  components: {
+    'comm-footer': Footer
+  }
+}
+</script>
+
+<style>
+#app {
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 0.4em;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#content-wrap {
+  position: relative;
+  height: calc(100vh - 48px);
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: all .2s ease;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+</style>
