@@ -6,6 +6,8 @@ import Index from '@/components/pages/Index'
 import Attention from '@/components/pages/Attention'
 import Message from '@/components/pages/Message'
 import Me from '@/components/pages/Me'
+import VideoChild from '@/components/pages/children/VideoChild'
+import StateChild from '@/components/pages/children/StateChild'
 
 Vue.use(Router)
 Vue.use(VueResource)
@@ -30,8 +32,16 @@ export default new Router({
     },
     {
       path: '/me',
-      name: 'page-me',
-      component: Me
+      component: Me,
+      children: [
+        {
+          path: '',
+          component: VideoChild
+        }, {
+          path: 'child-state',
+          component: StateChild
+        }
+      ]
     }
   ]
 })

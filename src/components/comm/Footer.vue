@@ -18,18 +18,18 @@ export default {
     }
   },
   mounted () {
-    var currentRouterName = this.$router.currentRoute.name
+    var currentRouterPath = this.$router.currentRoute.path
     var indicatorElem = document.getElementById('fooer').getElementsByClassName('footer-indicator')[0]
-    if (currentRouterName === 'page-index') {
+    if (currentRouterPath === '/') {
       this.curPageIndex = 0
       indicatorElem.style.transform = `translateX(calc((100vw - 80px - 10px) / 4 * ${0}))`
-    } else if (currentRouterName === 'page-attention') {
+    } else if (currentRouterPath.indexOf('/attention') === 0) {
       this.curPageIndex = 1
       indicatorElem.style.transform = `translateX(calc((100vw - 80px - 10px) / 4 * ${1}))`
-    } else if (currentRouterName === 'page-message') {
+    } else if (currentRouterPath.indexOf('/message') === 0) {
       this.curPageIndex = 3
       indicatorElem.style.transform = `translateX(calc(100vw - (100vw - 80px - 10px) / 4 * ${5 - 3}))`
-    } else if (currentRouterName === 'page-me') {
+    } else if (currentRouterPath.indexOf('/me') === 0) {
       this.curPageIndex = 4
       indicatorElem.style.transform = `translateX(calc(100vw - (100vw - 80px - 10px) / 4 * ${5 - 4}))`
     }

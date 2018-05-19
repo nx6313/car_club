@@ -25,15 +25,17 @@
       </div>
       <div class="menu-layout open attention-friend">
         <div class="attention-friend-item" v-if="attentionFriends.length > 0" v-for="friend in attentionFriends" :key="friend.id">
-          <img class="user-head" :src="friend.headImg">
+          <span class="user-head" :style="friend.headImg ? { 'background-image': 'url(' + friend.headImg + ')' } : ''"></span>
           <div class="item-content flex-col flex-b">
             <span class="flex-r flex-b">
               <span>{{friend.userName}}</span>
-              <span>{{friend.lastMsgTime}}</span>
+              <span>
+                <span v-if="friend.lastMsg !== ''">{{friend.lastMsgTime}}</span>
+              </span>
             </span>
             <span>
               <span v-if="friend.lastMsg !== ''">{{friend.lastMsg}}</span>
-              <span v-if="friend.lastMsg === ''">座驾类型：{{friend.carType}}</span>
+              <span v-if="friend.lastMsg === ''">座驾：{{friend.carType}}</span>
             </span>
           </div>
         </div>
@@ -295,10 +297,16 @@ export default {
   background: rgb(66, 48, 109);
 }
 
-.attention-friend-item>img.user-head {
+.attention-friend-item>span.user-head {
+  display: inline-block;
   width: 46px;
   height: 46px;
   border-radius: 46px;
+  background-color: #ffffff;
+  background-repeat: repeat-x;
+  background-position: center;
+  background-size: auto 100%;
+  background-image: url('./../../assets/add.png');
 }
 
 .attention-friend-item>div.item-content {
