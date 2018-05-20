@@ -107,7 +107,8 @@ span {
   bottom: 0;
   width: calc((100vw - 80px - 10px) / 4);
   height: 2px;
-  background: rgba(255, 255, 255, .6);
+  background: rgba(255, 255, 255, .4);
+  border-radius: 10px;
   left: 0;
   transition: all 0.3s ease 0s;
   -moz-transition: all 0.3s ease 0s;

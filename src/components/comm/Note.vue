@@ -1,0 +1,292 @@
+<template>
+  <div class="note-item">
+    <div class="head-name-wrap">
+      <span class="head" :style="note.uttererHead ? { 'background-image': 'url(' + note.uttererHead + ')' } : ''"></span>
+      <div class="nike-name-time flex-col flex-b">
+        <span>{{note.uttererNickName}}</span>
+        <span>{{note.uttererTime}}</span>
+      </div>
+    </div>
+    <div class="content-wrap">
+      <span>{{note.uttererContent | contentMore(40, isOnContentFilter)}}</span>
+      <span v-if="note.uttererContent.length > 40 && isOnContentFilter" @click="toggleAllContent">全文</span>
+      <span v-if="note.uttererContent.length > 40 && !isOnContentFilter" @click="toggleAllContent">收起</span>
+    </div>
+    <div class="imgs-video-wrap" v-if="note.imgsOrVideos.length > 0">
+      <span v-for="imgvideo in note.imgsOrVideos" :key="imgvideo.id" :style="(imgvideo.img || imgvideo.video) ? { 'background-image': 'url(' + (imgvideo.img || imgvideo.video) + ')' } : ''" :class="imgvideo.video ? 'isVideo' : ''"></span>
+    </div>
+    <div class="like-wrap" :style="note.imgsOrVideos.length > 0 ? { 'margin-top': '10px' } : { 'margin-top': '0px' }">
+      <div class="like-icon-btn-wrap">
+        <span :class="note.ifLike ? 'hasLike' : ''" @click="support"></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="like-tip-wrap">
+        <span>{{note.likeMans.length}}个点赞</span>
+        <span>{{note.likeMans | arrToStr(4)}}</span>
+      </div>
+    </div>
+    <div class="comments-wrap" v-if="note.comments.length > 0">
+      <span v-for="(comment, index) in note.comments" :key="index" v-if="index < 2 || !canToggleComment">{{comment}}</span>
+      <span class="toggleAllComment" v-if="note.comments.length > 2 && canToggleComment" @click="toggleAllComment">查看全部评论</span>
+      <span class="toggleAllComment" v-if="note.comments.length > 2 && !canToggleComment" @click="toggleAllComment">显示部分评论</span>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'comm-note',
+  props: {
+    note: { type: Object, default: function () { return {} } }
+  },
+  data () {
+    return {
+      isOnContentFilter: true,
+      canToggleComment: true
+    }
+  },
+  filters: {
+    contentMore (value, max, isOn) {
+      if (isOn && value.length > max) {
+        return value.substr(0, max) + ' ...'
+      }
+      return value
+    },
+    arrToStr (value, showCount) {
+      var showStr = ''
+      var index = 0
+      for (var a = 0; a < value.length; a++) {
+        if (a < showCount) {
+          showStr += value[a]
+          index++
+        }
+        if (a < showCount - 1 && a < value.length - 1) {
+          showStr += '，'
+        }
+      }
+      if (index < value.length) {
+        showStr += ' ...'
+      }
+      return showStr
+    }
+  },
+  methods: {
+    toggleAllContent () {
+      this.isOnContentFilter = !this.isOnContentFilter
+    },
+    toggleAllComment () {
+      this.canToggleComment = !this.canToggleComment
+    },
+    support () {
+      this.note.ifLike = !this.note.ifLike
+      if (this.note.ifLike) {
+        this.$toast('点赞成功')
+      } else {
+        this.$toast('点赞取消')
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+.note-item {
+  padding: 14px 10px;
+  background: #2c1f4a;
+}
+
+.note-item:nth-of-type(n + 2) {
+  margin-top: 8px;
+}
+
+.note-item>div.head-name-wrap {
+  position: relative;
+}
+
+.note-item>div.head-name-wrap>span.head {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 40px;
+  border: 1px solid #ffffff;
+  background-color: #ffffff;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto 100%;
+}
+
+.note-item>div.head-name-wrap>div.nike-name-time {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 52px;
+  right: 0;
+  padding: 4px 0 8px;
+}
+
+.note-item>div.head-name-wrap>div.nike-name-time>span:nth-of-type(1) {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.note-item>div.head-name-wrap>div.nike-name-time>span:nth-of-type(2) {
+  font-size: 0.6rem;
+  color: rgb(147, 133, 182);
+}
+
+.note-item>div.content-wrap {
+  position: relative;
+  padding: 20px 0 15px;
+}
+
+.note-item>div.content-wrap>span:nth-of-type(1) {
+  display: block;
+  line-height: 23px;
+  color: #d0c8e1;
+}
+
+.note-item>div.content-wrap>span:nth-of-type(2) {
+  display: inline-block;
+  padding: 8px 10px 0 0;
+  margin-top: 2px;
+  color: #ffffff;
+}
+
+.note-item>div.imgs-video-wrap {
+  position: relative;
+  width: 82%;
+  font-size: 0;
+  display: -webkit-flex; /* Safari */
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.note-item>div.imgs-video-wrap>span {
+  position: relative;
+  display: inline-block;
+  width: calc((100% - 15px) / 3);
+  height: 0;
+  padding-bottom: calc((100% - 15px) / 3);
+  margin: 0 5px 5px 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% auto;
+}
+
+.note-item>div.imgs-video-wrap>span.isVideo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .4);
+}
+
+.note-item>div.imgs-video-wrap>span.isVideo::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: auto;
+  width: 50%;
+  height: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto 100%;
+  background-image: url('./../../assets/add.png');
+}
+
+.note-item>div.like-wrap {
+  position: relative;
+  padding: 4px 0;
+}
+
+.note-item>div.like-wrap>div.like-icon-btn-wrap {
+  position: relative;
+  padding-bottom: 9px;
+}
+
+.note-item>div.like-wrap>div.like-icon-btn-wrap::after {
+  content: '';
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  bottom: 0;
+  height: 1px;
+  background: #433a57;
+}
+
+.note-item>div.like-wrap>div.like-icon-btn-wrap>span {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  margin-right: 24px;
+}
+
+.note-item>div.like-wrap>div.like-icon-btn-wrap>span:nth-of-type(1) {
+  background-image: url('./../../assets/add.png');
+}
+
+.note-item>div.like-wrap>div.like-icon-btn-wrap>span:nth-of-type(2) {
+  background-image: url('./../../assets/add.png');
+}
+
+.note-item>div.like-wrap>div.like-icon-btn-wrap>span:nth-of-type(3) {
+  background-image: url('./../../assets/add.png');
+}
+
+.note-item>div.like-wrap>div.like-icon-btn-wrap>span.hasLike {
+  background-image: url('./../../assets/support.png');
+}
+
+.note-item>div.like-wrap>div.like-tip-wrap {
+  position: relative;
+  padding-top: 10px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.note-item>div.like-wrap>div.like-tip-wrap>span:nth-of-type(1) {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.note-item>div.like-wrap>div.like-tip-wrap>span:nth-of-type(2) {
+  display: inline-block;
+  color: #d0c8e1;
+  margin-left: 12px;
+}
+
+.note-item>div.comments-wrap {
+  position: relative;
+  line-height: 23px;
+  padding-top: 12px;
+  color: #d0c8e1;
+}
+
+.note-item>div.comments-wrap>span {
+  position: relative;
+  display: block;
+}
+
+.note-item>div.comments-wrap>span.toggleAllComment {
+  display: inline-block;
+  padding: 8px 10px 0 0;
+  margin-top: 2px;
+  color: #685d82;
+}
+</style>

@@ -89,7 +89,7 @@ export default {
               messageItemsHeight += messageItems[mi].clientHeight
             }
           }
-          var menuLayoutMaxHeight = `calc(${document.getElementById('content-wrap').clientHeight}px - ${messageItemsHeight}px - ${(messageItems.length - 1) * 1}px)`
+          var menuLayoutMaxHeight = `calc(${document.getElementById('content-wrap').clientHeight}px - ${messageItemsHeight}px - ${(messageItems.length - 1) * 1}px - 7px)`
           menuLayouts[ml].style['transition-duration'] = '0.4s'
           menuLayouts[ml].classList.remove('close')
           menuLayouts[ml].classList.add('open')
@@ -131,7 +131,7 @@ export default {
               messageItemsHeight += messageItems[mi].clientHeight
             }
           }
-          var menuLayoutMaxHeight = `calc(${document.getElementById('content-wrap').clientHeight}px - ${messageItemsHeight}px - ${(messageItems.length - 1) * 1}px)`
+          var menuLayoutMaxHeight = `calc(${document.getElementById('content-wrap').clientHeight}px - ${messageItemsHeight}px - ${(messageItems.length - 1) * 1}px - 7px)`
           shrinkMenuLayoutElem.style['transition-duration'] = '0.4s'
           shrinkMenuLayoutElem.classList.remove('close')
           shrinkMenuLayoutElem.classList.add('open')
@@ -157,6 +157,10 @@ export default {
 </script>
 
 <style scoped>
+#content-wrap {
+  overflow: hidden;
+}
+
 #content-wrap>div:nth-of-type(n + 2) {
   margin-top: 1px;
 }
@@ -166,6 +170,7 @@ export default {
   padding: 8px 6px;
   background: rgb(44, 31, 74);
   padding-bottom: 32px;
+  margin-bottom: 7px;
 }
 
 .top-menus-wrap>span {

@@ -35,7 +35,7 @@
       </div>
     </div>
     <div class="video-tabs flex-r flex-b">
-      <span class="tab-item selected" v-on:click="toPage('/')">视频 {{videoInfo.videoCount}}</span>
+      <span class="tab-item selected" v-on:click="toPage('/child-video')">视频 {{videoInfo.videoCount}}</span>
       <span class="tab-item" v-on:click="toPage('/child-state')">动态 {{videoInfo.stateCount}}</span>
     </div>
     <transition name="fade" mode="out-in">
@@ -109,7 +109,7 @@ export default {
     for (var t = 0; t < tabElems.length; t++) {
       tabElems[t].classList.remove('selected')
     }
-    if (currentRouterPath === '/me' || currentRouterPath === '/me/') {
+    if (currentRouterPath === '/me' || currentRouterPath === '/me/' || currentRouterPath === '/me/child-video') {
       tabElems[0].classList.add('selected')
     } else if (currentRouterPath === '/me/child-state') {
       tabElems[1].classList.add('selected')
@@ -265,7 +265,7 @@ export default {
   position: absolute;
   top: 0;
   left: -6px;
-  background: #00a6ff;
+  background: #21affd;
   width: 30px;
   height: 100%;
   transform: skewX(160deg);

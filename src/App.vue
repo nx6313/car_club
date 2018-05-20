@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <transition name="fade" mode="out-in">
-      <router-view id="content-wrap"/>
+      <keep-alive exclude="page-index">
+        <router-view id="content-wrap"/>
+      </keep-alive>
     </transition>
     <comm-footer></comm-footer>
   </div>
@@ -31,6 +33,8 @@ export default {
 #content-wrap {
   position: relative;
   height: calc(100vh - 48px);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .fade-enter-active, .fade-leave-active {

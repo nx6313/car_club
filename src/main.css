@@ -8,12 +8,14 @@ body {
 
 .flex-r {
     display: flex;
+    display: -webkit-flex; /* Safari */
     flex-direction: row;
     align-items: center;
 }
 
 .flex-col {
     display: flex;
+    display: -webkit-flex; /* Safari */
     flex-direction: column;
 }
 
@@ -43,6 +45,7 @@ body {
 
 .center {
     display: flex;
+    display: -webkit-flex; /* Safari */
     justify-content: center;
     align-items: center;
 }
