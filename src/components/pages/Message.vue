@@ -277,13 +277,23 @@ export default {
 
 .attention-friend-list-empty {
   position: absolute;
-  top: calc(50% - 5em - 10px);
+  top: calc(50% - 3.5em - 14%);
   width: 100%;
-  height: 10em;
+  height: 7em;
   background-repeat: no-repeat;
   background-position: center;
   background-size: auto 100%;
-  background-image: url('./../../assets/add.png');
+  background-image: url('./../../assets/friend-empty.png');
+}
+
+.attention-friend-list-empty::after {
+  content: '还没有关注的好友，快去关注好友吧';
+  position: absolute;
+  bottom: -40px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #8b7caf;
 }
 
 .attention-friend-item {

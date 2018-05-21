@@ -201,7 +201,7 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
   background-size: auto 100%;
-  background-image: url('./../../assets/add.png');
+  background-image: url('./../../assets/play.png');
 }
 
 .note-item>div.like-wrap {
@@ -235,19 +235,19 @@ export default {
 }
 
 .note-item>div.like-wrap>div.like-icon-btn-wrap>span:nth-of-type(1) {
-  background-image: url('./../../assets/add.png');
+  background-image: url('./../../assets/note-like-normal.png');
 }
 
 .note-item>div.like-wrap>div.like-icon-btn-wrap>span:nth-of-type(2) {
-  background-image: url('./../../assets/add.png');
+  background-image: url('./../../assets/note-comment.png');
 }
 
 .note-item>div.like-wrap>div.like-icon-btn-wrap>span:nth-of-type(3) {
-  background-image: url('./../../assets/add.png');
+  background-image: url('./../../assets/note-share.png');
 }
 
 .note-item>div.like-wrap>div.like-icon-btn-wrap>span.hasLike {
-  background-image: url('./../../assets/support.png');
+  background-image: url('./../../assets/note-like-focus.png');
 }
 
 .note-item>div.like-wrap>div.like-tip-wrap {

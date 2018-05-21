@@ -1,10 +1,7 @@
 <template>
   <div>
     <comm-note v-if="noteList.length > 0" v-for="note in noteList" :key="note.id" :note="note"></comm-note>
-    <div class="data-empty" v-if="noteList.length == 0">
-      <img src="./../../assets/add.png">
-      <span>暂时没有数据</span>
-    </div>
+    <div class="data-empty" v-if="noteList.length == 0"></div>
   </div>
 </template>
 
@@ -25,7 +22,7 @@ export default {
     this.noteList = [
       {
         id: 0,
-        uttererHead: 'https://b-ssl.duitang.com/uploads/item/201412/19/20141219162216_jCHju.thumb.700_0.jpeg',
+        uttererHead: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd',
         uttererNickName: '俱乐部之友爱',
         uttererTime: '2分钟之前',
         uttererContent: '国台办发言人马晓光先生在上次发布会的时候已经明确表示过，解放军军演和空军绕岛飞行，传达的信息是十分清晰和明确的，就是针对“台独”分裂势力及其活动所做',
@@ -61,7 +58,7 @@ export default {
       },
       {
         id: 1,
-        uttererHead: 'https://b-ssl.duitang.com/uploads/item/201412/19/20141219162216_jCHju.thumb.700_0.jpeg',
+        uttererHead: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd',
         uttererNickName: '俱乐部之友爱',
         uttererTime: '2分钟之前',
         uttererContent: '国台办发言人马晓光先生在上次发布会的时候已经明确表示过',
@@ -76,23 +73,37 @@ export default {
         comments: [ '令狐冲：这里是测试的评论测试是测试的评论测试是测试的评论测试的评论', 'remmen1025：这里是测试的评论测试的评论', '张学友：这里是测试的评论测试的评论' ]
       }
     ]
+  },
+  activated () {
+    var contentWrapElem = document.getElementById('content-wrap')
+    contentWrapElem.scrollTop = this.$moment.attention_page_scroll_top
+  },
+  deactivated () {
+    var contentWrapElem = document.getElementById('content-wrap')
+    this.$moment.attention_page_scroll_top = contentWrapElem.scrollTop
   }
 }
 </script>
 
 <style scoped>
 .data-empty {
-  text-align: center;
   position: relative;
-  top: calc(50% - 80px);
+  top: calc(50% - 3.5em - 14%);
+  width: 100%;
+  height: 7em;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto 100%;
+  background-image: url('./../../assets/attention-empty.png');
 }
 
-.data-empty>img {
-  width: 100px;
-}
-
-.data-empty>span {
-  display: block;
-  margin-top: 10px;
+.data-empty::after {
+  content: '暂无动态';
+  position: absolute;
+  bottom: -40px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #8b7caf;
 }
 </style>

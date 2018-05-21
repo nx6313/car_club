@@ -14,7 +14,7 @@ export default {
   },
   data () {
     return {
-      curVideo: 'http://l.dachangjr.com/video/4.mp4',
+      curVideo: 'http://l.dachangjr.com/video/2.mp4',
       userHead: ''
     }
   },
