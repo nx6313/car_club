@@ -1,6 +1,6 @@
 <template>
   <div>
-    <comm-video :full=true :src="curVideo" :userHead="userHead"></comm-video>
+    <comm-video :full=true :videoInfo="videoInfo"></comm-video>
   </div>
 </template>
 
@@ -14,11 +14,17 @@ export default {
   },
   data () {
     return {
-      curVideo: 'http://l.dachangjr.com/video/2.mp4',
-      userHead: ''
+      videoInfo: {}
     }
   },
   created: function () {
+    this.videoInfo = {
+      src: 'http://l.dachangjr.com/video/2.mp4',
+      type: 'video/mp4',
+      userHead: '',
+      hasAttention: false,
+      ifSupport: true
+    }
     // this.$http.get('http://www.baidu.com').then(response => {
     //   this.someData = response.body
     // }, response => {

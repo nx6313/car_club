@@ -37,5 +37,46 @@ export default {
         }, 0.5 * 1000)
       }, duration)
     }
+
+    Vue.prototype.$pageImg = function (imgSrc, clientX, clientY, root) {
+      var imgRoot = root || document.body
+      var imgPopElem = document.createElement('img')
+      imgPopElem.classList.add('img-pop')
+      imgPopElem.src = imgSrc
+      imgPopElem.style.width = (rd(45, 55)) + 'px'
+      imgPopElem.style.position = 'absolute'
+      imgPopElem.style.top = (clientY + rd(-10, 10) - 20) + 'px'
+      imgPopElem.style.left = (clientX + rd(-10, 10) - 20) + 'px'
+      imgPopElem.style.opacity = 0
+      imgPopElem.style.transform = `rotate(${rd(-20, 20)}deg)`
+      imgPopElem.style.transition = 'opacity 0.8s ease 0s'
+      imgRoot.appendChild(imgPopElem)
+      setTimeout(() => {
+        imgPopElem.style.opacity = 1
+        imgPopElem.style.transition = 'all 0.8s ease 0s'
+        imgPopElem.style.top = (imgPopElem.offsetTop + rd(-50, 50)) + 'px'
+        imgPopElem.style.left = (imgPopElem.offsetLeft + rd(-50, 50)) + 'px'
+        setTimeout(() => {
+          imgPopElem.style.opacity = 0
+          setTimeout(() => {
+            imgRoot.removeChild(imgPopElem)
+          }, 900)
+        }, 400)
+      }, 20)
+    }
+
+    Vue.prototype.$pageImgExist = function (root) {
+      var imgRoot = root || document.body
+      var imgPopElems = imgRoot.getElementsByClassName('img-pop')
+      if (imgPopElems.length > 0) {
+        return true
+      }
+      return false
+    }
   }
+}
+
+function rd (n, m) {
+  var c = m - n + 1
+  return Math.floor(Math.random() * c + n)
 }
