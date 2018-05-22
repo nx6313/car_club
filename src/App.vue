@@ -25,14 +25,13 @@ export default {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-size: 0.4em;
   height: 100vh;
   overflow: hidden;
 }
 
 #content-wrap {
   position: relative;
-  height: calc(100vh - 48px);
+  height: calc(100vh - 3.2rem);
   overflow-x: hidden;
   overflow-y: auto;
 }

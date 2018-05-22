@@ -14,8 +14,8 @@ export default {
       toastElem.id = 'toast-message-box'
       toastElem.style.position = 'absolute'
       toastElem.style.left = '50%'
-      toastElem.style.bottom = '80px'
-      toastElem.style.padding = '3px 8px'
+      toastElem.style.bottom = '4rem'
+      toastElem.style.padding = '0.3rem 0.6rem'
       toastElem.style.whiteSpace = 'nowrap'
       toastElem.style.display = 'inline-block'
       toastElem.style.transition = 'opacity 0.5s ease 0s'
@@ -43,10 +43,11 @@ export default {
       var imgPopElem = document.createElement('img')
       imgPopElem.classList.add('img-pop')
       imgPopElem.src = imgSrc
-      imgPopElem.style.width = (rd(45, 55)) + 'px'
+      imgPopElem.style.width = (rd(20, 60)) + 'px'
       imgPopElem.style.position = 'absolute'
       imgPopElem.style.top = (clientY + rd(-10, 10) - 20) + 'px'
       imgPopElem.style.left = (clientX + rd(-10, 10) - 20) + 'px'
+      imgPopElem.style.zIndex = 99999999
       imgPopElem.style.opacity = 0
       imgPopElem.style.transform = `rotate(${rd(-20, 20)}deg)`
       imgPopElem.style.transition = 'opacity 0.8s ease 0s'

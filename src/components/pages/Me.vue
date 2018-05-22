@@ -1,6 +1,6 @@
 <template>
-  <div id="about-me">
-    <div class="user-info-wrap">
+  <div id="about-me" ref="about-me">
+    <div class="user-info-wrap" ref="user-info-wrap">
       <div class="user-info-shade" :style="userInfo.headImg ? { 'background-image': 'url(' + userInfo.headImg + ')' } : ''"></div>
       <div class="head-wrap">
         <span class="head" :style="userInfo.headImg ? { 'background-image': 'url(' + userInfo.headImg + ')' } : ''"></span>
@@ -34,12 +34,12 @@
         </div>
       </div>
     </div>
-    <div class="video-tabs flex-r flex-b">
+    <div class="video-tabs flex-r flex-b" ref="video-tabs">
       <span class="tab-item selected" v-on:click="toPage('/child-video')">视频 {{videoInfo.videoCount}}</span>
       <span class="tab-item" v-on:click="toPage('/child-state')">动态 {{videoInfo.stateCount}}</span>
     </div>
     <transition name="fade" mode="out-in">
-      <router-view/>
+      <router-view id="me-child-router" ref="me-child-router"/>
     </transition>
   </div>
 </template>
@@ -314,6 +314,11 @@ export default {
 
 .video-tabs>span.selected {
   background-color: #ff003b;
+}
+
+#me-child-router {
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .fade-enter-active, .fade-leave-active {

@@ -167,9 +167,9 @@ export default {
 
 .top-menus-wrap {
   position: relative;
-  padding: 8px 6px;
+  padding: 0.9rem 1.2rem;
   background: rgb(44, 31, 74);
-  padding-bottom: 32px;
+  padding-bottom: 2rem;
   margin-bottom: 7px;
 }
 
@@ -214,7 +214,7 @@ export default {
 .line-menu-wrap {
   position: relative;
   background: rgb(44, 31, 74);
-  padding: 13px 18px;
+  padding: 0.9rem 1.2rem;
 }
 
 .line-menu-wrap>i {
@@ -240,7 +240,7 @@ export default {
 .shrink-menu>div.menu-item {
   position: relative;
   background: rgb(44, 31, 74);
-  padding: 13px 18px;
+  padding: 0.9rem 1.2rem;
 }
 
 .shrink-menu>div.menu-item>i {
@@ -294,11 +294,12 @@ export default {
   right: 0;
   text-align: center;
   color: #8b7caf;
+  font-size: 0.7rem;
 }
 
 .attention-friend-item {
   position: relative;
-  padding: 10px 12px;
+  padding: 0.6rem 0.9rem;
   font-size: 0;
 }
 
@@ -326,12 +327,12 @@ export default {
 
 .attention-friend-item>div.item-content {
   position: absolute;
-  top: 10px;
-  left: 72px;
-  width: calc(100% - 12px - 72px);
-  height: calc(50px - 12px);
+  top: 0.6rem;
+  left: 4.5rem;
+  width: calc(100% - 0.9rem - 4.5rem);
+  height: calc(46px - 0.4rem);
   font-size: 0.6rem;
-  padding: 4px 0 8px;
+  padding: 0.2rem 0 0.1rem;
 }
 
 .attention-friend-item>div.item-content>span:nth-of-type(1) {
@@ -343,12 +344,12 @@ export default {
 }
 
 .attention-friend-item>div.item-content>span:nth-of-type(1)>span:last-of-type {
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   color: rgb(147, 133, 182);
 }
 
 .attention-friend-item>div.item-content>span:nth-of-type(2) {
-  font-size: 0.4rem;
+  font-size: 0.7rem;
   color: rgb(119, 106, 151);
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <comm-video :full=true :videoInfo="videoInfo"></comm-video>
+    <comm-video :full=true :videoInfoList="videoInfoList"></comm-video>
   </div>
 </template>
 
@@ -14,17 +14,48 @@ export default {
   },
   data () {
     return {
-      videoInfo: {}
+      videoInfoList: []
     }
   },
   created: function () {
-    this.videoInfo = {
-      src: 'http://l.dachangjr.com/video/2.mp4',
-      type: 'video/mp4',
-      userHead: '',
-      hasAttention: false,
-      ifSupport: true
-    }
+    this.videoInfoList = [
+      {
+        src: 'http://l.dachangjr.com/video/2.mp4',
+        type: 'video/mp4',
+        userHead: '',
+        hasAttention: false,
+        ifSupport: true,
+        supportCount: 0,
+        commentCount: 0
+      },
+      {
+        src: 'http://l.dachangjr.com/video/3.mp4',
+        type: 'video/mp4',
+        userHead: '',
+        hasAttention: false,
+        ifSupport: true,
+        supportCount: 0,
+        commentCount: 0
+      },
+      {
+        src: 'http://l.dachangjr.com/video/4.mp4',
+        type: 'video/mp4',
+        userHead: '',
+        hasAttention: false,
+        ifSupport: true,
+        supportCount: 0,
+        commentCount: 0
+      },
+      {
+        src: 'http://l.dachangjr.com/video/5.mp4',
+        type: 'video/mp4',
+        userHead: '',
+        hasAttention: false,
+        ifSupport: true,
+        supportCount: 0,
+        commentCount: 0
+      }
+    ]
     // this.$http.get('http://www.baidu.com').then(response => {
     //   this.someData = response.body
     // }, response => {
@@ -35,4 +66,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+#content-wrap {
+  overflow: hidden;
+}
 </style>

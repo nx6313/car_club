@@ -1,19 +1,21 @@
 <template>
-  <div class="video-item video-item-current" :style="full ? { position: 'fixed' } : { position: 'absolute' }" @click="supportHold" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
-    <video autoplay="true" loop="loop">
-      <source :src="videoInfo.src" :type="videoInfo.type">
-    </video>
-    <div :class="['videoDo', full ? 'videoDoFull' : 'videoDoNotFull']">
-      <span :style="videoInfo.userHead ? { 'background-image': 'url(' + videoInfo.userHead + ')' } : ''">
-        <img v-if="!videoInfo.hasAttention" class="attention" src="./../../assets/attention.png">
-      </span>
-      <span :class="videoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support">
-        <span>123</span>
-      </span>
-      <span>
-        <span>123</span>
-      </span>
-      <span></span>
+  <div id="video-item-wrap" ref="video-item-wrap" :style="full ? { position: 'fixed' } : { position: 'absolute' }">
+    <div v-for="(videoInfo, index) in videoInfoList" :key="index" :class="['video-item', index == 1 ? 'video-item-current' : '']">
+      <div class="video-wrap" ref="video-wrap">
+        <div class="video-shade" @click="supportHold(videoInfo)" @touchstart.prevent="touchStart(videoInfo)" @touchmove.prevent="touchMove" @touchend.prevent="touchEnd"></div>
+      </div>
+      <div :class="['videoDo', full ? 'videoDoFull' : 'videoDoNotFull']">
+        <span :style="videoInfo.userHead ? { 'background-image': 'url(' + videoInfo.userHead + ')' } : ''">
+          <img v-if="!videoInfo.hasAttention" class="attention" src="./../../assets/attention.png">
+        </span>
+        <span :class="videoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(videoInfo)">
+          <span>{{videoInfo.supportCount}}</span>
+        </span>
+        <span>
+          <span>{{videoInfo.commentCount}}</span>
+        </span>
+        <span></span>
+      </div>
     </div>
   </div>
 </template>
@@ -25,7 +27,7 @@ export default {
   name: 'comm-video',
   props: {
     full: { type: Boolean, default: false },
-    videoInfo: { type: Object, default () { return {} } }
+    videoInfoList: { type: Array, default () { return [] } }
   },
   data () {
     return {
@@ -38,80 +40,121 @@ export default {
       touchStartX: -1,
       touchStartY: -1,
       touchMoveDistanceX: 0,
-      touchMoveDistanceY: 0
+      touchMoveDistanceY: 0,
+      moveRate: 0.4,
+      everyVITsY: 0,
+      currentVIIndex: 1,
+      currentVITsY: 0,
+      reg: /[-?\d]+/g,
+      videoItemWrapElem: null
     }
   },
+  mounted () {
+    this.videoItemWrapElem = this.$refs['video-item-wrap']
+    this.everyVITsY = this.videoItemWrapElem.offsetHeight * 0.25
+    this.videoItemWrapElem.style.transform = `translateY(${-this.everyVITsY}px)`
+    this.currentVITsY = Number(this.videoItemWrapElem.style.transform.match(this.reg)[0])
+  },
   methods: {
-    support () {
-      this.videoInfo.ifSupport = !this.videoInfo.ifSupport
+    support (videoInfo) {
+      videoInfo.ifSupport = !videoInfo.ifSupport
     },
-    supportHold () {
+    supportHold (videoInfo) {
       this.dblclickCount++
       clearTimeout(this.dblclickTimer)
-      if (this.dblclickCount > 2) {
-        if (!this.videoInfo.ifSupport) {
-          this.videoInfo.ifSupport = !this.videoInfo.ifSupport
+      if (this.dblclickCount > 3) {
+        if (!videoInfo.ifSupport) {
+          videoInfo.ifSupport = !videoInfo.ifSupport
         }
-        var clickWhereX = event.clientX
-        var clickWhereY = event.clientY
-        this.$pageImg(likeIcon, clickWhereX, clickWhereY, document.getElementsByClassName('video-item-current')[0])
+        this.$pageImg(likeIcon, this.touchStartX, this.touchStartY, document.getElementsByClassName('video-item-current')[0])
       }
       this.dblclickTimer = setTimeout(() => {
         this.dblclickCount = 0
-      }, 1000)
+      }, 600)
     },
-    touchStart () {
-      this.touchStartX = event.touches[0].clientX
-      this.touchStartY = event.touches[0].clientY
+    touchStart (videoInfo) {
+      this.touchStartX = event.touches[0].pageX
+      this.touchStartY = event.touches[0].pageY
+      this.videoItemWrapElem.style['transition-duration'] = '0s'
     },
     touchMove () {
-      if (this.touchStartX < 0) {
-        this.touchStartX = event.touches[0].clientX
-        this.touchStartY = event.touches[0].clientY
+      if (this.$pageImgExist(document.getElementsByClassName('video-item-current')[0])) {
+        return
       }
-      this.touchMoveDistanceX = event.touches[0].clientX - this.touchStartX
-      this.touchMoveDistanceY = event.touches[0].clientY - this.touchStartY
+      if (this.touchStartX < 0) {
+        this.touchStartX = event.touches[0].pageX
+        this.touchStartY = event.touches[0].pageY
+        this.videoItemWrapElem.style['transition-duration'] = '0s'
+      }
+      this.touchMoveDistanceX = event.touches[0].pageX - this.touchStartX
+      this.touchMoveDistanceY = event.touches[0].pageY - this.touchStartY
       if (this.touchMoveDistanceX > 0 && Math.abs(this.touchMoveDistanceX) > Math.abs(this.touchMoveDistanceY)) {
-        if (this.touchToTop || this.touchToBottom || this.$pageImgExist(document.getElementsByClassName('video-item-current')[0])) {
+        if (this.touchToTop || this.touchToBottom) {
           return
         }
         this.touchToLeft = false
         this.touchToRight = true
       } else if (this.touchMoveDistanceX < 0 && Math.abs(this.touchMoveDistanceX) > Math.abs(this.touchMoveDistanceY)) {
-        if (this.touchToTop || this.touchToBottom || this.$pageImgExist(document.getElementsByClassName('video-item-current')[0])) {
+        if (this.touchToTop || this.touchToBottom) {
           return
         }
         this.touchToRight = false
         this.touchToLeft = true
       } else if (this.touchMoveDistanceY > 0 && Math.abs(this.touchMoveDistanceX) < Math.abs(this.touchMoveDistanceY)) {
-        if (this.touchToLeft || this.touchToRight || this.$pageImgExist(document.getElementsByClassName('video-item-current')[0])) {
+        if (this.touchToLeft || this.touchToRight) {
           return
         }
         this.touchToTop = false
         this.touchToBottom = true
       } else if (this.touchMoveDistanceY < 0 && Math.abs(this.touchMoveDistanceX) < Math.abs(this.touchMoveDistanceY)) {
-        if (this.touchToLeft || this.touchToRight || this.$pageImgExist(document.getElementsByClassName('video-item-current')[0])) {
+        if (this.touchToLeft || this.touchToRight) {
           return
         }
         this.touchToBottom = false
         this.touchToTop = true
       }
       if (this.touchToRight) {
-        console.log('执行向右滑动回掉方法', this.touchMoveDistanceX)
+        this.$emit('touch-to-right', this.touchMoveDistanceX)
       }
       if (this.touchToLeft) {
-        console.log('执行向左滑动回掉方法', this.touchMoveDistanceX)
+        this.$emit('touch-to-left', this.touchMoveDistanceX)
       }
       if (this.touchToTop) {
-        console.log('执行向上滑动回掉方法', this.touchMoveDistanceY)
+        this.$emit('touch-to-top', this.touchMoveDistanceY)
+        this.videoItemWrapElem.style.transform = `translateY(${this.currentVITsY + this.touchMoveDistanceY * this.moveRate}px)`
       }
       if (this.touchToBottom) {
-        console.log('执行向下滑动回掉方法', this.touchMoveDistanceY)
+        this.$emit('touch-to-bottom', this.touchMoveDistanceY)
+        this.videoItemWrapElem.style.transform = `translateY(${this.currentVITsY + this.touchMoveDistanceY * this.moveRate}px)`
       }
     },
     touchEnd () {
+      if (this.$pageImgExist(document.getElementsByClassName('video-item-current')[0])) {
+        return
+      }
       this.touchStartX = -1
       this.touchStartY = -1
+      this.videoItemWrapElem.style['transition-duration'] = '0.3s'
+      if (this.touchToTop) {
+        // 下一个视频
+        if (Math.abs(this.touchMoveDistanceY) > 200) {
+          this.videoItemWrapElem.style['transition-duration'] = '0.5s'
+          this.currentVITsY -= this.everyVITsY
+          this.videoItemWrapElem.style.transform = `translateY(${this.currentVITsY}px)`
+        } else {
+          this.videoItemWrapElem.style.transform = `translateY(${this.currentVITsY}px)`
+        }
+      }
+      if (this.touchToBottom) {
+        // 上一个视频
+        if (Math.abs(this.touchMoveDistanceY) > 200) {
+          this.videoItemWrapElem.style['transition-duration'] = '0.5s'
+          this.currentVITsY += this.everyVITsY
+          this.videoItemWrapElem.style.transform = `translateY(${this.currentVITsY}px)`
+        } else {
+          this.videoItemWrapElem.style.transform = `translateY(${this.currentVITsY}px)`
+        }
+      }
       this.touchToTop = false
       this.touchToBottom = false
       this.touchToLeft = false
@@ -122,12 +165,24 @@ export default {
 </script>
 
 <style scoped>
-.video-item {
+#video-item-wrap {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: calc(100% * 4);
+  overflow: hidden;
+  font-size: 0;
+  transition: all 0s ease 0s;
+  transform: translateY(-25%);
+}
+
+.video-item {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% / 4);
   overflow: hidden;
 }
 
@@ -151,18 +206,41 @@ export default {
   background: linear-gradient(to top, rgba(30, 20, 54, .6), rgba(0, 0, 0, 0));
 }
 
-video {
+.video-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+}
+
+.video-wrap>div.video-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9;
+}
+
+video-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 8;
 }
 
 .videoDo {
   position: absolute;
   right: 8px;
+  z-index: 999;
 }
 
 .videoDoFull {
-  bottom: calc(48px + 16px);
+  bottom: calc(3.2rem + 16px);
 }
 
 .videoDoNotFull {
@@ -219,6 +297,7 @@ video {
   text-align: center;
   font-weight: bold;
   text-shadow: 0px 0px 4px rgba(41, 41, 41, 0.4);
+  font-size: 0.8rem;
 }
 
 .videoDo>span:nth-of-type(3) {
@@ -237,6 +316,7 @@ video {
   text-align: center;
   font-weight: bold;
   text-shadow: 0px 0px 4px rgba(41, 41, 41, 0.4);
+  font-size: 0.8rem;
 }
 
 .videoDo>span:nth-of-type(4) {

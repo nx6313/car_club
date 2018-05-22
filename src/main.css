@@ -4,6 +4,7 @@ body {
     overflow-x: hidden;
     background: rgb(30, 20, 54);
     color: rgb(233, 240, 247);
+    font-size: 0.7rem;
 }
 
 .flex-r {

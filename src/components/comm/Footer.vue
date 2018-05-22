@@ -55,9 +55,10 @@ export default {
   left: 0;
   bottom: 0;
   width: 100%;
-  height: 48px;
+  height: 3.2rem;
   color: #ffffff;
   font-weight: bold;
+  font-size: 0.8rem;
 }
 
 #fooer::before {
