@@ -86,7 +86,7 @@ export default {
   },
   created () {
     this.userInfo = {
-      headImg: 'http://img03.store.sogou.com/app/a/10010016/b1296a6eecf78db4143f93678c40ed0b',
+      headImg: 'http://img01.store.sogou.com/app/a/10010016/80f52439c4ed48b974a3a756cb5b9bfe',
       nickName: '大是大非',
       sex: 1,
       address: '山西，太原',
@@ -131,6 +131,9 @@ export default {
   width: 100%;
   height: 100%;
   -webkit-filter: blur(6px);
+  -moz-filter: blur(6px);
+  -o-filter: blur(6px);
+  -ms-filter: blur(6px);
   filter: blur(6px);
   background-repeat: repeat-x;
   background-position: top center;
@@ -148,7 +151,7 @@ export default {
   width: 64px;
   height: 64px;
   border-radius: 64px;
-  border: 1px solid rgba(176, 135, 252, 0.521);
+  border: 1px solid rgba(223, 209, 250, 0.521);
   background-color: #ffffff;
   background-repeat: repeat-x;
   background-position: center;

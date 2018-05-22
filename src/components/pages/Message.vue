@@ -1,20 +1,20 @@
 <template>
   <div id="message">
     <div class="message-item top-menus-wrap flex-r flex-a">
-      <span>
+      <span @click="toChildPage('/message-fans')">
         <span>粉丝</span>
       </span>
-      <span>
+      <span @click="toChildPage('/message-praise')">
         <span>赞</span>
       </span>
-      <span>
-        <span>@我</span>
+      <span @click="toChildPage('/message-atme')">
+        <span>@ 我</span>
       </span>
-      <span>
+      <span @click="toChildPage('/message-comment')">
         <span>评论</span>
       </span>
     </div>
-    <div class="message-item line-menu-wrap" v-on:click="toggleMenu">
+    <div class="message-item line-menu-wrap" v-on:click="toggleMenu('/message-interest')">
       <div>可能感兴趣的人</div>
       <i></i>
     </div>
@@ -26,7 +26,7 @@
       <div class="menu-layout open attention-friend">
         <div class="attention-friend-item" v-if="attentionFriends.length > 0" v-for="friend in attentionFriends" :key="friend.id">
           <span class="user-head" :style="friend.headImg ? { 'background-image': 'url(' + friend.headImg + ')' } : ''"></span>
-          <div class="item-content flex-col flex-b">
+          <div class="item-content flex-col flex-b" @click="toChildPage('/message-chat', friend.userName)">
             <span class="flex-r flex-b">
               <span>{{friend.userName}}</span>
               <span>
@@ -109,9 +109,10 @@ export default {
     }
   },
   methods: {
-    toggleMenu: function (event) {
+    toggleMenu: function (toRoutePath) {
       var menuType = (event.target.classList.contains('shrink-menu') || event.target.parentElement.classList.contains('shrink-menu') || event.target.parentElement.parentElement.classList.contains('shrink-menu')) ? 'shrink' : 'normal'
       if (menuType === 'normal') {
+        this.toChildPage(toRoutePath)
       } else if (menuType === 'shrink') {
         var shrinkMenuLayoutElem = event.target.getElementsByClassName('menu-layout')[0] || event.target.parentElement.getElementsByClassName('menu-layout')[0] || event.target.parentElement.parentElement.getElementsByClassName('menu-layout')[0]
         var lineMenuArrows = shrinkMenuLayoutElem.parentElement.getElementsByTagName('i')[0]
@@ -151,6 +152,10 @@ export default {
           }
         }
       }
+    },
+    toChildPage (childPageRouter, params) {
+      var option = params || ''
+      this.$router.push(childPageRouter + option)
     }
   }
 }
