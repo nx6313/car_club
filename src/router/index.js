@@ -95,7 +95,7 @@ var router = new Router({
       }
     },
     {
-      path: '/message-chat:chatusername',
+      path: '/message-chat/:chatid/:chatusername',
       name: 'message-chat',
       component: MessageChat,
       meta: {

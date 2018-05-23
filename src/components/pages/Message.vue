@@ -26,7 +26,7 @@
       <div class="menu-layout open attention-friend">
         <div class="attention-friend-item" v-if="attentionFriends.length > 0" v-for="friend in attentionFriends" :key="friend.id">
           <span class="user-head" :style="friend.headImg ? { 'background-image': 'url(' + friend.headImg + ')' } : ''"></span>
-          <div class="item-content flex-col flex-b" @click="toChildPage('/message-chat', friend.userName)">
+          <div class="item-content flex-col flex-b" @click="toChildPage('/message-chat', '/' + friend.id + '/' + friend.userName)">
             <span class="flex-r flex-b">
               <span>{{friend.userName}}</span>
               <span>

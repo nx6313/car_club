@@ -1,20 +1,361 @@
 <template>
-  <div>聊天页面</div>
+  <div>
+    <transition-group :name="chatContentListTrsName" tag="div" class="chat-content-wrap" ref="chat-content-wrap">
+      <div v-for="(chat, index) in chatList" :key="index" :class="['chat-item', chat.isMe ? 'right' : 'left']">
+        <span class="head" :style="chat.head ? { 'background-image': 'url(' + chat.head + ')' } : ''"></span>
+        <div class="content-wrap">
+          <div class="chat-time-name" v-if="chat.isMe">
+            <span>{{chat.time}}</span>
+            <span>{{chat.nikeName}}</span>
+          </div>
+          <div class="chat-time-name" v-if="!chat.isMe">
+            <span>{{chat.nikeName}}</span>
+            <span>{{chat.time}}</span>
+          </div>
+          <div class="chat-content" v-html="chat.content"></div>
+        </div>
+      </div>
+    </transition-group>
+    <div class="chat-input-wrap">
+      <textarea placeholder="请输入消息内容" ref="chat-input-area" v-model="chatContentInput"/>
+      <span></span>
+      <span class="chat-add-btn" style="display: block;" ref="chat-add-btn"></span>
+      <span class="chat-send-btn ripple" style="display: none;" ref="chat-send-btn" @click="chatSend">发送</span>
+    </div>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'message-chat',
   data () {
-    return {}
+    return {
+      friendResiveTimer: null,
+      chatContentListTrsName: 'me-chat',
+      chatContentInput: '',
+      chatList: []
+    }
+  },
+  activated () {
+    this.$refs['chat-input-area'].focus()
+    this.chatList = this.$moment.message_chat_content[this.$route.params.chatid] || []
+  },
+  deactivated () {
+    clearTimeout(this.friendResiveTimer)
+    this.chatList = []
+  },
+  methods: {
+    scrollTobottom () {
+      setTimeout(() => {
+        var currentpos = this.$refs['chat-content-wrap'].$el.scrollHeight
+        this.$refs['chat-content-wrap'].$el.scrollTo(0, currentpos)
+      }, 100)
+    },
+    friendResive () {
+      this.friendResiveTimer = setTimeout(() => {
+        this.chatContentListTrsName = 'friend-chat'
+        var newResiveData = {
+          head: 'http://img01.store.sogou.com/app/a/10010016/80f52439c4ed48b974a3a756cb5b9bfe',
+          nikeName: '刘德华',
+          time: '2/18 16:23:30',
+          content: '你是大傻逼？',
+          isMe: false
+        }
+        this.chatList.push(newResiveData)
+        this.$moment.message_chat_content[this.$route.params.chatid] = this.chatList
+        this.scrollTobottom()
+      }, 3000)
+    },
+    chatSend () {
+      this.chatContentListTrsName = 'me-chat'
+      var newSendData = {
+        head: 'http://img01.store.sogou.com/app/a/10010016/80f52439c4ed48b974a3a756cb5b9bfe',
+        nikeName: '刘德华',
+        time: '2/18 16:23:30',
+        content: this.chatContentInput.trim().replace(new RegExp('\\n', 'gm'), '<br>'),
+        isMe: true
+      }
+      this.chatList.push(newSendData)
+      this.$moment.message_chat_content[this.$route.params.chatid] = this.chatList
+      this.scrollTobottom()
+      this.chatContentInput = ''
+      this.$refs['chat-input-area'].focus()
+      this.friendResive()
+    }
+  },
+  watch: {
+    chatContentInput (newValue, oldValue) {
+      var chatAddBtn = this.$refs['chat-add-btn']
+      var chatSendBtn = this.$refs['chat-send-btn']
+      if (newValue.trim()) {
+        if (chatSendBtn.style.display === 'none') {
+          chatAddBtn.style.display = 'none'
+          chatSendBtn.style.opacity = 0
+          chatSendBtn.style.display = 'block'
+          setTimeout(() => {
+            chatSendBtn.style.opacity = 1
+          }, 10)
+        }
+      } else {
+        if (chatAddBtn.style.display === 'none') {
+          chatSendBtn.style.display = 'none'
+          chatAddBtn.style.opacity = 0
+          chatAddBtn.style.display = 'block'
+          setTimeout(() => {
+            chatAddBtn.style.opacity = 1
+          }, 10)
+        }
+      }
+    }
   }
 }
 </script>
 
 <style scoped>
 #content-wrap {
-    height: 100vh;
-    z-index: 9;
-    background: rgb(30, 20, 54);
+  height: 100vh;
+  z-index: 9;
+  background: rgb(30, 20, 54);
+  overflow: hidden;
+}
+
+.chat-content-wrap {
+  position: absolute;
+  width: 100%;
+  height: calc(100% - 3.6rem - 14px);
+  top: 0;
+  left: 0;
+  padding-bottom: 14px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.chat-content-wrap>div.chat-item {
+  position: relative;
+  max-width: calc(100% - 4rem);
+  min-height: 4rem;
+  overflow-x: hidden;
+}
+
+.chat-content-wrap>div.chat-item:nth-of-type(n + 2) {
+  margin-top: 4px;
+}
+
+.chat-content-wrap>div.left {
+  left: 0;
+}
+
+.chat-content-wrap>div.right {
+  margin-left: 4rem;
+}
+
+.chat-content-wrap>div.chat-item>span.head {
+  position: absolute;
+  display: block;
+  top: 1rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 3rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% auto;
+}
+
+.chat-content-wrap>div.left>span.head {
+  left: 0.6rem;
+}
+
+.chat-content-wrap>div.right>span.head {
+  right: 0.6rem;
+}
+
+.chat-content-wrap>div.chat-item>div.content-wrap {
+  position: relative;
+  display: inline-block;
+  margin-top: 0.8rem;
+  width: calc(100% - 3rem - 0.6rem - 0.6rem);
+}
+
+.chat-content-wrap>div.chat-item>div.content-wrap::after {
+  content: '';
+  position: absolute;
+  width: 0.6rem;
+  height: 1rem;
+  background-color: #5c4592;
+  top: 2rem;
+  z-index: -1;
+}
+
+.chat-content-wrap>div.chat-item>div.content-wrap>div.chat-time-name {
+  position: relative;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.chat-content-wrap>div.chat-item>div.content-wrap>div.chat-content {
+  position: relative;
+  display: inline-block;
+  border-radius: 5px;
+  background-color: #5c4592;
+  padding: 0.4rem 0.9rem;
+  line-height: 1.4rem;
+  font-size: 0.9rem;
+  max-width: 100%;
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+.chat-content-wrap>div.left>div.content-wrap {
+  text-align: left;
+  margin-left: calc(3rem + 0.6rem + 0.6rem);
+}
+
+.chat-content-wrap>div.left>div.content-wrap::after {
+  transform: skewX(30deg) rotate(190deg);
+  left: -0.08rem;
+}
+
+.chat-content-wrap>div.left>div.content-wrap>div.chat-time-name {
+  text-align: left;
+}
+
+.chat-content-wrap>div.left>div.content-wrap>div.chat-time-name>span:nth-of-type(1) {
+  color: #bfb3dc;
+  margin-right: 6px;
+}
+
+.chat-content-wrap>div.left>div.content-wrap>div.chat-time-name>span:nth-of-type(2) {
+  color: #8b7caf;
+}
+
+.chat-content-wrap>div.left>div.content-wrap>div.chat-content {
+  text-align: left;
+}
+
+.chat-content-wrap>div.right>div.content-wrap {
+  text-align: right;
+}
+
+.chat-content-wrap>div.right>div.content-wrap::after {
+  transform: skewX(330deg) rotate(170deg);
+  right: -0.08rem;
+}
+
+.chat-content-wrap>div.right>div.content-wrap>div.chat-time-name {
+  text-align: right;
+}
+
+.chat-content-wrap>div.right>div.content-wrap>div.chat-time-name>span:nth-of-type(1) {
+  color: #8b7caf;
+  margin-right: 6px;
+}
+
+.chat-content-wrap>div.right>div.content-wrap>div.chat-time-name>span:nth-of-type(2) {
+  color: #bfb3dc;
+}
+
+.chat-content-wrap>div.right>div.content-wrap>div.chat-content {
+  text-align: left;
+}
+
+.me-chat-enter-active, .me-chat-leave-active {
+  transition: all 0.6s;
+}
+.me-chat-enter, .me-chat-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.friend-chat-enter-active, .friend-chat-leave-active {
+  transition: all 0.6s;
+}
+.friend-chat-enter, .friend-chat-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.chat-input-wrap {
+  position: fixed;
+  width: 100%;
+  height: 3.6rem;
+  left: 0;
+  bottom: 0;
+  background: #2c1f4a;
+}
+
+.chat-input-wrap>span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  display: inline-block;
+  width: 2.8rem;
+  height: 2.8rem;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 76% 76%;
+}
+
+.chat-input-wrap>span:nth-of-type(1) {
+  width: 2rem;
+  height: 2rem;
+  right: calc(2.8rem + 0.5rem + 4px);
+  background-image: url('./../../../assets/chat-face.png');
+}
+
+.chat-input-wrap>span.chat-add-btn {
+  right: 0.5rem;
+  background-image: url('./../../../assets/chat-add.png');
+  transition: opacity 0.3s ease 0s;
+  display: block;
+}
+
+.chat-input-wrap>span.chat-send-btn {
+  right: 0.5rem;
+  background: rgb(90, 64, 158);
+  width: 2.5rem;
+  height: 1.8rem;
+  line-height: 1.92rem;
+  border-radius: 2px;
+  text-align: center;
+  color: #af9be2;
+  font-size: 0.8rem;
+  text-shadow: 0 0 2px rgba(27, 18, 46, 0.4);
+  box-shadow: 0 0 4px rgba(78, 60, 116, 0.4);
+  transition: opacity 0.3s ease 0s;
+  display: none;
+}
+
+.chat-input-wrap>textarea {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0.5rem;
+  margin: auto 0;
+  display: inline-block;
+  width: calc(100% - 3.8rem - 20px - 2.2rem - 2px);
+  height: calc(2rem - 16px);
+  border: none;
+  outline: none;
+  border-radius: calc(2rem - 16px);
+  background-color: #433564;
+  padding: 8px 2.2rem 8px 20px;
+  color: #ffffff;
+  font-size: 0.7rem;
+  resize: none;
+}
+
+.chat-input-wrap>textarea::-webkit-input-placeholder { /* WebKit browsers */
+  color: #685d82;
+}
+.chat-input-wrap>textarea:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+  color: #685d82;
+}
+.chat-input-wrap>textarea::-moz-placeholder { /* Mozilla Firefox 19+ */
+  color: #685d82;
+}
+.chat-input-wrap>textarea:-ms-input-placeholder { /* Internet Explorer 10+ */
+  color: #685d82;
 }
 </style>

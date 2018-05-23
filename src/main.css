@@ -78,3 +78,9 @@ body {
     opacity: .3;
     transition: 0s;
 }
+
+/** 聊天窗口公共样式 **/
+.chat-content-wrap>div.chat-item>div.content-wrap>div.chat-content>img {
+    width: 100%;
+    border-radius: 4px;
+}
