@@ -1,12 +1,16 @@
 <template>
-  <div>赞页面</div>
+  <div>
+    <div class="list-item" v-for="(item, index) in dataList" :key="index"></div>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'message-praise',
   data () {
-    return {}
+    return {
+      dataList: []
+    }
   }
 }
 </script>

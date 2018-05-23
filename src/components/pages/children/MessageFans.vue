@@ -1,12 +1,16 @@
 <template>
-  <div>粉丝页面</div>
+  <div>
+    <div class="list-item" v-for="(item, index) in dataList" :key="index"></div>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'message-fans',
   data () {
-    return {}
+    return {
+      dataList: []
+    }
   }
 }
 </script>

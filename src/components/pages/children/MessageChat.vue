@@ -47,8 +47,8 @@ export default {
   methods: {
     scrollTobottom () {
       setTimeout(() => {
-        var currentpos = this.$refs['chat-content-wrap'].$el.scrollHeight
-        this.$refs['chat-content-wrap'].$el.scrollTo(0, currentpos)
+        var currentpos = this.$refs['chat-content-wrap'].$el.scrollHeight * 100
+        this.$refs['chat-content-wrap'].$el.scrollTop = currentpos
       }, 100)
     },
     friendResive () {
@@ -58,7 +58,7 @@ export default {
           head: 'http://img01.store.sogou.com/app/a/10010016/80f52439c4ed48b974a3a756cb5b9bfe',
           nikeName: '刘德华',
           time: '2/18 16:23:30',
-          content: '你是大傻逼？',
+          content: this.chatList[this.chatList.length - 1].content,
           isMe: false
         }
         this.chatList.push(newResiveData)
@@ -342,7 +342,7 @@ export default {
   background-color: #433564;
   padding: 8px 2.2rem 8px 20px;
   color: #ffffff;
-  font-size: 0.7rem;
+  font-size: 1rem;
   resize: none;
 }
 

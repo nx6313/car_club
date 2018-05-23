@@ -1,12 +1,16 @@
 <template>
-  <div>可能感兴趣的人</div>
+  <div>
+    <div class="list-item" v-for="(item, index) in dataList" :key="index"></div>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'message-interest',
   data () {
-    return {}
+    return {
+      dataList: []
+    }
   }
 }
 </script>
