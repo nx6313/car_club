@@ -1,6 +1,6 @@
 <template>
   <div class="stateChild">
-    <span class="clear" v-for="attenImg in attentionList" :key="attenImg">
+    <span class="clear" v-for="(attenImg, index) in attentionList" :key="index">
       <span>
         <span class="stateDay">{{attenImg.date}}</span>
         <span class="stateMonth">{{attenImg.month}}月</span>
@@ -45,7 +45,7 @@ export default {
             ]
           },
           {
-            id: 0,
+            id: 1,
             atteninfo:
               '用8当然不是因为数字吉利，而是因为 8 是偶数，并且8可以被成倍缩小三次以被成倍缩!',
             attenImgs: [
@@ -55,8 +55,8 @@ export default {
         ]
       },
       {
-        date: '04',
-        month: 5,
+        date: '03',
+        month: '5',
         stateList: [
           {
             id: 0,
@@ -68,7 +68,7 @@ export default {
             ]
           },
           {
-            id: 0,
+            id: 1,
             atteninfo:
               '用8当然不是因为数字吉利，而是因为 8 是偶数，并且8可以被成倍缩小三次以被成倍缩!',
             attenImgs: [
