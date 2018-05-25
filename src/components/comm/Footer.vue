@@ -2,7 +2,7 @@
   <div id="fooer" :class="['flex-r flex-a', curPageIndex == 0 ? 'footerIndex' : 'footerNotIndex']">
     <span v-on:click="toPage('/', 1)">首页</span>
     <span v-on:click="toPage('/attention', 2)">关注</span>
-    <span class="btn-video-add"></span>
+    <span class="btn-video-add" v-on:click="toPage('/issue', 3, 'child')"></span>
     <span v-on:click="toPage('/message', 4)">消息</span>
     <span v-on:click="toPage('/me', 5)">我</span>
     <div class="footer-indicator"></div>
@@ -20,6 +20,7 @@ export default {
   mounted () {
     var currentRouterPath = this.$router.currentRoute.path
     var indicatorElem = document.getElementById('fooer').getElementsByClassName('footer-indicator')[0]
+    indicatorElem.style.opacity = 1
     if (currentRouterPath === '/') {
       this.curPageIndex = 0
       indicatorElem.style.transform = `translateX(calc((100vw - 80px - 10px) / 4 * ${0}))`
@@ -32,17 +33,28 @@ export default {
     } else if (currentRouterPath.indexOf('/me') === 0) {
       this.curPageIndex = 4
       indicatorElem.style.transform = `translateX(calc(100vw - (100vw - 80px - 10px) / 4 * ${5 - 4}))`
+    } else {
+      indicatorElem.style.transform = `translateX(calc((100vw - (100vw - 80px - 10px) / 4) / 2))`
+      indicatorElem.style.opacity = 0
     }
   },
   methods: {
-    toPage: function (pageTo, pageIndex) {
-      this.$router.replace(pageTo)
+    toPage: function (pageTo, pageIndex, pageModel) {
+      if (pageModel === 'child') {
+        this.$router.push(pageTo)
+      } else {
+        this.$router.replace(pageTo)
+      }
       this.curPageIndex = pageIndex - 1
       var indicatorElem = document.getElementById('fooer').getElementsByClassName('footer-indicator')[0]
+      indicatorElem.style.opacity = 1
       if (pageIndex < 3) {
         indicatorElem.style.transform = `translateX(calc((100vw - 80px - 10px) / 4 * ${pageIndex - 1}))`
       } else if (pageIndex > 3) {
         indicatorElem.style.transform = `translateX(calc(100vw - (100vw - 80px - 10px) / 4 * ${5 - (pageIndex - 1)}))`
+      } else {
+        indicatorElem.style.transform = `translateX(calc((100vw - (100vw - 80px - 10px) / 4) / 2))`
+        indicatorElem.style.opacity = 0
       }
     }
   }
@@ -111,6 +123,7 @@ span {
   background: rgba(255, 255, 255, .4);
   border-radius: 10px;
   left: 0;
+  opacity: 1;
   transition: all 0.3s ease 0s;
   -moz-transition: all 0.3s ease 0s;
   -webkit-transition: all 0.3s ease 0s;

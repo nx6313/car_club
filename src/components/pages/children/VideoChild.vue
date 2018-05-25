@@ -1,6 +1,6 @@
 <template>
   <div class="video-child" >
-    <span v-for="(videoImg, index) in videoImgList" :key="index" :style="videoImg ? { 'background-image':'url(' + videoImg.videoImg + ' ) ' } : ''" ></span>
+    <span v-for="(videoImg, index) in videoImgList" :key="index" :style="videoImg ? { 'background-image':'url(' + videoImg.videoImg + ' ) ' } : ''" @click="toChildPage('/me-state-detail')"></span>
   </div>
 </template>
 
@@ -15,6 +15,12 @@ export default {
         { videoImg: 'http://pic.58pic.com/58pic/14/91/93/83M58PICPv5_1024.jpg' },
         { videoImg: 'http://pic.58pic.com/58pic/14/91/93/83M58PICPv5_1024.jpg' }
       ]
+    }
+  },
+  methods: {
+    toChildPage (childPageRouter, params) {
+      var option = params || ''
+      this.$router.push(childPageRouter + option)
     }
   }
 }

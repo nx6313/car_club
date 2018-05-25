@@ -5,7 +5,7 @@
         <span class="stateDay">{{attenImg.date}}</span>
         <span class="stateMonth">{{attenImg.month}}月</span>
       </span>
-      <span v-for="stateList in attenImg.stateList" :key="stateList.id">
+      <span v-for="stateList in attenImg.stateList" :key="stateList.id" @click="toChildPage('/me-state-detail')">
         <span :class="'statePage' + (stateList.attenImgs.length > 4 ? 4 : stateList.attenImgs.length)">
            <span v-for="(img , index) in stateList.attenImgs" :key="index" :style="img ? { 'background-image':'url(' + img + ' ) ' } : ''" ></span>
         </span>
@@ -80,6 +80,12 @@ export default {
         ]
       }
     ]
+  },
+  methods: {
+    toChildPage (childPageRouter, params) {
+      var option = params || ''
+      this.$router.push(childPageRouter + option)
+    }
   }
 }
 </script>
@@ -101,7 +107,7 @@ export default {
   margin: 10px 0 0;
 }
 .stateChild > span > span:nth-of-type(1) {
-  width: 17%;
+  width: 21%;
   height: auto;
   float: left;
   margin-left: 10px;
@@ -200,7 +206,7 @@ export default {
 /* 四张图的样式 */
 .stateChild > span > span {
   position: relative;
-  width: 80%;
+  width: 74%;
   float: right;
   display: flex;
   justify-content: space-around;
@@ -244,12 +250,12 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
 .stateCount {
   display: block;
-  width: 20%;
+  width: 80%;
   height: 1rem;
   overflow: hidden;
   color: #685d82;

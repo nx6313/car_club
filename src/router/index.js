@@ -5,6 +5,7 @@ import MessageBox from '@/plugins/MessageBox'
 import Config from './../config.js'
 import Index from '@/components/pages/Index'
 import Attention from '@/components/pages/Attention'
+import Issue from '@/components/pages/Issue'
 import Message from '@/components/pages/Message'
 import Me from '@/components/pages/Me'
 import VideoChild from '@/components/pages/children/VideoChild'
@@ -15,6 +16,8 @@ import MessagePraise from '@/components/pages/children/MessagePraise'
 import MessageFans from '@/components/pages/children/MessageFans'
 import MessageInterest from '@/components/pages/children/MessageInterest'
 import MessageChat from '@/components/pages/children/MessageChat'
+import EditUserInfo from '@/components/pages/children/EditUserInfo'
+import VideoStateDetail from '@/components/pages/children/VideoStateDetail'
 
 Vue.use(Router)
 Vue.use(VueResource)
@@ -32,6 +35,14 @@ var router = new Router({
       path: '/attention',
       name: 'page-attention',
       component: Attention
+    },
+    {
+      path: '/issue',
+      name: 'page-issue',
+      component: Issue,
+      meta: {
+        title: '发布动态'
+      }
     },
     {
       path: '/message',
@@ -100,6 +111,22 @@ var router = new Router({
       component: MessageChat,
       meta: {
         title: '聊天 - '
+      }
+    },
+    {
+      path: '/me-edit-user-info',
+      name: 'me-edit-user-info',
+      component: EditUserInfo,
+      meta: {
+        title: '编辑资料'
+      }
+    },
+    {
+      path: '/me-state-detail',
+      name: 'me-state-detail',
+      component: VideoStateDetail,
+      meta: {
+        title: '动态详情'
       }
     }
   ]

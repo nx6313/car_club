@@ -5,7 +5,7 @@
       <div class="head-wrap">
         <span class="head" :style="userInfo.headImg ? { 'background-image': 'url(' + userInfo.headImg + ')' } : ''"></span>
         <div class="do-wrap flex-r flex-a">
-          <span>编辑资料</span>
+          <span @click="toChildPage('/me-edit-user-info')">编辑资料</span>
           <span><img src="./../../assets/transpond.png"></span>
         </div>
       </div>
@@ -82,6 +82,10 @@ export default {
         tabs[t].classList.remove('selected')
       }
       event.target.classList.add('selected')
+    },
+    toChildPage (childPageRouter, params) {
+      var option = params || ''
+      this.$router.push(childPageRouter + option)
     }
   },
   created () {
