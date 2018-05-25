@@ -172,7 +172,7 @@ export default {
 
 .top-menus-wrap {
   position: relative;
-  padding: 0.9rem 1.2rem;
+  padding: 0.9rem 1rem;
   background: rgb(44, 31, 74);
   padding-bottom: 2rem;
   margin-bottom: 7px;

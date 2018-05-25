@@ -1,8 +1,8 @@
 <template>
   <div id="video-item-wrap" ref="video-item-wrap" :style="full ? { position: 'fixed' } : { position: 'absolute' }">
-    <div v-for="(videoInfo, index) in videoInfoList" :key="index" :class="['video-item', index == 1 ? 'video-item-current' : '']">
-      <div class="video-wrap" ref="video-wrap">
-        <div class="video-shade" @click="supportHold(videoInfo)" @touchstart.prevent="touchStart(videoInfo)" @touchmove.prevent="touchMove" @touchend.prevent="touchEnd"></div>
+    <div v-for="(videoInfo, index) in videoInfoList" :key="index" :class="['video-item', index == 1 ? 'video-item-current' : '']" @click="supportHold(videoInfo)">
+      <div class="video-wrap" ref="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
+        <div class="video-shade"></div>
       </div>
       <div :class="['videoDo', full ? 'videoDoFull' : 'videoDoNotFull']">
         <span :style="videoInfo.userHead ? { 'background-image': 'url(' + videoInfo.userHead + ')' } : ''">
@@ -11,7 +11,7 @@
         <span :class="videoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(videoInfo)">
           <span>{{videoInfo.supportCount}}</span>
         </span>
-        <span>
+        <span @click.stop="lookComment(videoInfo)">
           <span>{{videoInfo.commentCount}}</span>
         </span>
         <span></span>
@@ -60,19 +60,23 @@ export default {
       videoInfo.ifSupport = !videoInfo.ifSupport
     },
     supportHold (videoInfo) {
+      this.$emit('close-comment-pop')
       this.dblclickCount++
       clearTimeout(this.dblclickTimer)
       if (this.dblclickCount > 3) {
         if (!videoInfo.ifSupport) {
           videoInfo.ifSupport = !videoInfo.ifSupport
         }
-        this.$pageImg(likeIcon, this.touchStartX, this.touchStartY, document.getElementsByClassName('video-item-current')[0])
+        this.$pageImg(likeIcon, event.clientX, event.clientY, document.getElementsByClassName('video-item-current')[0])
       }
       this.dblclickTimer = setTimeout(() => {
         this.dblclickCount = 0
       }, 600)
     },
-    touchStart (videoInfo) {
+    touchStart () {
+      if (this.$pageImgExist(document.getElementsByClassName('video-item-current')[0])) {
+        event.preventDefault()
+      }
       this.touchStartX = event.touches[0].pageX
       this.touchStartY = event.touches[0].pageY
       this.videoItemWrapElem.style['transition-duration'] = '0s'
@@ -81,6 +85,7 @@ export default {
       if (this.$pageImgExist(document.getElementsByClassName('video-item-current')[0])) {
         return
       }
+      event.preventDefault()
       if (this.touchStartX < 0) {
         this.touchStartX = event.touches[0].pageX
         this.touchStartY = event.touches[0].pageY
@@ -159,6 +164,9 @@ export default {
       this.touchToBottom = false
       this.touchToLeft = false
       this.touchToRight = false
+    },
+    lookComment (videoInfo) {
+      this.$emit('look-comment', videoInfo)
     }
   }
 }
