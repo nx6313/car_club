@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import VueResource from 'vue-resource'
 import MessageBox from '@/plugins/MessageBox'
 import Config from './../config.js'
+import ComFun from './../comfun.js'
 import Index from '@/components/pages/Index'
 import Attention from '@/components/pages/Attention'
 import Issue from '@/components/pages/Issue'
@@ -23,6 +24,7 @@ Vue.use(Router)
 Vue.use(VueResource)
 Vue.use(MessageBox)
 Vue.use(Config)
+Vue.use(ComFun)
 
 var router = new Router({
   routes: [
