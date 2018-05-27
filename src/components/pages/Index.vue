@@ -1,6 +1,6 @@
 <template>
   <div>
-    <comm-video :full=true :videoInfoList="videoInfoList" @close-comment-pop="closeCommentPop" @get-new-video-page="getNewVideoPage" @look-comment="lookComment"></comm-video>
+    <comm-video :full=true :videoInfo="videoInfo" :startIndex="0" @close-comment-pop="closeCommentPop" @get-new-video-page="getNewVideoPage" @look-comment="lookComment"></comm-video>
     <div class="comment-pop-wrap" ref="comment-pop-wrap">
       <span class="pop-close-btn ripple" @click="hideCommentPop"></span>
       <span class="comment-title" v-if="videoComments.length > 0">{{videoComments.length}}条评论</span>
@@ -46,53 +46,21 @@ export default {
     return {
       currentVideoUserId: null,
       commentContentInput: '',
-      videoInfoList: [],
+      videoInfo: {},
       videoComments: []
     }
   },
   created: function () {
-    this.videoInfoList = [
-      {
-        userId: '1',
-        src: 'http://l.dachangjr.com/video/2.mp4',
-        type: 'video/mp4',
-        userHead: '',
-        hasAttention: false,
-        ifSupport: true,
-        supportCount: 0,
-        commentCount: 0
-      },
-      {
-        userId: '2',
-        src: 'http://l.dachangjr.com/video/3.mp4',
-        type: 'video/mp4',
-        userHead: '',
-        hasAttention: false,
-        ifSupport: true,
-        supportCount: 0,
-        commentCount: 0
-      },
-      {
-        userId: '1',
-        src: 'http://l.dachangjr.com/video/4.mp4',
-        type: 'video/mp4',
-        userHead: '',
-        hasAttention: false,
-        ifSupport: true,
-        supportCount: 0,
-        commentCount: 0
-      },
-      {
-        userId: '3',
-        src: 'http://l.dachangjr.com/video/5.mp4',
-        type: 'video/mp4',
-        userHead: '',
-        hasAttention: false,
-        ifSupport: true,
-        supportCount: 0,
-        commentCount: 0
-      }
-    ]
+    this.videoInfoList = {
+      userId: '1',
+      src: 'http://l.dachangjr.com/video/2.mp4',
+      type: 'video/mp4',
+      userHead: '',
+      hasAttention: false,
+      ifSupport: true,
+      supportCount: 0,
+      commentCount: 0
+    }
     // this.$http.get('http://www.baidu.com').then(response => {
     //   this.someData = response.body
     // }, response => {

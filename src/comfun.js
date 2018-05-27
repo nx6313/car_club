@@ -66,7 +66,7 @@ export default {
       wx_check_access_token: function (context) {
         var checkAccessPromise = new Promise((resolve, reject) => {
           if (context.$moment.wxUserInfo.access_token === '' && context.$moment.wxUserInfo.openid === '') {
-            resolve({ code: 'no-access_token' })
+            resolve({ code: 'no-access-token' })
           } else {
             context.$comfun.http_get(this, `https://api.weixin.qq.com/sns/auth?access_token=${context.$moment.wxUserInfo.access_token}&openid=${context.$moment.wxUserInfo.openid}`).then((response) => {
               resolve(response)

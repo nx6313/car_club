@@ -37,8 +37,9 @@ export default {
     }
   },
   activated () {
-    this.$refs['chat-input-area'].focus()
+    // this.$refs['chat-input-area'].focus()
     this.chatList = this.$moment.message_chat_content[this.$route.params.chatid] || []
+    this.scrollTobottom()
   },
   deactivated () {
     clearTimeout(this.friendResiveTimer)
@@ -79,7 +80,7 @@ export default {
       this.$moment.message_chat_content[this.$route.params.chatid] = this.chatList
       this.scrollTobottom()
       this.chatContentInput = ''
-      this.$refs['chat-input-area'].focus()
+      // this.$refs['chat-input-area'].focus()
       this.friendResive()
     }
   },
