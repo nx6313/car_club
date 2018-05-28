@@ -18,16 +18,11 @@ export default {
     'comm-footer': Footer
   },
   beforeCreate () {
-    this.$comfun.wx_check_access_token(this).then((response) => {
-      console.log(response)
-      // this.$comfun.wx_get_access_token_by_code(this).then((response) => {
-      //   console.log(response)
-      //   if (response.code === 'url-no-code-param') {
-      //     this.$comfun.wx_oauth2(this, 'snsapi_userinfo')
-      //   }
-      // }, (error) => {
-      //   console.log(error)
-      // })
+    this.$comfun.getWxUserInfoDataToLocal(this)
+    this.$comfun.wx_get_access_token_by_code(this).then((response) => {
+      if (response.code === 'url-no-code-param') {
+        this.$comfun.wx_oauth2(this, 'snsapi_userinfo')
+      }
     }, (error) => {
       console.log(error)
     })

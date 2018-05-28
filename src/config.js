@@ -16,6 +16,8 @@ export default {
       // 访问接口
       urls: {
         test: '/account/test.json',
+        get_open_id: '/user/wx/openid/',
+        get_wx_user_info: '/user/wx/getuserinfo/',
         save_account_info: '/account/create.json'
       },
       // 微信AppId
@@ -27,10 +29,14 @@ export default {
       // 微信用户授权后，获取到的用户信息
       wxUserInfo: {
         openid: '',
-        access_token: '',
-        expires_in: '',
-        refresh_token: '',
-        scope: ''
+        nickname: '',
+        sex: '',
+        province: '',
+        city: '',
+        country: '',
+        headimgurl: '',
+        privilege: [],
+        unionid: ''
       },
       // 记录 一级页面 - 消息，关注好友列表是否展开。 -1 未记录、0 关闭、1 展开
       message_attention_friend_toggle_state: -1,

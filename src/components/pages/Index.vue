@@ -1,6 +1,6 @@
 <template>
   <div>
-    <comm-video :full=true :videoInfo="videoInfo" :startIndex="0" @close-comment-pop="closeCommentPop" @get-new-video-page="getNewVideoPage" @look-comment="lookComment"></comm-video>
+    <comm-video :full=true :videoInfo="videoInfo" @close-comment-pop="closeCommentPop" @cut-video-page="cutVideoPage" @vieo-to-ref="vieoRef" @look-comment="lookComment"></comm-video>
     <div class="comment-pop-wrap" ref="comment-pop-wrap">
       <span class="pop-close-btn ripple" @click="hideCommentPop"></span>
       <span class="comment-title" v-if="videoComments.length > 0">{{videoComments.length}}条评论</span>
@@ -51,7 +51,7 @@ export default {
     }
   },
   created: function () {
-    this.videoInfoList = {
+    this.videoInfo = {
       userId: '1',
       src: 'http://l.dachangjr.com/video/2.mp4',
       type: 'video/mp4',
@@ -67,8 +67,14 @@ export default {
     // })
   },
   methods: {
-    getNewVideoPage (videoUserId) {
-      this.currentVideoUserId = videoUserId
+    cutVideoPage (videoInfo) {
+      console.log(videoInfo)
+      // this.currentVideoUserId = videoUserId
+    },
+    vieoRef (finishFn) {
+      setTimeout(() => {
+        finishFn()
+      }, 3000)
     },
     closeCommentPop () {
       if (this.$refs['comment-pop-wrap'].classList.contains('open')) {

@@ -34,8 +34,8 @@ export default {
       this.curPageIndex = 4
       indicatorElem.style.transform = `translateX(calc(100vw - (100vw - 80px - 10px) / 4 * ${5 - 4}))`
     } else {
-      indicatorElem.style.transform = `translateX(calc((100vw - (100vw - 80px - 10px) / 4) / 2))`
-      indicatorElem.style.opacity = 0
+      // indicatorElem.style.transform = `translateX(calc((100vw - (100vw - 80px - 10px) / 4) / 2))`
+      // indicatorElem.style.opacity = 0
     }
   },
   methods: {
@@ -53,8 +53,8 @@ export default {
       } else if (pageIndex > 3) {
         indicatorElem.style.transform = `translateX(calc(100vw - (100vw - 80px - 10px) / 4 * ${5 - (pageIndex - 1)}))`
       } else {
-        indicatorElem.style.transform = `translateX(calc((100vw - (100vw - 80px - 10px) / 4) / 2))`
-        indicatorElem.style.opacity = 0
+        // indicatorElem.style.transform = `translateX(calc((100vw - (100vw - 80px - 10px) / 4) / 2))`
+        // indicatorElem.style.opacity = 0
       }
     }
   }

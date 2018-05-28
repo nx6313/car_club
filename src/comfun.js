@@ -62,45 +62,38 @@ export default {
         }
         return theRequest
       },
-      // 检验授权凭证（access_token）是否有效，无效返回 false， 有效返回 true
-      wx_check_access_token: function (context) {
-        var checkAccessPromise = new Promise((resolve, reject) => {
-          if (context.$moment.wxUserInfo.access_token === '' && context.$moment.wxUserInfo.openid === '') {
-            resolve({ code: 'no-access-token' })
-          } else {
-            context.$comfun.http_get(this, `https://api.weixin.qq.com/sns/auth?access_token=${context.$moment.wxUserInfo.access_token}&openid=${context.$moment.wxUserInfo.openid}`).then((response) => {
-              resolve(response)
-            }, (response) => {
-              reject(response)
-            })
-          }
-        })
-        return checkAccessPromise
+      // 将localStorage中保存的微信相关信息保存到本地
+      getWxUserInfoDataToLocal: function (context) {
+        var wxUserInfoData = window.localStorage.getItem('wx-user-info')
+        if (wxUserInfoData) {
+          context.$moment.wxUserInfo.openid = wxUserInfoData.openid
+          context.$moment.wxUserInfo.nickname = wxUserInfoData.nickname
+          context.$moment.wxUserInfo.sex = wxUserInfoData.sex
+          context.$moment.wxUserInfo.province = wxUserInfoData.province
+          context.$moment.wxUserInfo.city = wxUserInfoData.city
+          context.$moment.wxUserInfo.country = wxUserInfoData.country
+          context.$moment.wxUserInfo.headimgurl = wxUserInfoData.headimgurl
+          context.$moment.wxUserInfo.privilege = wxUserInfoData.privilege
+          context.$moment.wxUserInfo.unionid = wxUserInfoData.unionid || ''
+        }
       },
       // 微信网页授权oauth2，scope：snsapi_base、snsapi_userinfo
       wx_oauth2: function (context, scope) {
-        if (!window.localStorage.getItem('oauth2')) {
-          window.localStorage.setItem('oauth2', true)
-          window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${context.$moment.wxAppId}&redirect_uri=${context.$moment.indexPage}&response_type=code&scope=${scope}&state=STATE#wechat_redirect`
-        }
+        window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${context.$moment.wxAppId}&redirect_uri=${context.$moment.indexPage}&response_type=code&scope=${scope}&state=STATE#wechat_redirect`
       },
       // 通过code换取网页授权access_token
       wx_get_access_token_by_code: function (context) {
         var accessTokenPromise = new Promise((resolve, reject) => {
           var urlParams = context.$comfun.getRequest()
           if (urlParams.code) {
-            context.$comfun.http_get(context, `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${context.$moment.wxAppId}&secret=${context.$moment.wxSecret}&code=${urlParams.code}&grant_type=authorization_code`).then((response) => {
-              var accessToken = response.access_token
-              var expiresIn = response.expires_in
-              var refreshToken = response.refresh_token
-              var openid = response.openid
-              var scope = response.scope
-              context.$moment.wxUserInfo.openid = openid
-              context.$moment.wxUserInfo.access_token = accessToken
-              context.$moment.wxUserInfo.expires_in = expiresIn
-              context.$moment.wxUserInfo.refresh_token = refreshToken
-              context.$moment.wxUserInfo.scope = scope
-              resolve(response)
+            context.$comfun.http_get(context, `${context.$moment.urls.get_open_id}${urlParams.code}`).then((response) => {
+              if (response.body.data && response.body.data.openid) {
+                context.$moment.wxUserInfo.openid = response.body.data.openid
+                window.localStorage.setItem('wx-user-info', context.$moment.wxUserInfo)
+                context.$comfun.wx_get_user_info(context, context.$moment.wxUserInfo.openid)
+              } else {
+                console.error('wx_get_access_token_by_code => ', response)
+              }
             }, (response) => {
               reject(response)
             })
@@ -111,8 +104,24 @@ export default {
         return accessTokenPromise
       },
       // 拉取用户信息(需scope为 snsapi_userinfo)
-      wx_get_user_info: function (context, openid, accessToken) {
-        context.$comfun.http_get(context, `https://api.weixin.qq.com/sns/userinfo?access_token=${accessToken}&openid=${openid}&lang=zh_CN`)
+      wx_get_user_info: function (context, openid) {
+        context.$comfun.http_get(context, `${context.$moment.urls.get_wx_user_info}${openid}`).then((response) => {
+          if (response.body.data && response.body.data.openid) {
+            context.$moment.wxUserInfo.nickname = response.body.data.nickname
+            context.$moment.wxUserInfo.sex = response.body.data.sex
+            context.$moment.wxUserInfo.province = response.body.data.province
+            context.$moment.wxUserInfo.city = response.body.data.city
+            context.$moment.wxUserInfo.country = response.body.data.country
+            context.$moment.wxUserInfo.headimgurl = response.body.data.headimgurl
+            context.$moment.wxUserInfo.privilege = response.body.data.privilege
+            context.$moment.wxUserInfo.unionid = response.body.data.unionid || ''
+            window.localStorage.setItem('wx-user-info', context.$moment.wxUserInfo)
+          } else {
+            console.error('wx_get_user_info => ', response)
+          }
+        }, (response) => {
+          console.error('wx_get_user_info => ', response)
+        })
       }
     }
 
