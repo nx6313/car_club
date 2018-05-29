@@ -74,7 +74,7 @@ export default {
           tipColor = '#0FB0BF'
         }
         if (!tipPic) {
-          tipPic = 'https://img.zcool.cn/community/01375b5795716f0000012e7e92bbca.gif'
+          tipPic = 'https://img.zcool.cn/community/01c3365795716f0000012e7ef2e489.gif'
         }
         console.log(`%c ${tip}`, `padding: 20px 50px; line-height: 56px; color: ${tipColor}; background-repeat: no-repeat; background-size: auto 100%; background-image: url(${tipPic});`, consoleData)
       },
