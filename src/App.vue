@@ -18,18 +18,17 @@ export default {
     'comm-footer': Footer
   },
   beforeCreate () {
+    this.$moment.wx.error(function (res) {
+      // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名
+      console.warn(res)
+    })
     this.$comfun.getWxUserInfoDataToLocal(this)
-    this.$comfun.wx_get_access_token_by_code(this).then((response) => {
+    var jsApiList = [ 'chooseImage' ]
+    this.$comfun.wx_get_access_token_by_code(this, jsApiList).then((response) => {
       if (response.code === 'url-no-code-param') {
         this.$comfun.wx_oauth2(this, 'snsapi_userinfo')
       }
-    }, (error) => {
-      console.log(error)
     })
-    // this.$moment.wx.config({
-    //   debug: true,
-    //   appId: this.$moment.wxAppId
-    // })
   }
 }
 </script>

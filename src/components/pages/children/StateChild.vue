@@ -98,6 +98,7 @@ export default {
 }
 .stateChild {
   width: 100%;
+  background-color: #1E1436;
 }
 .stateChild > span {
   width: 100%;

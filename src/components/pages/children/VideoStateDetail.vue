@@ -2,11 +2,54 @@
   <div>
     <div class="state-info-wrap">
       <span class="head" :style="detailData.headImg ? { 'background-image': 'url(' + detailData.headImg + ')' } : ''"></span>
-      <div class="content-wrap"></div>
+      <div class="content-wrap">
+        <span>{{detailData.nikeName}}</span>
+        <span v-if="detailData.content">{{detailData.content}}</span>
+        <div v-if="detailData.assets.length > 0">
+          <span v-for="(asset, index) in detailData.assets" :key="index" :style="(asset.img || asset.video) ? { 'background-image': 'url(' + (asset.img || asset.video) + ')' } : ''"></span>
+        </div>
+        <div>
+          <span>{{detailData.time}}</span>
+          <span>{{detailData.readNum}}阅读</span>
+          <span class="btn-delete">删除</span>
+        </div>
+      </div>
     </div>
-    <div class="comment-wrap">44</div>
+    <div class="comment-wrap">
+      <div v-if="detailData.supports.length > 0">
+        <div class="support-count-wrap">
+          <span>{{detailData.supports.length}}个赞</span>
+          <span></span>
+        </div>
+        <span v-for="(support, index) in detailData.supports" :key="index" :style="support.head ? { 'background-image': 'url(' + support.head + ')' } : ''"></span>
+      </div>
+      <div>
+        <div class="comment-title-bar">
+          <span>{{detailData.comments.length}}全部评论</span>
+          <span></span>
+        </div>
+        <span v-if="detailData.comments.length === 0"></span>
+        <div v-if="detailData.comments.length > 0" v-for="(comment, index) in detailData.comments" :key="index">
+          <span class="head" :style="comment.head ? { 'background-image': 'url(' + comment.head + ')' } : ''"></span>
+          <div class="comment-content-wrap">
+            <span>{{comment.nikeName}}</span>
+            <span>{{comment.time}}</span>
+            <span>{{comment.content}}</span>
+            <div v-if="comment.replys.length > 0">
+              <div v-for="(reply, index) in comment.replys" :key="index">
+                <div>
+                  <span>{{reply.name}}</span>
+                  <span>回复&nbsp;&nbsp;{{comment.nikeName}}</span>
+                </div>
+                <span>{{reply.content}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="comment-input-wrap">
-      <textarea placeholder="请输入评论内容" ref="comment-input-area" v-model="commentContentInput"/>
+      <textarea placeholder="评论....." ref="comment-input-area" v-model="commentContentInput"/>
       <span></span>
       <span class="comment-send-btn ripple" ref="comment-send-btn" @click="commentSend">发送</span>
     </div>
@@ -20,6 +63,75 @@ export default {
     return {
       detailData: {},
       commentContentInput: ''
+    }
+  },
+  created () {
+    this.detailData = {
+      headImg: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd',
+      nikeName: '俱乐部之友爱',
+      content: '国台办发言人马晓光先生在上次发布会的时候已经明确表示过，解放军军演和空军绕',
+      assets: [
+        {
+          img: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        },
+        {
+          img: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        },
+        {
+          img: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        }
+      ],
+      time: '2018年5月19日 15:49:51',
+      readNum: 3,
+      supports: [
+        {
+          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        },
+        {
+          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        },
+        {
+          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        },
+        {
+          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        },
+        {
+          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        },
+        {
+          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        },
+        {
+          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        },
+        {
+          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        }
+      ],
+      comments: [
+        {
+          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd',
+          nikeName: '刘德华',
+          time: '40分钟前',
+          like: 2,
+          content: '我们在设计任何作品时，首先考虑的是应用的尺寸。如iPhone8的分辨率我们在设计任何作品时，首先考虑的是应用的尺寸。如iPhone8的分辨率',
+          replys: [
+            {
+              userId: '2',
+              name: '张学友',
+              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
+              time: '40分钟前'
+            },
+            {
+              userId: '2',
+              name: '张学友',
+              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
+              time: '40分钟前'
+            }
+          ]
+        }
+      ]
     }
   },
   methods: {

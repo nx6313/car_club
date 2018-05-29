@@ -29,11 +29,13 @@ export default {
 <style scoped>
 .video-child{
   width: 100%;
+  background-color: #1E1436;
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
   justify-content: flex-start;
 }
+
 .video-child>span{
   display: inline-block;
   width: calc(100% / 3);

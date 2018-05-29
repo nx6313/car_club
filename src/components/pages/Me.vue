@@ -13,8 +13,8 @@
         <span :class="['nike-sex', userInfo.sex === 0 ? 'sex-lady' : 'sex-sir']">{{userInfo.nickName}}</span>
         <span class="address">
           <span>{{userInfo.address}}</span>
-          <span>{{userInfo.age}}岁</span>
-          <span>{{userInfo.constellation}}</span>
+          <span v-if="userInfo.age">{{userInfo.age}}岁</span>
+          <span v-if="userInfo.constellation">{{userInfo.constellation}}</span>
         </span>
       </div>
       <div class="intro-wrap">
@@ -89,15 +89,23 @@ export default {
     }
   },
   created () {
+    var address = ''
+    if (this.$moment.wxUserInfo.province && this.$moment.wxUserInfo.city) {
+      address = this.$moment.wxUserInfo.province + '，' + this.$moment.wxUserInfo.city
+    } else if (this.$moment.wxUserInfo.province) {
+      address = this.$moment.wxUserInfo.province
+    } else if (this.$moment.wxUserInfo.city) {
+      address = this.$moment.wxUserInfo.city
+    }
     this.userInfo = {
-      headImg: 'http://img01.store.sogou.com/app/a/10010016/80f52439c4ed48b974a3a756cb5b9bfe',
-      nickName: '大是大非',
-      sex: 1,
-      address: '山西，太原',
-      age: 23,
-      constellation: '金牛座',
-      carType: '劳斯莱斯，奔驰，宝马',
-      intro: '被誉为“亚洲电动车之父”的中国工程院院士陈清泉是给习主席写信的牵头人。他说，香港回归祖国20多。',
+      headImg: this.$moment.wxUserInfo.headimgurl,
+      nickName: this.$moment.wxUserInfo.nickname,
+      sex: this.$moment.wxUserInfo.sex,
+      address: address,
+      age: null,
+      constellation: '',
+      carType: '',
+      intro: '',
       praiseCount: 0,
       attentionCount: 0,
       fansCount: 0

@@ -15,8 +15,18 @@ export default {
                 'Access-Control-Allow-Origin': '*'
               }
             }).then(response => {
+              context.$comfun.consoleBeautiful('接口访问完成：url【' + url + '】', '#0FB0BF', 'https://img.zcool.cn/community/01db9f579571700000012e7e9da0fb.gif', {
+                '链接': callUrl,
+                '请求返回': response,
+                '相关参数': paramsData
+              })
               resolve(response)
             }, response => {
+              context.$comfun.consoleBeautiful('接口访问出错：url【' + url + '】', '#BF0F3D', 'https://img.zcool.cn/community/014db6579571700000012e7e602493.gif', {
+                '链接': callUrl,
+                '请求返回': response,
+                '相关参数': paramsData
+              })
               reject(response)
             })
           })
@@ -39,8 +49,18 @@ export default {
                 'Access-Control-Allow-Origin': '*'
               }
             }).then(response => {
+              context.$comfun.consoleBeautiful('接口访问完成：url【' + url + '】', '#0FB0BF', 'https://img.zcool.cn/community/01db9f579571700000012e7e9da0fb.gif', {
+                '链接': callUrl,
+                '请求返回': response,
+                '相关参数': paramsData
+              })
               resolve(response)
             }, response => {
+              context.$comfun.consoleBeautiful('接口访问出错：url【' + url + '】', '#BF0F3D', 'https://img.zcool.cn/community/014db6579571700000012e7e602493.gif', {
+                '链接': callUrl,
+                '请求返回': response,
+                '相关参数': paramsData
+              })
               reject(response)
             })
           })
@@ -48,6 +68,15 @@ export default {
         } else {
           console.error('上下文对象或请求地址不能为空', 'http_get(context, url)')
         }
+      },
+      consoleBeautiful: function (tip, tipColor, tipPic, consoleData) {
+        if (!tipColor) {
+          tipColor = '#0FB0BF'
+        }
+        if (!tipPic) {
+          tipPic = 'https://img.zcool.cn/community/01375b5795716f0000012e7e92bbca.gif'
+        }
+        console.log(`%c ${tip}`, `padding: 20px 50px; line-height: 56px; color: ${tipColor}; background-repeat: no-repeat; background-size: auto 100%; background-image: url(${tipPic});`, consoleData)
       },
       // 获取网址中的参数
       getRequest: function () {
@@ -66,15 +95,16 @@ export default {
       getWxUserInfoDataToLocal: function (context) {
         var wxUserInfoData = window.localStorage.getItem('wx-user-info')
         if (wxUserInfoData) {
-          context.$moment.wxUserInfo.openid = wxUserInfoData.openid
-          context.$moment.wxUserInfo.nickname = wxUserInfoData.nickname
-          context.$moment.wxUserInfo.sex = wxUserInfoData.sex
-          context.$moment.wxUserInfo.province = wxUserInfoData.province
-          context.$moment.wxUserInfo.city = wxUserInfoData.city
-          context.$moment.wxUserInfo.country = wxUserInfoData.country
-          context.$moment.wxUserInfo.headimgurl = wxUserInfoData.headimgurl
-          context.$moment.wxUserInfo.privilege = wxUserInfoData.privilege
-          context.$moment.wxUserInfo.unionid = wxUserInfoData.unionid || ''
+          var wxUserInfoDataJson = JSON.parse(wxUserInfoData)
+          context.$moment.wxUserInfo.openid = wxUserInfoDataJson.openid
+          context.$moment.wxUserInfo.nickname = wxUserInfoDataJson.nickname
+          context.$moment.wxUserInfo.sex = wxUserInfoDataJson.sex
+          context.$moment.wxUserInfo.province = wxUserInfoDataJson.province
+          context.$moment.wxUserInfo.city = wxUserInfoDataJson.city
+          context.$moment.wxUserInfo.country = wxUserInfoDataJson.country
+          context.$moment.wxUserInfo.headimgurl = wxUserInfoDataJson.headimgurl
+          context.$moment.wxUserInfo.privilege = wxUserInfoDataJson.privilege
+          context.$moment.wxUserInfo.unionid = wxUserInfoDataJson.unionid || ''
         }
       },
       // 微信网页授权oauth2，scope：snsapi_base、snsapi_userinfo
@@ -82,17 +112,30 @@ export default {
         window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${context.$moment.wxAppId}&redirect_uri=${context.$moment.indexPage}&response_type=code&scope=${scope}&state=STATE#wechat_redirect`
       },
       // 通过code换取网页授权access_token
-      wx_get_access_token_by_code: function (context) {
+      wx_get_access_token_by_code: function (context, jsApiList) {
         var accessTokenPromise = new Promise((resolve, reject) => {
           var urlParams = context.$comfun.getRequest()
           if (urlParams.code) {
             context.$comfun.http_get(context, `${context.$moment.urls.get_open_id}${urlParams.code}`).then((response) => {
               if (response.body.data && response.body.data.openid) {
                 context.$moment.wxUserInfo.openid = response.body.data.openid
-                window.localStorage.setItem('wx-user-info', context.$moment.wxUserInfo)
-                context.$comfun.wx_get_user_info(context, context.$moment.wxUserInfo.openid)
-              } else {
-                console.error('wx_get_access_token_by_code => ', response)
+                context.$moment.wxUserInfo.nickname = response.body.data.nickname
+                context.$moment.wxUserInfo.sex = response.body.data.sex
+                context.$moment.wxUserInfo.province = response.body.data.province
+                context.$moment.wxUserInfo.city = response.body.data.city
+                context.$moment.wxUserInfo.country = response.body.data.country
+                context.$moment.wxUserInfo.headimgurl = response.body.data.headimgurl
+                context.$moment.wxUserInfo.privilege = response.body.data.privilege
+                context.$moment.wxUserInfo.unionid = response.body.data.unionid || ''
+                window.localStorage.setItem('wx-user-info', JSON.stringify(context.$moment.wxUserInfo))
+                // context.$moment.wx.config({
+                //   debug: true,
+                //   appId: context.$moment.wxAppId,
+                //   timestamp: '',
+                //   nonceStr: '',
+                //   signature: '',
+                //   jsApiList: jsApiList
+                // })
               }
             }, (response) => {
               reject(response)
@@ -103,24 +146,16 @@ export default {
         })
         return accessTokenPromise
       },
-      // 拉取用户信息(需scope为 snsapi_userinfo)
-      wx_get_user_info: function (context, openid) {
-        context.$comfun.http_get(context, `${context.$moment.urls.get_wx_user_info}${openid}`).then((response) => {
-          if (response.body.data && response.body.data.openid) {
-            context.$moment.wxUserInfo.nickname = response.body.data.nickname
-            context.$moment.wxUserInfo.sex = response.body.data.sex
-            context.$moment.wxUserInfo.province = response.body.data.province
-            context.$moment.wxUserInfo.city = response.body.data.city
-            context.$moment.wxUserInfo.country = response.body.data.country
-            context.$moment.wxUserInfo.headimgurl = response.body.data.headimgurl
-            context.$moment.wxUserInfo.privilege = response.body.data.privilege
-            context.$moment.wxUserInfo.unionid = response.body.data.unionid || ''
-            window.localStorage.setItem('wx-user-info', context.$moment.wxUserInfo)
-          } else {
-            console.error('wx_get_user_info => ', response)
+      // 拍照或从手机相册中选图接口
+      wxChooseImage: function (context, maxChoose) {
+        context.$moment.wx.chooseImage({
+          count: maxChoose,
+          sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+          sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+          success: function (res) {
+            var localIds = res.localIds // 返回选定照片的本地ID列表，localId可以作为img标签的src属性显示图片
+            console.log(localIds)
           }
-        }, (response) => {
-          console.error('wx_get_user_info => ', response)
         })
       }
     }

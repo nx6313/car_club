@@ -118,7 +118,7 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% auto;
-  background-image: url('./../../../assets/add.png');
+  background-image: url('./../../../assets/icon-address.png');
 }
 
 .list-item>div.comment-wrap>div:nth-of-type(2)>div:nth-of-type(1)>span:nth-of-type(2) {
@@ -138,7 +138,7 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% auto;
-  background-image: url('./../../../assets/add.png');
+  background-image: url('./../../../assets/icon-car-type.png');
 }
 
 .list-item>div.comment-wrap>div:nth-of-type(2)>div:nth-of-type(2)>span:nth-of-type(2) {

@@ -4,40 +4,40 @@
       <div class="user-info-shade" :style="userInfo.headImg ? { 'background-image': 'url(' + userInfo.headImg + ')' } : ''"></div>
       <span class="head" :style="userInfo.headImg ? { 'background-image': 'url(' + userInfo.headImg + ')' } : ''"></span>
       <br>
-      <span class="name ripple">更换头像</span>
+      <span class="name ripple" @click="changeUserHead">更换头像</span>
     </div>
     <div class="edit-item-wrap">
       <div class="edit-item">
         <span>昵称</span>
-        <input type="text" placeholder="请输入昵称">
+        <input type="text" placeholder="请输入昵称" v-model="userInfo.nikeName">
       </div>
       <div class="edit-item">
         <span>性别</span>
-        <input type="text" placeholder="请输入性别">
+        <input type="text" placeholder="请输入性别" v-model="userInfo.sex">
       </div>
       <div class="edit-item">
         <span>生日</span>
-        <input type="text" placeholder="请输入生日">
+        <input type="text" placeholder="请输入生日" v-model="userInfo.birthday">
       </div>
       <div class="edit-item">
         <span>座驾</span>
-        <input type="text" placeholder="请输入座驾">
+        <input type="text" placeholder="请输入座驾" v-model="userInfo.carType">
       </div>
       <div class="edit-item">
         <span>星座</span>
-        <input type="text" placeholder="请输入星座">
+        <input type="text" placeholder="请输入星座" v-model="userInfo.constellation">
       </div>
       <div class="edit-item">
         <span>手机号</span>
-        <input type="text" placeholder="请输入手机号">
+        <input type="text" placeholder="请输入手机号" v-model="userInfo.phoneNum">
       </div>
       <div class="edit-item">
         <span>常驻城市</span>
-        <input type="text" placeholder="请输入常驻城市">
+        <input type="text" placeholder="请输入常驻城市" v-model="userInfo.address">
       </div>
       <div class="edit-item">
         <span>个性签名</span>
-        <textarea type="text" placeholder="请填写个性签名"></textarea>
+        <textarea type="text" placeholder="请填写个性签名" v-model="userInfo.intro"></textarea>
       </div>
     </div>
     <div class="btn-edit-info-wrap">保存</div>
@@ -53,8 +53,29 @@ export default {
     }
   },
   created () {
+    var address = ''
+    if (this.$moment.wxUserInfo.province && this.$moment.wxUserInfo.city) {
+      address = this.$moment.wxUserInfo.province + '，' + this.$moment.wxUserInfo.city
+    } else if (this.$moment.wxUserInfo.province) {
+      address = this.$moment.wxUserInfo.province
+    } else if (this.$moment.wxUserInfo.city) {
+      address = this.$moment.wxUserInfo.city
+    }
     this.userInfo = {
-      headImg: 'http://img01.store.sogou.com/app/a/10010016/80f52439c4ed48b974a3a756cb5b9bfe'
+      headImg: this.$moment.wxUserInfo.headimgurl,
+      nikeName: this.$moment.wxUserInfo.nickname,
+      sex: this.$moment.wxUserInfo.sex,
+      birthday: '',
+      carType: '',
+      constellation: '',
+      phoneNum: '',
+      address: address,
+      intro: ''
+    }
+  },
+  methods: {
+    changeUserHead () {
+      this.$comfun.wxChooseImage(this, 1)
     }
   }
 }
