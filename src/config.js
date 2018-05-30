@@ -11,13 +11,14 @@ export default {
     var AppConfig = {
       // 微信包
       wx: wx,
+      // 域名地址
+      realm: 'http://l.dachangjr.com',
       // 服务器地址
       server: 'http://' + HttpIp + ':' + HttpPort + '/',
       // 访问接口
       urls: {
-        test: '/account/test.json',
-        get_open_id: '/user/wx/openid/',
-        get_wx_user_info: '/user/wx/getuserinfo/',
+        get_user_info: '/user/wx/openid/',
+        get_wx_page_signature: '/user/wx/signature.json',
         save_account_info: '/account/create.json'
       },
       // 微信AppId
@@ -26,6 +27,7 @@ export default {
       wxSecret: WxSecret,
       // 微信授权后指定的跳转页面
       indexPage: encodeURIComponent('http://l.dachangjr.com/dist/#/'),
+      indexPage_: 'http://l.dachangjr.com/dist/',
       // 微信用户授权后，获取到的用户信息
       wxUserInfo: {
         openid: '',

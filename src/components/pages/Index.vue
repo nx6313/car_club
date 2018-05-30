@@ -68,7 +68,7 @@ export default {
   },
   methods: {
     cutVideoPage (videoInfo) {
-      this.$comfun.consoleBeautiful('切换到的页面视频信息', null, null, videoInfo)
+      this.$comfun.consoleBeautiful('切换到的页面视频信息', null, null, videoInfo, 'info')
       // this.currentVideoUserId = videoUserId
     },
     vieoRef (finishFn) {
@@ -155,7 +155,7 @@ div.comment-pop-wrap {
   z-index: 999;
   background: rgba(30, 20, 54, 0.98);
   width: 100%;
-  height: 60%;
+  height: 70%;
   color: #ffffff;
   transition: all 0.4s ease 0s;
   opacity: 0;
