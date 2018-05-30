@@ -117,7 +117,7 @@ export default {
         consolePanlWrapElem.style.background = 'rgba(39, 35, 49)'
         consolePanlWrapElem.style.width = '100%'
         consolePanlWrapElem.style.height = '100%'
-        consolePanlWrapElem.style.position = 'fixed'
+        consolePanlWrapElem.style.position = 'absolute'
         consolePanlWrapElem.style.bottom = 0
         consolePanlWrapElem.style.left = 0
         consolePanlWrapElem.style.zIndex = 999999998
