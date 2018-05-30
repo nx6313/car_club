@@ -86,9 +86,9 @@ export default {
           }
         }
         if (consoleData) {
-          console.log(`%c ${tip}`, `padding: 20px 50px; line-height: 56px; color: ${tipColor}; background-repeat: no-repeat; background-size: auto 100%; background-image: url(${tipPic});`, consoleData)
+          console.log(`%c ${tip}`, `height: 40px; padding-left: 60px; line-height: 56px; color: ${tipColor}; background-repeat: no-repeat; background-size: auto 100%; background-image: url(${tipPic});`, consoleData)
         } else {
-          console.log(`%c ${tip}`, `padding: 20px 50px; line-height: 56px; color: ${tipColor}; background-repeat: no-repeat; background-size: auto 100%; background-image: url(${tipPic});`)
+          console.log(`%c ${tip}`, `height: 40px; padding-left: 60px; line-height: 56px; color: ${tipColor}; background-repeat: no-repeat; background-size: auto 100%; background-image: url(${tipPic});`)
         }
       },
       // 判断字符串是否为空
@@ -138,6 +138,10 @@ export default {
           context.$moment.wxUserInfo.privilege = wxUserInfoDataJson.privilege
           context.$moment.wxUserInfo.unionid = wxUserInfoDataJson.unionid || ''
           context.$comfun.wx_page_signature(context, jsApiList)
+          // 显示日志面板
+          if (context.$moment.wxIsDebug) {
+            context.$consolePopWindow()
+          }
         }
       },
       // 微信网页授权oauth2，scope：snsapi_base、snsapi_userinfo
@@ -195,7 +199,7 @@ export default {
             }).then((response) => {
               if (response.body.data) {
                 context.$moment.wx.config({
-                  debug: true,
+                  debug: context.$moment.wxIsDebug,
                   appId: context.$moment.wxAppId,
                   timestamp: response.body.data.timestamp,
                   nonceStr: response.body.data.nonceStr,

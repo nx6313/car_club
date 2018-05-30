@@ -21,6 +21,8 @@ export default {
         get_wx_page_signature: '/user/wx/signature.json',
         save_account_info: '/account/create.json'
       },
+      // 微信是否开启调试模式，也会一并开启自定义的调试面板
+      wxIsDebug: true,
       // 微信AppId
       wxAppId: WxAppId,
       // 微信Secret

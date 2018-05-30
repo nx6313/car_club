@@ -215,7 +215,7 @@ export default {
         if (!this.currentVideoInfo.ifSupport) {
           this.support(this.currentVideoInfo)
         }
-        this.$pageImg(likeIcon, event.clientX, event.clientY, document.getElementsByClassName('video-item-current')[0])
+        this.$pageImg([likeIcon], event.clientX, event.clientY, document.getElementsByClassName('video-item-current')[0])
       }
       this.dblclickTimer = setTimeout(() => {
         this.dblclickCount = 0
