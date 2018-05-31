@@ -68,7 +68,7 @@ export default {
   },
   methods: {
     cutVideoPage (videoInfo) {
-      this.$comfun.consoleBeautiful('切换到的页面视频信息', null, null, videoInfo, 'info')
+      this.$comfun.consoleBeautiful(this, '切换到的页面视频信息', null, null, videoInfo, 'info')
       // this.currentVideoUserId = videoUserId
     },
     vieoRef (finishFn) {

@@ -19,7 +19,8 @@ export default {
       urls: {
         get_user_info: '/user/wx/openid/',
         get_wx_page_signature: '/user/wx/signature.json',
-        save_account_info: '/account/create.json'
+        save_account_info: '/account/create.json',
+        save_wx_image: '/user/wx/savewximg.json'
       },
       // 微信是否开启调试模式，也会一并开启自定义的调试面板
       wxIsDebug: true,
@@ -32,6 +33,7 @@ export default {
       indexPage_: 'http://l.dachangjr.com/dist/',
       // 微信用户授权后，获取到的用户信息
       wxUserInfo: {
+        accountId: '',
         openid: '',
         nickname: '',
         sex: '',

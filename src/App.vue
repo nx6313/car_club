@@ -20,11 +20,10 @@ export default {
   beforeCreate () {
     this.$moment.wx.error(function (res) {
       // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名
-      this.$comfun.consoleBeautiful('微信config信息验证失败', null, null, res, 'warn')
+      this.$comfun.consoleBeautiful(this, '微信config信息验证失败', null, null, res, 'warn')
     })
-    // var jsApiList = [ 'chooseImage' ]
-    // this.$comfun.wx_oauth2(this, 'snsapi_userinfo', jsApiList)
-    this.$consolePopWindow()
+    var jsApiList = [ 'chooseImage', 'uploadImage' ]
+    this.$comfun.wx_oauth2(this, 'snsapi_userinfo', jsApiList)
   }
 }
 </script>

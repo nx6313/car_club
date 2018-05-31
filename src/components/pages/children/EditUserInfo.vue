@@ -75,7 +75,16 @@ export default {
   },
   methods: {
     changeUserHead () {
-      this.$comfun.wxChooseImage(this, 1)
+      this.$comfun.wxChooseImage(this, 1).then((data) => {
+        var localIds = data.localIds
+        if (localIds && localIds.length > 0) {
+          this.userInfo.headImg = localIds[0]
+          this.$comfun.wxUploadImage(this, localIds[0]).then((data) => {
+            var serverId = data.serverId
+            this.$comfun.saveWxImg(this, serverId)
+          })
+        }
+      })
     }
   }
 }

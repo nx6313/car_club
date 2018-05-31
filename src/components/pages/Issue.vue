@@ -26,6 +26,7 @@ export default {
   name: 'page-issue',
   data () {
     return {
+      maxImgNum: 9,
       issueContentInput: '',
       imgVideos: [
         {
@@ -39,9 +40,20 @@ export default {
   methods: {
     clickImgVideo (imgVideo) {
       if (imgVideo.type === 'add-btn') {
-        this.imgVideos.splice(0, 0, {
-          type: 'img',
-          cover: 'http://img.zhaogexing.com/touxiang/160414/1-1604140H238-51.jpg'
+        this.$comfun.wxChooseImage(this, this.maxImgNum - this.imgVideos.length + 1).then((data) => {
+          var localIds = data.localIds
+          if (localIds && localIds.length > 0) {
+            for (var l = 0; l < localIds.length; l++) {
+              this.imgVideos.splice(0, 0, {
+                type: 'img',
+                cover: localIds[l]
+              })
+              this.$comfun.wxUploadImage(this, localIds[l]).then((data) => {
+                var serverId = data.serverId
+                this.$comfun.saveWxImg(this, serverId)
+              })
+            }
+          }
         })
       }
     },
@@ -56,11 +68,11 @@ export default {
       }
     },
     imgVideos (newValue, oldValue) {
-      if (newValue.length >= 10) {
-        this.imgVideos.splice(9, 1)
-      } else if (newValue.length === 8) {
+      if (newValue.length >= this.maxImgNum + 1) {
+        this.imgVideos.splice(this.maxImgNum, 1)
+      } else if (newValue.length === this.maxImgNum - 1) {
         if (this.imgVideos[this.imgVideos.length - 1].type !== 'add-btn') {
-          this.imgVideos.splice(9, 9, {
+          this.imgVideos.splice(this.maxImgNum, this.maxImgNum, {
             type: 'add-btn'
           })
         }

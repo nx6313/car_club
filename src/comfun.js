@@ -1,3 +1,5 @@
+import Clipboard from 'clipboard'
+
 export default {
   install: function (Vue, options) {
     var ComFun = {
@@ -14,13 +16,13 @@ export default {
                 'Access-Control-Allow-Origin': '*'
               }
             }).then(response => {
-              context.$comfun.consoleBeautiful('接口访问完成：url【' + url + '】', '#0FB0BF', 'https://img.zcool.cn/community/01db9f579571700000012e7e9da0fb.gif', {
+              context.$comfun.consoleBeautiful(context, '接口访问完成：url【' + url + '】', '#0FB0BF', 'https://img.zcool.cn/community/01db9f579571700000012e7e9da0fb.gif', {
                 '链接': callUrl,
                 '请求返回': response
               })
               resolve(response)
             }, response => {
-              context.$comfun.consoleBeautiful('接口访问出错：url【' + url + '】', '#BF0F3D', 'https://img.zcool.cn/community/014db6579571700000012e7e602493.gif', {
+              context.$comfun.consoleBeautiful(context, '接口访问出错：url【' + url + '】', '#BF0F3D', 'https://img.zcool.cn/community/014db6579571700000012e7e602493.gif', {
                 '链接': callUrl,
                 '请求返回': response
               })
@@ -46,14 +48,14 @@ export default {
                 'Access-Control-Allow-Origin': '*'
               }
             }).then(response => {
-              context.$comfun.consoleBeautiful('接口访问完成：url【' + url + '】', '#0FB0BF', 'https://img.zcool.cn/community/01db9f579571700000012e7e9da0fb.gif', {
+              context.$comfun.consoleBeautiful(context, '接口访问完成：url【' + url + '】', '#0FB0BF', 'https://img.zcool.cn/community/01db9f579571700000012e7e9da0fb.gif', {
                 '链接': callUrl,
                 '请求返回': response,
                 '相关参数': paramsData
               })
               resolve(response)
             }, response => {
-              context.$comfun.consoleBeautiful('接口访问出错：url【' + url + '】', '#BF0F3D', 'https://img.zcool.cn/community/014db6579571700000012e7e602493.gif', {
+              context.$comfun.consoleBeautiful(context, '接口访问出错：url【' + url + '】', '#BF0F3D', 'https://img.zcool.cn/community/014db6579571700000012e7e602493.gif', {
                 '链接': callUrl,
                 '请求返回': response,
                 '相关参数': paramsData
@@ -66,7 +68,10 @@ export default {
           console.error('上下文对象或请求地址不能为空', 'http_post(context, url)')
         }
       },
-      consoleBeautiful: function (tip, tipColor, tipPic, consoleData, type) {
+      console: function (context, tip, data, type) {
+        context.$comfun.consoleBeautiful(context, tip, null, null, data, type)
+      },
+      consoleBeautiful: function (context, tip, tipColor, tipPic, consoleData, type) {
         if (!tipColor) {
           tipColor = '#0FB0BF'
         }
@@ -90,6 +95,25 @@ export default {
         } else {
           console.log(`%c ${tip}`, `height: 40px; padding-left: 60px; line-height: 56px; color: ${tipColor}; background-repeat: no-repeat; background-size: auto 100%; background-image: url(${tipPic});`)
         }
+        context.$writeToConsolePanl(`<div>
+        <span style="display: inline-block; width: 40px; height: 36px; vertical-align: middle; 
+        background-repeat: no-repeat; background-size: auto 100%; background-image: url(${tipPic});"></span>
+        <span style="vertical-align: middle;">${tip}</span></div>`, consoleData, context)
+      },
+      // 复制文本到剪切板，在input或者button元素上加上data-clipboard-text属性，填入要复制的值
+      copyTxt: function (context, target) {
+        var clipboard = new Clipboard(target)
+        clipboard.on('success', e => {
+          context.$toast('复制成功')
+          // 释放内存
+          clipboard.destroy()
+        })
+        clipboard.on('error', e => {
+          // 不支持复制
+          context.$toast('该浏览器不支持自动复制')
+          // 释放内存
+          clipboard.destroy()
+        })
       },
       // 判断字符串是否为空
       isNotNull: function (str) {
@@ -128,6 +152,7 @@ export default {
         var wxUserInfoData = window.localStorage.getItem('wx-user-info')
         if (context.$comfun.isNotNull(wxUserInfoData)) {
           var wxUserInfoDataJson = JSON.parse(wxUserInfoData)
+          context.$moment.wxUserInfo.accountId = wxUserInfoDataJson.accountId
           context.$moment.wxUserInfo.openid = wxUserInfoDataJson.openid
           context.$moment.wxUserInfo.nickname = wxUserInfoDataJson.nickname
           context.$moment.wxUserInfo.sex = wxUserInfoDataJson.sex
@@ -140,7 +165,7 @@ export default {
           context.$comfun.wx_page_signature(context, jsApiList)
           // 显示日志面板
           if (context.$moment.wxIsDebug) {
-            context.$consolePopWindow()
+            context.$consolePopWindow(context)
           }
         }
       },
@@ -156,7 +181,7 @@ export default {
             context.$comfun.wx_get_access_token_by_code(context)
           }
         } else {
-          context.$comfun.consoleBeautiful('用户信息已存在，不再执行微信授权登录', null, null, null, 'info')
+          context.$comfun.consoleBeautiful(context, '用户信息已存在，不再执行微信授权登录', null, null, context.$moment.wxUserInfo, 'info')
         }
       },
       // 通过code换取网页授权access_token
@@ -165,6 +190,7 @@ export default {
           var urlParams = context.$comfun.getRequest()
           context.$comfun.http_get(context, `${context.$moment.urls.get_user_info}${urlParams.code}`).then((response) => {
             if (response.body.data && response.body.data.openid) {
+              context.$moment.wxUserInfo.accountId = response.body.data.accountId
               context.$moment.wxUserInfo.openid = response.body.data.openid
               context.$moment.wxUserInfo.nickname = response.body.data.nickname
               context.$moment.wxUserInfo.sex = response.body.data.sex
@@ -218,15 +244,43 @@ export default {
       },
       // 拍照或从手机相册中选图接口
       wxChooseImage: function (context, maxChoose) {
-        context.$moment.wx.chooseImage({
-          count: maxChoose,
-          sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
-          sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
-          success: function (res) {
-            var localIds = res.localIds // 返回选定照片的本地ID列表，localId可以作为img标签的src属性显示图片
-            console.log(localIds)
-          }
+        var chooseImagePromise = new Promise((resolve, reject) => {
+          context.$moment.wx.chooseImage({
+            count: maxChoose,
+            sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+            sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+            success: function (res) {
+              context.$comfun.console(context, '微信选取图片完成', res)
+              resolve(res)
+            }
+          })
         })
+        return chooseImagePromise
+      },
+      // 微信 - 上传图片到微信服务器
+      wxUploadImage: function (context, localId, isShowProgressTips) {
+        var uploadImagePromise = new Promise((resolve, reject) => {
+          var isShowProgress = isShowProgressTips || 1
+          context.$moment.wx.uploadImage({
+            localId: localId,
+            isShowProgressTips: isShowProgress, // 默认为1，显示进度提示
+            success: function (res) {
+              context.$comfun.console(context, '微信 - 上传图片到微信服务器', res)
+              resolve(res)
+            }
+          })
+        })
+        return uploadImagePromise
+      },
+      // 保存微信临时服务器的图片到本地服务器
+      saveWxImg: function (context, mediaId) {
+        var saveWxImgPromise = new Promise((resolve, reject) => {
+          context.$comfun.http_get(context, `${context.$moment.urls.save_wx_image}?mediaId=${mediaId}`).then((response) => {
+          }, (response) => {
+            reject(response)
+          })
+        })
+        return saveWxImgPromise
       }
     }
 
