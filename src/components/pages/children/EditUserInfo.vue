@@ -11,11 +11,11 @@
         <span>昵称</span>
         <input type="text" placeholder="请输入昵称" v-model="userInfo.nikeName">
       </div>
-      <div class="edit-item">
+      <div class="edit-item" v-picker="pickerSex">
         <span>性别</span>
         <input type="text" placeholder="请输入性别" v-model="userInfo.sex">
       </div>
-      <div class="edit-item">
+      <div class="edit-item" v-picker="pickerBirthday">
         <span>生日</span>
         <input type="text" placeholder="请输入生日" v-model="userInfo.birthday">
       </div>
@@ -49,7 +49,13 @@ export default {
   name: 'me-edit-user-info',
   data () {
     return {
-      userInfo: {}
+      userInfo: {},
+      pickerSex: {
+        context: this
+      },
+      pickerBirthday: {
+        context: this
+      }
     }
   },
   created () {
@@ -85,6 +91,19 @@ export default {
           })
         }
       })
+    }
+  },
+  directives: {
+    picker: {
+      inserted: function (el, binding) {
+        var inputs = el.getElementsByTagName('input')
+        for (var i = 0; i < inputs.length; i++) {
+          inputs[i].readOnly = true
+        }
+        el.onclick = function () {
+          binding.value.context.$picker()
+        }
+      }
     }
   }
 }

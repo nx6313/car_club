@@ -113,6 +113,10 @@ export default {
       document.body.appendChild(dragElem)
       dragElem.onclick = function () {
         if (document.getElementById('console-copy')) {
+          if (currentCopyElem) {
+            currentCopyElem.style.color = 'rgb(170, 224, 252)'
+            currentCopyElem = null
+          }
           document.body.removeChild(document.getElementById('console-copy'))
         }
         var consolePanlWrapElem = document.getElementById('console-panl-wrap')
@@ -188,6 +192,10 @@ export default {
       consolePanlTitleElem.appendChild(consolePanlTipElem)
       consolePanlTipElem.onclick = function () {
         if (document.getElementById('console-copy')) {
+          if (currentCopyElem) {
+            currentCopyElem.style.color = 'rgb(170, 224, 252)'
+            currentCopyElem = null
+          }
           document.body.removeChild(document.getElementById('console-copy'))
         }
         if (Number(consolePanlWrapElem.style.opacity) === 1) {
@@ -214,6 +222,10 @@ export default {
       consolePanlTitleElem.appendChild(consolePanlClearElem)
       consolePanlClearElem.onclick = function () {
         if (document.getElementById('console-copy')) {
+          if (currentCopyElem) {
+            currentCopyElem.style.color = 'rgb(170, 224, 252)'
+            currentCopyElem = null
+          }
           document.body.removeChild(document.getElementById('console-copy'))
         }
         var consolePanlContentElem = document.getElementById('console-panl-content-elem')
@@ -237,6 +249,10 @@ export default {
       consolePanlTitleElem.appendChild(consolePanlClearCacheElem)
       consolePanlClearCacheElem.onclick = function () {
         if (document.getElementById('console-copy')) {
+          if (currentCopyElem) {
+            currentCopyElem.style.color = 'rgb(170, 224, 252)'
+            currentCopyElem = null
+          }
           document.body.removeChild(document.getElementById('console-copy'))
         }
         window.localStorage.clear()
@@ -253,6 +269,10 @@ export default {
       consolePanlWrapElem.appendChild(consolePanlContentElem)
       consolePanlContentElem.onclick = function () {
         if (document.getElementById('console-copy')) {
+          if (currentCopyElem) {
+            currentCopyElem.style.color = 'rgb(170, 224, 252)'
+            currentCopyElem = null
+          }
           document.body.removeChild(document.getElementById('console-copy'))
         }
         if (Number(consolePanlWrapElem.style.opacity) !== 1) {
@@ -265,6 +285,58 @@ export default {
     // 将日志内容写入日志面板进行显示
     Vue.prototype.$writeToConsolePanl = function (contentHtml, jsonObj, vueContext) {
       writeToConsolePanl(contentHtml, jsonObj, vueContext)
+    }
+
+    // picker弹出层
+    Vue.prototype.$picker = function (context, option) {
+      if (document.getElementById('picker-box')) {
+        return false
+      }
+      var params = option || {}
+      var shadeBg = params.shadeBg || 'rgba(0, 0, 0, 0.2)'
+      var background = params.background || 'rgba(255, 255, 255, 1)'
+      var color = params.color || 'rgba(0, 0, 0, 1)'
+      var pickerShade = document.createElement('div')
+      pickerShade.style.position = 'fixed'
+      pickerShade.style.width = '100vw'
+      pickerShade.style.height = '100vh'
+      pickerShade.style.top = 0
+      pickerShade.style.left = 0
+      pickerShade.style.transition = 'all 0.3s ease 0s'
+      pickerShade.style.opacity = 0
+      pickerShade.style.zIndex = 999999998
+      pickerShade.style.backgroundColor = shadeBg
+      document.body.appendChild(pickerShade)
+      setTimeout(() => {
+        pickerShade.style.opacity = 1
+      }, 10)
+
+      var pickerElem = document.createElement('div')
+      pickerElem.id = 'picker-box'
+      pickerElem.style.position = 'fixed'
+      pickerElem.style.left = 0
+      pickerElem.style.bottom = 0
+      pickerElem.style.width = '100%'
+      pickerElem.style.height = '4rem'
+      pickerElem.style.transition = 'all 0.4s ease 0s'
+      pickerElem.style.transform = 'translateY(110%)'
+      pickerElem.style.fontSize = '0.8rem'
+      pickerElem.innerHTML = 'content'
+      pickerElem.style.zIndex = 999999999
+      pickerElem.style.background = background
+      pickerElem.style.color = color
+      document.body.appendChild(pickerElem)
+      setTimeout(() => {
+        pickerElem.style.transform = 'translateY(0px)'
+      }, 10)
+      pickerShade.onclick = function () {
+        this.style.opacity = 0
+        pickerElem.style.transform = 'translateY(110%)'
+        setTimeout(() => {
+          document.body.removeChild(this)
+          document.body.removeChild(pickerElem)
+        }, 400)
+      }
     }
   }
 }
@@ -338,6 +410,7 @@ function writeToConsolePanl (contentHtml, jsonObj, vueContext) {
 }
 
 // 获取json数据中每一层级的数据，并写入指定区域
+var currentCopyElem = null
 function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
   if (rootElem.getElementsByClassName('json-obj-log-' + level).length === 0) {
     var nextLogElem = document.createElement('div')
@@ -393,8 +466,14 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
           jsonItemElem.onclick = function (event) {
             setTimeout(() => {
               if (document.getElementById('console-copy')) {
+                if (currentCopyElem) {
+                  currentCopyElem.style.color = 'rgb(170, 224, 252)'
+                  currentCopyElem = null
+                }
                 document.body.removeChild(document.getElementById('console-copy'))
               }
+              currentCopyElem = this
+              currentCopyElem.style.color = '#ffffff'
               var copyElem = document.createElement('button')
               copyElem.id = 'console-copy'
               copyElem.style.display = 'block'
@@ -478,8 +557,14 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
           jsonItemElem.onclick = function (event) {
             setTimeout(() => {
               if (document.getElementById('console-copy')) {
+                if (currentCopyElem) {
+                  currentCopyElem.style.color = 'rgb(170, 224, 252)'
+                  currentCopyElem = null
+                }
                 document.body.removeChild(document.getElementById('console-copy'))
               }
+              currentCopyElem = this
+              currentCopyElem.style.color = '#ffffff'
               var copyElem = document.createElement('button')
               copyElem.id = 'console-copy'
               copyElem.style.display = 'block'
