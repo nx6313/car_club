@@ -79,12 +79,13 @@ export default {
           [
             {
               val: '0',
-              display: '男士',
+              display: '男士12',
               unit: '年'
             },
             {
               val: '1',
-              display: '女士'
+              display: '女士',
+              unit: '年'
             }
           ],
           [

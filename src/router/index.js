@@ -36,10 +36,12 @@ Vue.directive('picker', {
     }
     el.onclick = function () {
       binding.value.context.$picker(binding.value.context, {
+        debug: binding.value.debug,
         title: binding.value.title,
         cols: binding.value.cols,
         value: binding.value.value,
         selectedFn: binding.value.selectedFn,
+        selectedFinishFn: binding.value.selectedFinishFn,
         shadeBg: binding.value.shadeBg,
         background: binding.value.background,
         color: binding.value.color,

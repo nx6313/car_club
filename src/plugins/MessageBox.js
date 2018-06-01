@@ -294,6 +294,7 @@ export default {
       }
       var selected = [] // 保存选中的值
       var params = option || {}
+      var debug = params.debug === undefined ? false : params.debug // debug模式会显示console日志输出
       var shadeBg = params.shadeBg || 'rgba(0, 0, 0, 0.2)'
       var background = params.background || 'rgba(255, 255, 255, 1)'
       var color = params.color || 'rgba(0, 0, 0, 1)'
@@ -303,7 +304,7 @@ export default {
       var cols = params.cols || []
       var gradualHeight = params.gradualHeight || ((14 - 2.8) / 2) + 'rem'
       var wheelHeight = params.wheelHeight || '14rem'
-      var wheelBg = params.wheelBg || 'rgba(241, 241, 241, .6)'
+      var wheelBg = params.wheelBg || 'rgba(250, 250, 250, .8)'
       var colLineColor = params.colLineColor || 'rgba(210, 210, 210, 0.6)'
       var colLineHeight = params.colLineHeight || '2.8rem'
       var selectedBg = params.selectedBg || 'rgba(255, 255, 255, 0)'
@@ -316,7 +317,14 @@ export default {
       var value = params.value || [] // 优先对应实际值，没有实际值时，对应显示值
       var arg = params.arg || [] // 额外的变量，将会直接传给选择回掉方法
       var selectedFn = params.selectedFn || function () {
-        console.warn('picker选择响应事件未指定，请指定参数 selectedFn')
+        if (debug) {
+          console.warn('picker 选择响应事件未指定，请指定参数 selectedFn')
+        }
+      } // 响应选择的事件
+      var selectedFinishFn = params.selectedFinishFn || function () {
+        if (debug) {
+          console.warn('picker 选择完成后响应事件未指定，请指定参数 selectedFinishFn')
+        }
       } // 响应选择的事件
       selected = value
       var pickerShade = document.createElement('div')
@@ -357,7 +365,7 @@ export default {
           document.body.removeChild(this)
           document.body.removeChild(pickerElem)
         }, 400)
-        selectedFn(selected, arg)
+        selectedFinishFn(selected, arg)
       }
 
       var pickerTitleWrapElem = document.createElement('div')
@@ -394,7 +402,7 @@ export default {
           document.body.removeChild(pickerShade)
           document.body.removeChild(pickerElem)
         }, 400)
-        selectedFn(selected, arg)
+        selectedFinishFn(selected, arg)
       }
 
       var pickerTitleLineElem = document.createElement('div')
@@ -428,9 +436,9 @@ export default {
           selectedShowElem.style.height = colLineHeight
           selectedShowElem.style.left = 0
           selectedShowElem.style.top = `calc((100% - ${colLineHeight}) / 2 - ${lineSelectedOffsetTop})`
-          selectedShowElem.style.borderTop = '1px dotted ' + lineSelectedColor
-          selectedShowElem.style.borderBottom = '1px dotted ' + lineSelectedColor
-          selectedShowElem.style.boxShadow = '0px 0px 60px 0px rgba(200, 200, 200, .1)'
+          selectedShowElem.style.borderTop = '0.1px dashed ' + lineSelectedColor
+          selectedShowElem.style.borderBottom = '0.1px dashed ' + lineSelectedColor
+          selectedShowElem.style.boxShadow = '0px 0px 60px 0px rgba(200, 200, 200, .3) inset'
           selectedShowElem.style.backgroundColor = selectedBg
           selectedShowElem.style.zIndex = 10
           selectedShowElem.style.pointerEvents = 'none'
@@ -510,13 +518,15 @@ export default {
             pickerDataWheelWrapElem.style.transform = `translateY(${(pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx}px)`
             pickerColmunWrapElem.appendChild(pickerDataWheelWrapElem)
             ;(function (elem, index) {
+              selected[row] = {
+                val: cols[row][index].val || '',
+                display: cols[row][index].display || '',
+                unit: cols[row][index].unit || null
+              }
               setTimeout(() => {
                 elem.style.transform = `translateY(${(pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx - index * colLineHeightToPx + 1}px)`
               }, 200)
             })(pickerDataWheelWrapElem, initSelectedItemIndex)
-            var pickerWheelTouchYStart = -1
-            var currentTranslateY = -1
-            var translateToY = -1
 
             for (let d = 0; d < cols[row].length; d++) {
               var pickerDatalem = document.createElement('span')
@@ -591,7 +601,10 @@ export default {
               }
             }
 
-            ;(function (pickerDataWheelWrapElem, pickerUnitWheelWrapElem) {
+            ;(function (pickerDataWheelWrapElem, pickerUnitWheelWrapElem, rowData, row) {
+              var pickerWheelTouchYStart = -1
+              var currentTranslateY = -1
+              var translateToY = -1
               pickerDataWheelWrapElem.addEventListener('touchstart', function () {
                 event.preventDefault()
                 pickerWheelTouchYStart = event.touches[0].pageY
@@ -609,7 +622,7 @@ export default {
                 }
                 var diff = event.touches[0].pageY - pickerWheelTouchYStart
                 this.style.transform = `translateY(calc(${currentTranslateY}px + ${diff * touchRate}px))`
-                if (unitFollow && pickerUnitWheelWrapElem) {
+                if (unitFollow === true && pickerUnitWheelWrapElem) {
                   pickerUnitWheelWrapElem.style.transform = `translateY(calc(${currentTranslateY}px + ${diff * touchRate}px))`
                 }
                 translateToY = currentTranslateY + diff * touchRate
@@ -620,29 +633,65 @@ export default {
                 var maxY = (pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx
                 if (translateToY < minY + colLineHeightToPx) {
                   // 选中最后一项
+                  let selectedItemUnit = rowData[rowData.length - 1].unit || rowData[0].unit || null
                   this.style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
-                  if (pickerUnitWheelWrapElem) {
-                    pickerUnitWheelWrapElem.style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
+                  if ((unitFollow === false && selectedItemUnit && selectedItemUnit !== selected[row].unit) || unitFollow === true) {
+                    if (pickerUnitWheelWrapElem) {
+                      pickerUnitWheelWrapElem.style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
+                    }
                   }
+                  selected[row] = {
+                    val: rowData[rowData.length - 1].val || '',
+                    display: rowData[rowData.length - 1].display || '',
+                    unit: rowData[rowData.length - 1].unit || null
+                  }
+                  selectedFn(selected, arg)
                 } else if (translateToY > maxY) {
                   // 选中最前一项
+                  let selectedItemUnit = rowData[0].unit || null
                   this.style.transform = `translateY(${maxY + 1}px)`
-                  if (pickerUnitWheelWrapElem) {
-                    pickerUnitWheelWrapElem.style.transform = `translateY(${maxY + 1}px)`
+                  if ((unitFollow === false && selectedItemUnit && selectedItemUnit !== selected[row].unit) || unitFollow === true) {
+                    if (pickerUnitWheelWrapElem) {
+                      pickerUnitWheelWrapElem.style.transform = `translateY(${maxY + 1}px)`
+                    }
                   }
+                  selected[row] = {
+                    val: rowData[0].val || '',
+                    display: rowData[0].display || '',
+                    unit: rowData[0].unit || null
+                  }
+                  selectedFn(selected, arg)
                 } else {
                   var overItemCount = Math.floor(Math.abs((translateToY - maxY) / colLineHeightToPx))
                   var bryond = Math.abs((translateToY - maxY) % colLineHeightToPx)
                   if (bryond < colLineHeightToPx / 2) {
+                    let selectedItemUnit = rowData[overItemCount].unit || rowData[0].unit || null
                     this.style.transform = `translateY(${maxY - overItemCount * colLineHeightToPx + 1}px)`
-                    if (pickerUnitWheelWrapElem) {
-                      pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - overItemCount * colLineHeightToPx + 1}px)`
+                    if ((unitFollow === false && selectedItemUnit && selectedItemUnit !== selected[row].unit) || unitFollow === true) {
+                      if (pickerUnitWheelWrapElem) {
+                        pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - overItemCount * colLineHeightToPx + 1}px)`
+                      }
                     }
+                    selected[row] = {
+                      val: rowData[overItemCount].val || '',
+                      display: rowData[overItemCount].display || '',
+                      unit: rowData[overItemCount].unit || null
+                    }
+                    selectedFn(selected, arg)
                   } else {
+                    let selectedItemUnit = rowData[overItemCount + 1].unit || rowData[0].unit || null
                     this.style.transform = `translateY(${maxY - (overItemCount + 1) * colLineHeightToPx + 1}px)`
-                    if (pickerUnitWheelWrapElem) {
-                      pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - (overItemCount + 1) * colLineHeightToPx + 1}px)`
+                    if ((unitFollow === false && selectedItemUnit && selectedItemUnit !== selected[row].unit) || unitFollow === true) {
+                      if (pickerUnitWheelWrapElem) {
+                        pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - (overItemCount + 1) * colLineHeightToPx + 1}px)`
+                      }
                     }
+                    selected[row] = {
+                      val: rowData[overItemCount + 1].val || '',
+                      display: rowData[overItemCount + 1].display || '',
+                      unit: rowData[overItemCount + 1].unit || null
+                    }
+                    selectedFn(selected, arg)
                   }
                 }
                 pickerWheelTouchYStart = -1
@@ -684,7 +733,7 @@ export default {
                 currentTranslateY = -1
                 translateToY = -1
               }, false)
-            })(pickerDataWheelWrapElem, pickerUnitWheelWrapElem)
+            })(pickerDataWheelWrapElem, pickerUnitWheelWrapElem, cols[row], row)
           }
         }
       } else {
