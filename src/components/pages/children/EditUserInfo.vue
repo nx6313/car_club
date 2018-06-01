@@ -51,10 +51,53 @@ export default {
     return {
       userInfo: {},
       pickerSex: {
-        context: this
+        context: this,
+        title: '请选择性别',
+        value: [],
+        arg: 'sex',
+        selectedFn: this.pickSelect,
+        cols: [
+          [
+            {
+              val: '0',
+              display: '男士'
+            },
+            {
+              val: '1',
+              display: '女士'
+            }
+          ]
+        ]
       },
       pickerBirthday: {
-        context: this
+        context: this,
+        title: '请选择生日',
+        value: [],
+        arg: 'birthday',
+        selectedFn: this.pickSelect,
+        cols: [
+          [
+            {
+              val: '0',
+              display: '男士',
+              unit: '年'
+            },
+            {
+              val: '1',
+              display: '女士'
+            }
+          ],
+          [
+            {
+              val: '0',
+              display: '男士'
+            },
+            {
+              val: '1',
+              display: '女士'
+            }
+          ]
+        ]
       }
     }
   },
@@ -91,19 +134,9 @@ export default {
           })
         }
       })
-    }
-  },
-  directives: {
-    picker: {
-      inserted: function (el, binding) {
-        var inputs = el.getElementsByTagName('input')
-        for (var i = 0; i < inputs.length; i++) {
-          inputs[i].readOnly = true
-        }
-        el.onclick = function () {
-          binding.value.context.$picker()
-        }
-      }
+    },
+    pickSelect (selected, arg) {
+      console.log(selected, arg)
     }
   }
 }

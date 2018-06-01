@@ -292,10 +292,33 @@ export default {
       if (document.getElementById('picker-box')) {
         return false
       }
+      var selected = [] // 保存选中的值
       var params = option || {}
       var shadeBg = params.shadeBg || 'rgba(0, 0, 0, 0.2)'
       var background = params.background || 'rgba(255, 255, 255, 1)'
       var color = params.color || 'rgba(0, 0, 0, 1)'
+      var title = params.title || '请选择项目'
+      var titleColor = params.titleColor || 'rgba(0, 0, 0, 1)'
+      var titleLineColor = params.titleLineColor || 'rgba(210, 210, 210, .6)'
+      var cols = params.cols || []
+      var gradualHeight = params.gradualHeight || ((14 - 2.8) / 2) + 'rem'
+      var wheelHeight = params.wheelHeight || '14rem'
+      var wheelBg = params.wheelBg || 'rgba(241, 241, 241, .6)'
+      var colLineColor = params.colLineColor || 'rgba(210, 210, 210, 0.6)'
+      var colLineHeight = params.colLineHeight || '2.8rem'
+      var selectedBg = params.selectedBg || 'rgba(255, 255, 255, 0)'
+      var lineSelectedColor = params.lineSelectedColor || 'rgba(210, 210, 210, 0.8)'
+      var lineSelectedOffsetTop = params.lineSelectedOffsetTop || '10px'
+      var merge = params.merge === undefined ? true : params.merge // 将相邻的滚轮选择的项目进行显示合并，即不现实分割线
+      var unitFollow = params.unitFollow === undefined ? false : params.unitFollow // 单位项是否一起跟随滚动，还是只在最终不同时做滚动
+      var unitBg = params.unitBg || 'rgba(255, 255, 255, 1)'
+      var touchRate = params.touchRate || 0.8
+      var value = params.value || [] // 优先对应实际值，没有实际值时，对应显示值
+      var arg = params.arg || [] // 额外的变量，将会直接传给选择回掉方法
+      var selectedFn = params.selectedFn || function () {
+        console.warn('picker选择响应事件未指定，请指定参数 selectedFn')
+      } // 响应选择的事件
+      selected = value
       var pickerShade = document.createElement('div')
       pickerShade.style.position = 'fixed'
       pickerShade.style.width = '100vw'
@@ -317,11 +340,9 @@ export default {
       pickerElem.style.left = 0
       pickerElem.style.bottom = 0
       pickerElem.style.width = '100%'
-      pickerElem.style.height = '4rem'
       pickerElem.style.transition = 'all 0.4s ease 0s'
       pickerElem.style.transform = 'translateY(110%)'
       pickerElem.style.fontSize = '0.8rem'
-      pickerElem.innerHTML = 'content'
       pickerElem.style.zIndex = 999999999
       pickerElem.style.background = background
       pickerElem.style.color = color
@@ -336,6 +357,350 @@ export default {
           document.body.removeChild(this)
           document.body.removeChild(pickerElem)
         }, 400)
+        selectedFn(selected, arg)
+      }
+
+      var pickerTitleWrapElem = document.createElement('div')
+      pickerTitleWrapElem.classList.add('flex-r')
+      pickerTitleWrapElem.classList.add('flex-b')
+      pickerTitleWrapElem.style.height = '3rem'
+      pickerElem.appendChild(pickerTitleWrapElem)
+
+      var pickerTitleLeftElem = document.createElement('span')
+      pickerTitleLeftElem.style.height = '100%'
+      pickerTitleLeftElem.style.width = '3rem'
+      pickerTitleLeftElem.style.borderRadius = '3rem'
+      pickerTitleWrapElem.appendChild(pickerTitleLeftElem)
+
+      var pickerTitleElem = document.createElement('span')
+      pickerTitleElem.innerHTML = title
+      pickerTitleElem.style.color = titleColor
+      pickerTitleWrapElem.appendChild(pickerTitleElem)
+
+      var pickerTitleRightElem = document.createElement('span')
+      pickerTitleRightElem.classList.add('ripple')
+      pickerTitleRightElem.style.height = '100%'
+      pickerTitleRightElem.style.width = '3rem'
+      pickerTitleRightElem.style.borderRadius = '3rem'
+      pickerTitleRightElem.style.backgroundImage = 'url(' + require('@/assets/close-dark.png') + ')'
+      pickerTitleRightElem.style.backgroundRepeat = 'no-repeat'
+      pickerTitleRightElem.style.backgroundSize = '40% 40%'
+      pickerTitleRightElem.style.backgroundPosition = 'center'
+      pickerTitleWrapElem.appendChild(pickerTitleRightElem)
+      pickerTitleRightElem.onclick = function () {
+        pickerShade.style.opacity = 0
+        pickerElem.style.transform = 'translateY(110%)'
+        setTimeout(() => {
+          document.body.removeChild(pickerShade)
+          document.body.removeChild(pickerElem)
+        }, 400)
+        selectedFn(selected, arg)
+      }
+
+      var pickerTitleLineElem = document.createElement('div')
+      pickerTitleLineElem.style.height = 0
+      pickerTitleLineElem.style.borderBottom = '1px solid ' + titleLineColor
+      pickerElem.appendChild(pickerTitleLineElem)
+
+      var pickerWheelWrapElem = document.createElement('div')
+      pickerWheelWrapElem.style.position = 'relative'
+      pickerWheelWrapElem.style.height = wheelHeight
+      pickerWheelWrapElem.style.overflow = 'hidden'
+      pickerElem.appendChild(pickerWheelWrapElem)
+
+      if (cols.length > 0) {
+        var dataColumn = 0
+        var unitColumn = 0
+        pickerWheelWrapElem.innerHTML = ''
+        for (let row = 0; row < cols.length; row++) {
+          if (cols[row] && isArr(cols[row]) && cols[row].length > 0) {
+            dataColumn++
+            if (cols[row][0].unit) {
+              unitColumn++
+            }
+          }
+        }
+        if (dataColumn > 0) {
+          var selectedShowElem = document.createElement('div')
+          selectedShowElem.classList.add('picker-selected')
+          selectedShowElem.style.position = 'absolute'
+          selectedShowElem.style.width = '100%'
+          selectedShowElem.style.height = colLineHeight
+          selectedShowElem.style.left = 0
+          selectedShowElem.style.top = `calc((100% - ${colLineHeight}) / 2 - ${lineSelectedOffsetTop})`
+          selectedShowElem.style.borderTop = '1px dotted ' + lineSelectedColor
+          selectedShowElem.style.borderBottom = '1px dotted ' + lineSelectedColor
+          selectedShowElem.style.boxShadow = '0px 0px 60px 0px rgba(200, 200, 200, .1)'
+          selectedShowElem.style.backgroundColor = selectedBg
+          selectedShowElem.style.zIndex = 10
+          selectedShowElem.style.pointerEvents = 'none'
+          pickerWheelWrapElem.appendChild(selectedShowElem)
+
+          var topGradualElem = document.createElement('div')
+          topGradualElem.classList.add('picker-gradual-top')
+          topGradualElem.style.position = 'absolute'
+          topGradualElem.style.width = '100%'
+          topGradualElem.style.height = gradualHeight
+          topGradualElem.style.left = 0
+          topGradualElem.style.top = 0
+          topGradualElem.style.background = 'linear-gradient(rgba(255, 255, 255, .8), rgba(255, 255, 255, .6), rgba(255, 255, 255, .2), rgba(255, 255, 255, .0))'
+          topGradualElem.style.zIndex = 100
+          topGradualElem.style.pointerEvents = 'none'
+          pickerWheelWrapElem.appendChild(topGradualElem)
+
+          var bottomGradualElem = document.createElement('div')
+          bottomGradualElem.classList.add('picker-gradual-bottom')
+          bottomGradualElem.style.position = 'absolute'
+          bottomGradualElem.style.width = '100%'
+          bottomGradualElem.style.height = gradualHeight
+          bottomGradualElem.style.left = 0
+          bottomGradualElem.style.bottom = 0
+          bottomGradualElem.style.background = 'linear-gradient(rgba(255, 255, 255, .0), rgba(255, 255, 255, .2), rgba(255, 255, 255, .6), rgba(255, 255, 255, .8))'
+          bottomGradualElem.style.zIndex = 100
+          bottomGradualElem.style.pointerEvents = 'none'
+          pickerWheelWrapElem.appendChild(bottomGradualElem)
+        }
+        var unitColumnWidth = pickerWheelWrapElem.offsetWidth * 0.14
+        var dataColumnWidth = (pickerWheelWrapElem.offsetWidth - unitColumn * unitColumnWidth - (dataColumn + unitColumn) * 1) / dataColumn
+        var currentOffsetLeft = 0
+        for (let row = 0; row < cols.length; row++) {
+          if (cols[row] && isArr(cols[row]) && cols[row].length > 0) {
+            var initSelectedItemIndex = 0
+            for (let d = 0; d < cols[row].length; d++) {
+              if (value[row] && (cols[row][d].val || cols[row][d].display) === value[row]) {
+                initSelectedItemIndex = d
+              }
+            }
+            var pickerUnitWrapElem = null
+            var pickerColmunWrapElem = document.createElement('div')
+            pickerColmunWrapElem.classList.add('picker-data-wheel')
+            pickerColmunWrapElem.style.width = dataColumnWidth + 'px'
+            pickerColmunWrapElem.style.height = '100%'
+            pickerColmunWrapElem.style.position = 'absolute'
+            pickerColmunWrapElem.style.top = 0
+            pickerColmunWrapElem.style.left = currentOffsetLeft + 'px'
+            pickerColmunWrapElem.style.zIndex = 1
+            pickerColmunWrapElem.style.backgroundColor = wheelBg
+            if (row > 0) {
+              if (merge === true && pickerWheelWrapElem.lastChild.classList.contains('picker-data-wheel')) {
+                pickerColmunWrapElem.style.borderLeft = '1px solid rgba(255, 255, 255, 0)'
+              } else {
+                pickerColmunWrapElem.style.borderLeft = '1px solid ' + colLineColor
+              }
+            }
+            pickerWheelWrapElem.appendChild(pickerColmunWrapElem)
+            currentOffsetLeft += dataColumnWidth
+
+            var colLineHeightToPx = 0
+            if (colLineHeight.indexOf('rem') > 0) {
+              colLineHeightToPx = Number(colLineHeight.match(/[-?\d.?]+/g)[0]) * 16
+            } else {
+              colLineHeightToPx = Number(colLineHeight.match(/[-?\d.?]+/g)[0])
+            }
+            var lineSelectedOffsetTopToPx = 0
+            if (lineSelectedOffsetTop.indexOf('rem') > 0) {
+              lineSelectedOffsetTopToPx = Number(lineSelectedOffsetTop.match(/[-?\d.?]+/g)[0]) * 16
+            } else {
+              lineSelectedOffsetTopToPx = Number(lineSelectedOffsetTop.match(/[-?\d.?]+/g)[0])
+            }
+            var pickerDataWheelWrapElem = document.createElement('div')
+            pickerDataWheelWrapElem.style.position = 'relative'
+            pickerDataWheelWrapElem.style.width = '100%'
+            pickerDataWheelWrapElem.style.transition = 'all 0.3s ease 0s'
+            pickerDataWheelWrapElem.style.transform = `translateY(${(pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx}px)`
+            pickerColmunWrapElem.appendChild(pickerDataWheelWrapElem)
+            ;(function (elem, index) {
+              setTimeout(() => {
+                elem.style.transform = `translateY(${(pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx - index * colLineHeightToPx + 1}px)`
+              }, 200)
+            })(pickerDataWheelWrapElem, initSelectedItemIndex)
+            var pickerWheelTouchYStart = -1
+            var currentTranslateY = -1
+            var translateToY = -1
+
+            for (let d = 0; d < cols[row].length; d++) {
+              var pickerDatalem = document.createElement('span')
+              pickerDatalem.style.display = 'block'
+              pickerDatalem.innerHTML = cols[row][d].display || ''
+              pickerDatalem.style.position = 'relative'
+              pickerDatalem.style.width = '100%'
+              pickerDatalem.style.height = colLineHeight
+              pickerDatalem.style.lineHeight = colLineHeight
+              pickerDatalem.style.textAlign = 'center'
+              pickerDatalem.setAttribute('picker-item-real-val', cols[row][d].val || '')
+              pickerDataWheelWrapElem.appendChild(pickerDatalem)
+            }
+
+            var pickerUnitWheelWrapElem = null
+            if (cols[row][0].unit) {
+              pickerUnitWrapElem = document.createElement('div')
+              pickerUnitWrapElem.classList.add('picker-unit-wheel')
+              pickerUnitWrapElem.style.width = unitColumnWidth + 'px'
+              pickerUnitWrapElem.style.height = '100%'
+              pickerUnitWrapElem.style.position = 'absolute'
+              pickerUnitWrapElem.style.top = 0
+              pickerUnitWrapElem.style.left = currentOffsetLeft + 'px'
+              pickerUnitWrapElem.style.borderLeft = '1px solid ' + colLineColor
+              pickerUnitWrapElem.style.backgroundColor = unitBg
+              pickerUnitWrapElem.style.zIndex = 20
+              pickerWheelWrapElem.appendChild(pickerUnitWrapElem)
+              currentOffsetLeft += unitColumnWidth + 1
+
+              var shadeTop = document.createElement('div')
+              shadeTop.style.position = 'absolute'
+              shadeTop.style.left = 0
+              shadeTop.style.top = 0
+              shadeTop.style.width = '100%'
+              shadeTop.style.height = `calc((100% - ${colLineHeight}) / 2 - ${lineSelectedOffsetTop})`
+              shadeTop.style.zIndex = 99
+              shadeTop.style.background = 'linear-gradient(rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 0))'
+              pickerUnitWrapElem.appendChild(shadeTop)
+
+              var shadeBottom = document.createElement('div')
+              shadeBottom.style.position = 'absolute'
+              shadeBottom.style.left = 0
+              shadeBottom.style.bottom = 0
+              shadeBottom.style.width = '100%'
+              shadeBottom.style.height = `calc((100% - ${colLineHeight}) / 2 + ${lineSelectedOffsetTop})`
+              shadeBottom.style.zIndex = 99
+              shadeBottom.style.background = 'linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), rgba(255, 255, 255, 1))'
+              pickerUnitWrapElem.appendChild(shadeBottom)
+
+              pickerUnitWheelWrapElem = document.createElement('div')
+              pickerUnitWheelWrapElem.style.position = 'relative'
+              pickerUnitWheelWrapElem.style.width = '100%'
+              pickerUnitWheelWrapElem.style.transition = 'all 0.2s ease 0s'
+              pickerUnitWheelWrapElem.style.transform = `translateY(${(pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx}px)`
+              pickerUnitWrapElem.appendChild(pickerUnitWheelWrapElem)
+              ;(function (elem, index) {
+                setTimeout(() => {
+                  elem.style.transform = `translateY(${(pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx - index * colLineHeightToPx + 1}px)`
+                }, 200)
+              })(pickerUnitWheelWrapElem, initSelectedItemIndex)
+
+              for (let u = 0; u < cols[row].length; u++) {
+                var pickerUnitElem = document.createElement('span')
+                pickerUnitElem.style.display = 'block'
+                pickerUnitElem.innerHTML = cols[row][u].unit || cols[row][0].unit
+                pickerUnitElem.style.position = 'relative'
+                pickerUnitElem.style.width = '100%'
+                pickerUnitElem.style.height = colLineHeight
+                pickerUnitElem.style.lineHeight = colLineHeight
+                pickerUnitElem.style.textAlign = 'center'
+                pickerUnitWheelWrapElem.appendChild(pickerUnitElem)
+              }
+            }
+
+            ;(function (pickerDataWheelWrapElem, pickerUnitWheelWrapElem) {
+              pickerDataWheelWrapElem.addEventListener('touchstart', function () {
+                event.preventDefault()
+                pickerWheelTouchYStart = event.touches[0].pageY
+                currentTranslateY = Number(this.style.transform.match(/[-?\d]+/g)[0])
+                translateToY = currentTranslateY
+                this.style.transitionDuration = '0s'
+              }, false)
+              pickerDataWheelWrapElem.addEventListener('touchmove', function () {
+                event.preventDefault()
+                if (pickerWheelTouchYStart < 0) {
+                  pickerWheelTouchYStart = event.touches[0].pageY
+                  currentTranslateY = Number(this.style.transform.match(/[-?\d]+/g)[0])
+                  translateToY = currentTranslateY
+                  this.style.transitionDuration = '0s'
+                }
+                var diff = event.touches[0].pageY - pickerWheelTouchYStart
+                this.style.transform = `translateY(calc(${currentTranslateY}px + ${diff * touchRate}px))`
+                if (unitFollow && pickerUnitWheelWrapElem) {
+                  pickerUnitWheelWrapElem.style.transform = `translateY(calc(${currentTranslateY}px + ${diff * touchRate}px))`
+                }
+                translateToY = currentTranslateY + diff * touchRate
+              }, false)
+              pickerDataWheelWrapElem.addEventListener('touchend', function () {
+                this.style.transitionDuration = '0.3s'
+                var minY = (pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx - this.offsetHeight
+                var maxY = (pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx
+                if (translateToY < minY + colLineHeightToPx) {
+                  // 选中最后一项
+                  this.style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
+                  if (pickerUnitWheelWrapElem) {
+                    pickerUnitWheelWrapElem.style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
+                  }
+                } else if (translateToY > maxY) {
+                  // 选中最前一项
+                  this.style.transform = `translateY(${maxY + 1}px)`
+                  if (pickerUnitWheelWrapElem) {
+                    pickerUnitWheelWrapElem.style.transform = `translateY(${maxY + 1}px)`
+                  }
+                } else {
+                  var overItemCount = Math.floor(Math.abs((translateToY - maxY) / colLineHeightToPx))
+                  var bryond = Math.abs((translateToY - maxY) % colLineHeightToPx)
+                  if (bryond < colLineHeightToPx / 2) {
+                    this.style.transform = `translateY(${maxY - overItemCount * colLineHeightToPx + 1}px)`
+                    if (pickerUnitWheelWrapElem) {
+                      pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - overItemCount * colLineHeightToPx + 1}px)`
+                    }
+                  } else {
+                    this.style.transform = `translateY(${maxY - (overItemCount + 1) * colLineHeightToPx + 1}px)`
+                    if (pickerUnitWheelWrapElem) {
+                      pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - (overItemCount + 1) * colLineHeightToPx + 1}px)`
+                    }
+                  }
+                }
+                pickerWheelTouchYStart = -1
+                currentTranslateY = -1
+                translateToY = -1
+              }, false)
+              pickerDataWheelWrapElem.addEventListener('touchcancle', function () {
+                this.style.transitionDuration = '0.3s'
+                var minY = (pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx - this.offsetHeight
+                var maxY = (pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx
+                if (translateToY < minY + colLineHeightToPx) {
+                  // 选中最后一项
+                  this.style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
+                  if (pickerUnitWheelWrapElem) {
+                    pickerUnitWheelWrapElem.style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
+                  }
+                } else if (translateToY > maxY) {
+                  // 选中最前一项
+                  this.style.transform = `translateY(${maxY + 1}px)`
+                  if (pickerUnitWheelWrapElem) {
+                    pickerUnitWheelWrapElem.style.transform = `translateY(${maxY + 1}px)`
+                  }
+                } else {
+                  var overItemCount = Math.floor(Math.abs((translateToY - maxY) / colLineHeightToPx))
+                  var bryond = Math.abs((translateToY - maxY) % colLineHeightToPx)
+                  if (bryond < colLineHeightToPx / 2) {
+                    this.style.transform = `translateY(${maxY - overItemCount * colLineHeightToPx + 1}px)`
+                    if (pickerUnitWheelWrapElem) {
+                      pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - overItemCount * colLineHeightToPx + 1}px)`
+                    }
+                  } else {
+                    this.style.transform = `translateY(${maxY - (overItemCount + 1) * colLineHeightToPx + 1}px)`
+                    if (pickerUnitWheelWrapElem) {
+                      pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - (overItemCount + 1) * colLineHeightToPx + 1}px)`
+                    }
+                  }
+                }
+                pickerWheelTouchYStart = -1
+                currentTranslateY = -1
+                translateToY = -1
+              }, false)
+            })(pickerDataWheelWrapElem, pickerUnitWheelWrapElem)
+          }
+        }
+      } else {
+        pickerWheelWrapElem.innerHTML = ''
+        var noColsDataTipElem = document.createElement('span')
+        noColsDataTipElem.style.position = 'absolute'
+        noColsDataTipElem.style.top = 0
+        noColsDataTipElem.style.bottom = 0
+        noColsDataTipElem.style.left = 0
+        noColsDataTipElem.style.right = 0
+        noColsDataTipElem.innerHTML = '请设置clos属性'
+        noColsDataTipElem.style.textShadow = '2px 1px 18px rgba(0, 0, 0, .8)'
+        noColsDataTipElem.style.backgroundColor = 'rgba(173, 173, 173, 0.23)'
+        noColsDataTipElem.style.textAlign = 'center'
+        noColsDataTipElem.style.lineHeight = pickerWheelWrapElem.offsetHeight + 'px'
+        pickerWheelWrapElem.appendChild(noColsDataTipElem)
       }
     }
   }

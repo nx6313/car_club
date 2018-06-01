@@ -26,6 +26,43 @@ Vue.use(MessageBox)
 Vue.use(Config)
 Vue.use(ComFun)
 
+/** 定义全局指令 */
+// picker选择容器指令
+Vue.directive('picker', {
+  inserted: function (el, binding) {
+    var inputs = el.getElementsByTagName('input')
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].readOnly = true
+    }
+    el.onclick = function () {
+      binding.value.context.$picker(binding.value.context, {
+        title: binding.value.title,
+        cols: binding.value.cols,
+        value: binding.value.value,
+        selectedFn: binding.value.selectedFn,
+        shadeBg: binding.value.shadeBg,
+        background: binding.value.background,
+        color: binding.value.color,
+        titleColor: binding.value.titleColor,
+        titleLineColor: binding.value.titleLineColor,
+        gradualHeight: binding.value.gradualHeight,
+        wheelHeight: binding.value.wheelHeight,
+        wheelBg: binding.value.wheelBg,
+        colLineColor: binding.value.colLineColor,
+        colLineHeight: binding.value.colLineHeight,
+        selectedBg: binding.value.selectedBg,
+        lineSelectedColor: binding.value.lineSelectedColor,
+        lineSelectedOffsetTop: binding.value.lineSelectedOffsetTop,
+        merge: binding.value.merge,
+        unitFollow: binding.value.unitFollow,
+        unitBg: binding.value.unitBg,
+        touchRate: binding.value.touchRate,
+        arg: binding.value.arg
+      })
+    }
+  }
+})
+
 var router = new Router({
   routes: [
     {
