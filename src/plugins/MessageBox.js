@@ -523,6 +523,7 @@ export default {
                 display: cols[row][index].display || '',
                 unit: cols[row][index].unit || null
               }
+              selectedFn(selected, arg)
               setTimeout(() => {
                 elem.style.transform = `translateY(${(pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx - index * colLineHeightToPx + 1}px)`
               }, 200)
