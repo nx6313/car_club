@@ -53,52 +53,18 @@ export default {
       pickerSex: {
         context: this,
         title: '请选择性别',
-        value: [],
         arg: 'sex',
         selectedFn: this.pickSelect,
-        cols: [
-          [
-            {
-              val: '0',
-              display: '男士'
-            },
-            {
-              val: '1',
-              display: '女士'
-            }
-          ]
-        ]
+        type: 'sex'
       },
       pickerBirthday: {
         context: this,
         title: '请选择生日',
-        value: [],
         arg: 'birthday',
         selectedFn: this.pickSelect,
-        cols: [
-          [
-            {
-              val: '0',
-              display: '男士12',
-              unit: '年'
-            },
-            {
-              val: '1',
-              display: '女士',
-              unit: '年'
-            }
-          ],
-          [
-            {
-              val: '0',
-              display: '男士'
-            },
-            {
-              val: '1',
-              display: '女士'
-            }
-          ]
-        ]
+        type: 'yyyy-mm-dd',
+        valRange: [ '1980-01-01', '~' ],
+        value: [ '1993', '11', '13' ]
       }
     }
   },
@@ -112,9 +78,11 @@ export default {
       address = this.$moment.wxUserInfo.city
     }
     this.userInfo = {
+      headId: null,
       headImg: this.$moment.wxUserInfo.headimgurl,
       nikeName: this.$moment.wxUserInfo.nickname,
-      sex: this.$moment.wxUserInfo.sex,
+      sexVal: this.$moment.wxUserInfo.sex,
+      sex: this.$moment.wxUserInfo.sex === '0' ? '女士' : (this.$moment.wxUserInfo.sex === '1' ? '男士' : ''),
       birthday: '',
       carType: '',
       constellation: '',
@@ -122,6 +90,7 @@ export default {
       address: address,
       intro: ''
     }
+    this.pickerSex.value = [ this.userInfo.sexVal ]
   },
   methods: {
     changeUserHead () {
@@ -131,13 +100,25 @@ export default {
           this.userInfo.headImg = localIds[0]
           this.$comfun.wxUploadImage(this, localIds[0]).then((data) => {
             var serverId = data.serverId
-            this.$comfun.saveWxImg(this, serverId)
+            this.$comfun.saveWxImg(this, serverId).then((response) => {
+              if (response.body.code === '0000' && response.body.success === true) {
+                this.$toast('图片保存成功')
+                this.userInfo.headId = response.body.data.id
+                this.$moment.wxUserInfo.headimgid = response.body.data.id
+              } else {
+                this.$toast('图片保存至服务器失败')
+              }
+            })
           })
         }
       })
     },
     pickSelect (selected, arg) {
-      console.log(selected, arg)
+      if (arg === 'sex') {
+        this.userInfo.sexVal = selected[0].val
+        this.userInfo.sex = selected[0].display
+        this.pickerSex.value = [ this.userInfo.sexVal ]
+      }
     }
   }
 }

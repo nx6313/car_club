@@ -308,7 +308,7 @@ export default {
       var colLineColor = params.colLineColor || 'rgba(210, 210, 210, 0.6)'
       var colLineHeight = params.colLineHeight || '2.8rem'
       var selectedBg = params.selectedBg || 'rgba(255, 255, 255, 0)'
-      var lineSelectedColor = params.lineSelectedColor || 'rgba(210, 210, 210, 0.8)'
+      var lineSelectedColor = params.lineSelectedColor || 'rgba(210, 210, 210, 0.1)'
       var lineSelectedOffsetTop = params.lineSelectedOffsetTop || '10px'
       var merge = params.merge === undefined ? true : params.merge // 将相邻的滚轮选择的项目进行显示合并，即不现实分割线
       var unitFollow = params.unitFollow === undefined ? false : params.unitFollow // 单位项是否一起跟随滚动，还是只在最终不同时做滚动
@@ -316,6 +316,8 @@ export default {
       var touchRate = params.touchRate || 0.8
       var value = params.value || [] // 优先对应实际值，没有实际值时，对应显示值
       var arg = params.arg || [] // 额外的变量，将会直接传给选择回掉方法
+      var type = params.type || null // 类型，一些常用滚轮格式的简单封装，可以简化掉cols参数
+      var valRange = params.valRange || [] // 数值的范围，数组，两个值，第一个值为最小值，第二个值为最大值；特定值：~代表至今
       var selectedFn = params.selectedFn || function () {
         if (debug) {
           console.warn('picker 选择响应事件未指定，请指定参数 selectedFn')
@@ -326,7 +328,6 @@ export default {
           console.warn('picker 选择完成后响应事件未指定，请指定参数 selectedFinishFn')
         }
       } // 响应选择的事件
-      selected = value
       var pickerShade = document.createElement('div')
       pickerShade.style.position = 'fixed'
       pickerShade.style.width = '100vw'
@@ -416,6 +417,65 @@ export default {
       pickerWheelWrapElem.style.overflow = 'hidden'
       pickerElem.appendChild(pickerWheelWrapElem)
 
+      if (type) {
+        var minVal = valRange[0]
+        var maxVal = valRange[1]
+        if (type.toLowerCase() === 'yyyy-mm-dd') {
+          var yearMin = 1900
+          var yearMax = -1
+          if (minVal !== '~') {
+            yearMin = Number(minVal.match(/[\d]+/g)[0])
+          } else {
+            yearMin = Number(new Date().getFullYear())
+          }
+          if (maxVal !== '~') {
+            yearMax = Number(maxVal.match(/[\d]+/g)[0])
+          } else {
+            yearMax = Number(new Date().getFullYear())
+          }
+          var yearArr = []
+          for (let y = yearMin; y <= yearMax; y++) {
+            yearArr.push({
+              val: y,
+              unit: '年'
+            })
+          }
+          cols[0] = yearArr
+          var monthArr = []
+          for (let m = 1; m <= 12; m++) {
+            monthArr.push({
+              val: m,
+              unit: '月'
+            })
+          }
+          cols[1] = monthArr
+          var days = 0
+          if (value && value.length > 0) {
+            days = getDaysInMonth(Number(value[0]), Number(value[1]))
+          } else {
+            days = getDaysInMonth(Number(cols[0][0].val), Number(cols[1][0].val))
+          }
+          var dayArr = []
+          for (let d = 1; d <= days; d++) {
+            dayArr.push({
+              val: d,
+              unit: '日'
+            })
+          }
+          cols[2] = dayArr
+        } else if (type.toLowerCase() === 'sex') {
+          cols[0] = [
+            {
+              val: '0',
+              display: '女士'
+            },
+            {
+              val: '1',
+              display: '男士'
+            }
+          ]
+        }
+      }
       if (cols.length > 0) {
         var dataColumn = 0
         var unitColumn = 0
@@ -438,7 +498,7 @@ export default {
           selectedShowElem.style.top = `calc((100% - ${colLineHeight}) / 2 - ${lineSelectedOffsetTop})`
           selectedShowElem.style.borderTop = '0.1px dashed ' + lineSelectedColor
           selectedShowElem.style.borderBottom = '0.1px dashed ' + lineSelectedColor
-          selectedShowElem.style.boxShadow = '0px 0px 60px 0px rgba(200, 200, 200, .3) inset'
+          selectedShowElem.style.boxShadow = '0px 0px 40px 0px rgba(200, 200, 200, .4) inset'
           selectedShowElem.style.backgroundColor = selectedBg
           selectedShowElem.style.zIndex = 10
           selectedShowElem.style.pointerEvents = 'none'
@@ -475,7 +535,7 @@ export default {
           if (cols[row] && isArr(cols[row]) && cols[row].length > 0) {
             var initSelectedItemIndex = 0
             for (let d = 0; d < cols[row].length; d++) {
-              if (value[row] && (cols[row][d].val || cols[row][d].display) === value[row]) {
+              if (String(value[row]) && String(cols[row][d].val || cols[row][d].display) === String(value[row])) {
                 initSelectedItemIndex = d
               }
             }
@@ -532,7 +592,7 @@ export default {
             for (let d = 0; d < cols[row].length; d++) {
               var pickerDatalem = document.createElement('span')
               pickerDatalem.style.display = 'block'
-              pickerDatalem.innerHTML = cols[row][d].display || ''
+              pickerDatalem.innerHTML = cols[row][d].display || cols[row][d].val || ''
               pickerDatalem.style.position = 'relative'
               pickerDatalem.style.width = '100%'
               pickerDatalem.style.height = colLineHeight
@@ -745,7 +805,7 @@ export default {
         noColsDataTipElem.style.bottom = 0
         noColsDataTipElem.style.left = 0
         noColsDataTipElem.style.right = 0
-        noColsDataTipElem.innerHTML = '请设置clos属性'
+        noColsDataTipElem.innerHTML = '请设置clos属性或type属性'
         noColsDataTipElem.style.textShadow = '2px 1px 18px rgba(0, 0, 0, .8)'
         noColsDataTipElem.style.backgroundColor = 'rgba(173, 173, 173, 0.23)'
         noColsDataTipElem.style.textAlign = 'center'
@@ -886,6 +946,7 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
                   currentCopyElem = null
                 }
                 document.body.removeChild(document.getElementById('console-copy'))
+                return false
               }
               currentCopyElem = this
               currentCopyElem.style.color = '#ffffff'
@@ -977,6 +1038,7 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
                   currentCopyElem = null
                 }
                 document.body.removeChild(document.getElementById('console-copy'))
+                return false
               }
               currentCopyElem = this
               currentCopyElem.style.color = '#ffffff'
@@ -1043,4 +1105,11 @@ function isFunction (obj) {
 function rd (n, m) {
   var c = m - n + 1
   return Math.floor(Math.random() * c + n)
+}
+
+// 判断某年某月有多少天
+function getDaysInMonth (year, month) {
+  month = parseInt(month, 10) + 1
+  var temp = new Date(year, month, 0)
+  return temp.getDate()
 }

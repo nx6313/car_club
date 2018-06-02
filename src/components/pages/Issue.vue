@@ -50,7 +50,12 @@ export default {
               })
               this.$comfun.wxUploadImage(this, localIds[l]).then((data) => {
                 var serverId = data.serverId
-                this.$comfun.saveWxImg(this, serverId)
+                this.$comfun.saveWxImg(this, serverId).then((response) => {
+                  if (response.body.code === '0000' && response.body.success === true) {
+                  } else {
+                    this.$toast('图片保存至服务器失败')
+                  }
+                })
               })
             }
           }

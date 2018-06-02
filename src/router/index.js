@@ -59,7 +59,9 @@ Vue.directive('picker', {
         unitFollow: binding.value.unitFollow,
         unitBg: binding.value.unitBg,
         touchRate: binding.value.touchRate,
-        arg: binding.value.arg
+        arg: binding.value.arg,
+        type: binding.value.type,
+        valRange: binding.value.valRange
       })
     }
   }

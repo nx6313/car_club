@@ -276,6 +276,7 @@ export default {
       saveWxImg: function (context, mediaId) {
         var saveWxImgPromise = new Promise((resolve, reject) => {
           context.$comfun.http_get(context, `${context.$moment.urls.save_wx_image}?mediaId=${mediaId}`).then((response) => {
+            resolve(response)
           }, (response) => {
             reject(response)
           })

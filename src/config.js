@@ -40,6 +40,7 @@ export default {
         province: '',
         city: '',
         country: '',
+        headimgid: '',
         headimgurl: '',
         privilege: [],
         unionid: ''
