@@ -1,3 +1,7 @@
+html {
+    font-size: 16px !important;
+}
+
 body {
     padding: 0;
     margin: 0;
@@ -83,4 +87,18 @@ body {
 .chat-content-wrap>div.chat-item>div.content-wrap>div.chat-content>img {
     width: 100%;
     border-radius: 4px;
+}
+
+/** 其他公共样式 **/
+p.tip-block {
+    background: #bfd2d3;
+    border-left: 4px solid #099494;
+    padding: 4px;
+    padding-left: 8px;
+}
+
+p.tip-round-block {
+    background: #ece3f1;
+    border-radius: 4px;
+    padding: 6px 8px;
 }

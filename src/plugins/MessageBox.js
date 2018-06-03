@@ -318,16 +318,41 @@ export default {
       var arg = params.arg || [] // 额外的变量，将会直接传给选择回掉方法
       var type = params.type || null // 类型，一些常用滚轮格式的简单封装，可以简化掉cols参数
       var valRange = params.valRange || [] // 数值的范围，数组，两个值，第一个值为最小值，第二个值为最大值；特定值：~代表至今
+      var colCallBack = params.colCallBack || [] // 每列移动完后，触发的事件，数组，数组项对应每一列；一般供插件内部使用
       var selectedFn = params.selectedFn || function () {
         if (debug) {
-          console.warn('picker 选择响应事件未指定，请指定参数 selectedFn')
+          console.warn('picker 选择响应事件未指定，如果需要请指定参数 selectedFn')
         }
       } // 响应选择的事件
       var selectedFinishFn = params.selectedFinishFn || function () {
         if (debug) {
-          console.warn('picker 选择完成后响应事件未指定，请指定参数 selectedFinishFn')
+          console.warn('picker 选择完成后响应事件未指定，如果需要请指定参数 selectedFinishFn')
         }
       } // 响应选择的事件
+      var pickerColsDoc = `
+        <p class="tip-block">cols属性用于设置选项列内容。如果设置该参数，则不需要再设置type参数。</p>
+        格式为 [ [ {}, {}, {}, ... ], [], [], ... ]<br><br>
+        {} 中为每一选项列中一个子项的属性json，具体包含：<br>
+        <p class="tip-round-block">val：数据的实际值<br><br>
+        display：数据的显示值，该值未设置时将认为显示值与实际值一致<br><br>
+        unit：数据的单位，设置该值将会在数据滚轮选项后另外添加单位的显示区域，否则只会存在数据的滚轮区域；该属性以第一条数据的单位属性为准，该列中如果其他数据项未设置单位属性，默认按照第一条数据的单位设置<br></p>
+      `
+      var pickerTypeDoc = `
+        <p class="tip-block">type属性是指通过一些特定的值，来进行picker的初始化，主要是为了简化复杂的cols属性的编写。如果设置该参数，则不需要再设置cols参数。</p>
+        <p>type属性值列表如下：（字符串属性，不区分大小写）</p>
+        <ul>
+          <li>yyyy-mm-dd：选择时间格式
+            <p class="tip-round-block">其中，yyyy表示年份的选择，mm表示月份的选择，dd表示日期的选择；可参考的组合有：<br>yyyy-mm-dd、yyyy-mm、mm-dd、yyyy、mm<br><br><span style="color: #f51010; font-size: 0.2rem;">注意：只能出现 - 符号和 yyyy mm dd 这些值</span></p>
+            <p class="tip-round-block">当使用时间选择时，可以配合 valRange 属性（数组格式）使用，指明日期的可选范围，符号 ～ 表示至今</p>
+          </li>
+          <li>sex：选择性别
+            <p class="tip-round-block">输出：女士，对应值0；男士，对应值1</p>
+          </li>
+          <li>constellation：选择星座
+            <p class="tip-round-block">输出：星座字符串，对应值与显示值一致</p>
+          </li>
+        </ul>
+        `
       var pickerShade = document.createElement('div')
       pickerShade.style.position = 'fixed'
       pickerShade.style.width = '100vw'
@@ -336,7 +361,7 @@ export default {
       pickerShade.style.left = 0
       pickerShade.style.transition = 'all 0.3s ease 0s'
       pickerShade.style.opacity = 0
-      pickerShade.style.zIndex = 999999998
+      pickerShade.style.zIndex = 99999998
       pickerShade.style.backgroundColor = shadeBg
       document.body.appendChild(pickerShade)
       setTimeout(() => {
@@ -352,7 +377,7 @@ export default {
       pickerElem.style.transition = 'all 0.4s ease 0s'
       pickerElem.style.transform = 'translateY(110%)'
       pickerElem.style.fontSize = '0.8rem'
-      pickerElem.style.zIndex = 999999999
+      pickerElem.style.zIndex = 99999999
       pickerElem.style.background = background
       pickerElem.style.color = color
       document.body.appendChild(pickerElem)
@@ -379,9 +404,50 @@ export default {
       pickerTitleLeftElem.style.height = '100%'
       pickerTitleLeftElem.style.width = '3rem'
       pickerTitleLeftElem.style.borderRadius = '3rem'
+      if (debug) {
+        pickerTitleLeftElem.classList.add('ripple')
+        pickerTitleLeftElem.style.backgroundImage = 'url(' + require('@/assets/bulb-dark.png') + ')'
+        pickerTitleLeftElem.style.backgroundRepeat = 'no-repeat'
+        pickerTitleLeftElem.style.backgroundSize = '50% 50%'
+        pickerTitleLeftElem.style.backgroundPosition = 'center'
+        pickerTitleLeftElem.onclick = function () {
+          var helpDataArr = [
+            {
+              content: 'cols属性使用说明',
+              title: '属性 cols 说明文档',
+              doc: pickerColsDoc
+            },
+            {
+              content: 'type属性使用说明',
+              title: '属性 type 说明文档',
+              doc: pickerTypeDoc
+            }
+          ]
+          var helpListWrapElem = document.createElement('div')
+          helpListWrapElem.innerHTML = `<p class="tip-block">欢迎阅读 picker 选择器的使用说明<br><br>作者：蜜糖灬小妖</p>`
+          var helpListUlElem = document.createElement('ul')
+          for (let h = 0; h < helpDataArr.length; h++) {
+            var helpItemElem = document.createElement('li')
+            helpItemElem.style.lineHeight = '30px'
+            var helpAElem = document.createElement('a')
+            helpAElem.href = 'javascript:void(0);'
+            helpAElem.innerHTML = helpDataArr[h].content
+            ;(function (target, helpInfo) {
+              target.onclick = function () {
+                showPickerInfoPop(helpInfo.title, helpInfo.doc)
+              }
+            })(helpAElem, helpDataArr[h])
+            helpItemElem.appendChild(helpAElem)
+            helpListUlElem.appendChild(helpItemElem)
+          }
+          helpListWrapElem.appendChild(helpListUlElem)
+          showPickerInfoPop('picker 使用帮助文档', helpListWrapElem, true)
+        }
+      }
       pickerTitleWrapElem.appendChild(pickerTitleLeftElem)
 
       var pickerTitleElem = document.createElement('span')
+      pickerTitleElem.classList.add('picker-title')
       pickerTitleElem.innerHTML = title
       pickerTitleElem.style.color = titleColor
       pickerTitleWrapElem.appendChild(pickerTitleElem)
@@ -397,6 +463,15 @@ export default {
       pickerTitleRightElem.style.backgroundPosition = 'center'
       pickerTitleWrapElem.appendChild(pickerTitleRightElem)
       pickerTitleRightElem.onclick = function () {
+        if (document.getElementById('picker-box').classList.contains('picker-info-pop')) {
+          document.getElementById('picker-box').classList.remove('picker-info-pop')
+          document.getElementById('picker-box').getElementsByClassName('picker-title')[0].innerHTML = title
+          var pickerInfoDocPop = document.getElementById('picker-box').getElementsByClassName('picker-info-doc-pop')[0]
+          if (pickerInfoDocPop) {
+            document.getElementById('picker-box').getElementsByClassName('picker-wheel-wrap')[0].removeChild(pickerInfoDocPop)
+          }
+          return false
+        }
         pickerShade.style.opacity = 0
         pickerElem.style.transform = 'translateY(110%)'
         setTimeout(() => {
@@ -412,6 +487,7 @@ export default {
       pickerElem.appendChild(pickerTitleLineElem)
 
       var pickerWheelWrapElem = document.createElement('div')
+      pickerWheelWrapElem.classList.add('picker-wheel-wrap')
       pickerWheelWrapElem.style.position = 'relative'
       pickerWheelWrapElem.style.height = wheelHeight
       pickerWheelWrapElem.style.overflow = 'hidden'
@@ -420,20 +496,30 @@ export default {
       if (type) {
         var minVal = valRange[0]
         var maxVal = valRange[1]
-        if (type.toLowerCase() === 'yyyy-mm-dd') {
-          var yearMin = 1900
-          var yearMax = -1
-          if (minVal !== '~') {
+        if (type.toLowerCase() === 'yyyy-mm-dd' || type.toLowerCase() === 'yyyy-mm') {
+          let yearMin = 1900
+          let yearMax = Number(new Date().getFullYear())
+          if (minVal && minVal !== '~') {
             yearMin = Number(minVal.match(/[\d]+/g)[0])
           } else {
             yearMin = Number(new Date().getFullYear())
           }
-          if (maxVal !== '~') {
+          if (maxVal && maxVal !== '~') {
             yearMax = Number(maxVal.match(/[\d]+/g)[0])
           } else {
             yearMax = Number(new Date().getFullYear())
           }
-          var yearArr = []
+          let monthMax = 12
+          if (maxVal && maxVal !== '~') {
+            monthMax = 12
+          } else {
+            if (value && value.length > 0 && Number(value[0]) === yearMax) {
+              monthMax = Number(new Date().getMonth()) + 1
+            } else {
+              monthMax = 12
+            }
+          }
+          let yearArr = []
           for (let y = yearMin; y <= yearMax; y++) {
             yearArr.push({
               val: y,
@@ -441,28 +527,175 @@ export default {
             })
           }
           cols[0] = yearArr
-          var monthArr = []
-          for (let m = 1; m <= 12; m++) {
+          colCallBack[0] = function (pickerSelected, rowIndex) {
+            if (maxVal && maxVal === '~') {
+              let changeMonthMax = 12
+              let changeDayMax = getDaysInMonth(Number(pickerSelected[0].val), Number(pickerSelected[1].val))
+              if (Number(pickerSelected[0].val) === Number(new Date().getFullYear())) {
+                changeMonthMax = Number(new Date().getMonth()) + 1
+                if (Number(pickerSelected[1].val) === Number(new Date().getMonth()) + 1) {
+                  changeDayMax = Number(new Date().getDate())
+                }
+              }
+              let changeMonthData = []
+              for (let m = 1; m <= changeMonthMax; m++) {
+                changeMonthData.push({
+                  val: m,
+                  unit: '月'
+                })
+              }
+              resetPickerItem(1, changeMonthData, colLineHeight, lineSelectedOffsetTop, selected, arg, selectedFn)
+              if (type.toLowerCase() === 'yyyy-mm-dd') {
+                let changeDayData = []
+                for (let d = 1; d <= changeDayMax; d++) {
+                  changeDayData.push({
+                    val: d,
+                    unit: '日'
+                  })
+                }
+                resetPickerItem(2, changeDayData, colLineHeight, lineSelectedOffsetTop, selected, arg, selectedFn)
+              }
+            }
+          }
+          let monthArr = []
+          for (let m = 1; m <= monthMax; m++) {
             monthArr.push({
               val: m,
               unit: '月'
             })
           }
           cols[1] = monthArr
-          var days = 0
-          if (value && value.length > 0) {
-            days = getDaysInMonth(Number(value[0]), Number(value[1]))
-          } else {
-            days = getDaysInMonth(Number(cols[0][0].val), Number(cols[1][0].val))
+          if (type.toLowerCase() === 'yyyy-mm-dd') {
+            colCallBack[1] = function (pickerSelected, rowIndex) {
+              if (!maxVal || (maxVal && maxVal === '~')) {
+                let changeDayMax = getDaysInMonth(Number(pickerSelected[0].val), Number(pickerSelected[1].val))
+                if (maxVal && maxVal === '~' && Number(pickerSelected[0].val) === Number(new Date().getFullYear())) {
+                  if (Number(pickerSelected[1].val) === Number(new Date().getMonth()) + 1) {
+                    changeDayMax = Number(new Date().getDate())
+                  }
+                }
+                let changeDayData = []
+                for (let d = 1; d <= changeDayMax; d++) {
+                  changeDayData.push({
+                    val: d,
+                    unit: '日'
+                  })
+                }
+                resetPickerItem(2, changeDayData, colLineHeight, lineSelectedOffsetTop, selected, arg, selectedFn)
+              }
+            }
           }
-          var dayArr = []
-          for (let d = 1; d <= days; d++) {
+          if (type.toLowerCase() === 'yyyy-mm-dd') {
+            let dayMax = -1
+            if (value && value.length > 0) {
+              dayMax = getDaysInMonth(Number(value[0]), Number(value[1]))
+            } else {
+              dayMax = getDaysInMonth(Number(cols[0][0].val), Number(cols[1][0].val))
+            }
+            if (maxVal && maxVal === '~') {
+              if (value && value.length > 0 && Number(value[0]) === Number(new Date().getFullYear())) {
+                if (Number(value[1]) === Number(new Date().getMonth()) + 1) {
+                  dayMax = Number(new Date().getDate())
+                }
+              }
+            }
+            let dayArr = []
+            for (let d = 1; d <= dayMax; d++) {
+              dayArr.push({
+                val: d,
+                unit: '日'
+              })
+            }
+            cols[2] = dayArr
+          }
+        } else if (type.toLowerCase() === 'mm-dd') {
+          let monthMax = 12
+          if (maxVal !== '~') {
+            monthMax = 12
+          } else {
+            monthMax = Number(new Date().getMonth()) + 1
+          }
+          let monthArr = []
+          for (let m = 1; m <= monthMax; m++) {
+            monthArr.push({
+              val: m,
+              unit: '月'
+            })
+          }
+          cols[0] = monthArr
+          colCallBack[0] = function (pickerSelected, rowIndex) {
+            if (!maxVal || (maxVal && maxVal === '~')) {
+              let changeDayMax = getDaysInMonth(Number(new Date().getFullYear()), Number(pickerSelected[0].val))
+              if (maxVal && maxVal === '~' && Number(pickerSelected[0].val) === Number(new Date().getMonth()) + 1) {
+                changeDayMax = Number(new Date().getDate())
+              }
+              let changeDayData = []
+              for (let d = 1; d <= changeDayMax; d++) {
+                changeDayData.push({
+                  val: d,
+                  unit: '日'
+                })
+              }
+              resetPickerItem(1, changeDayData, colLineHeight, lineSelectedOffsetTop, selected, arg, selectedFn)
+            }
+          }
+          let dayMax = -1
+          if (value && value.length > 0) {
+            dayMax = getDaysInMonth(Number(new Date().getFullYear()), Number(value[0]))
+          } else {
+            dayMax = getDaysInMonth(Number(new Date().getFullYear()), Number(cols[0][0].val))
+          }
+          if (maxVal && maxVal === '~') {
+            if (value && value.length > 0) {
+              if (Number(value[0]) === Number(new Date().getMonth()) + 1) {
+                dayMax = Number(new Date().getDate())
+              }
+            }
+          }
+          let dayArr = []
+          for (let d = 1; d <= dayMax; d++) {
             dayArr.push({
               val: d,
               unit: '日'
             })
           }
-          cols[2] = dayArr
+          cols[1] = dayArr
+        } else if (type.toLowerCase() === 'yyyy') {
+          let yearMin = 1980
+          let yearMax = Number(new Date().getFullYear())
+          if (minVal && minVal !== '~') {
+            yearMin = Number(minVal)
+          }
+          if (maxVal && maxVal !== '~') {
+            yearMax = Number(maxVal)
+          }
+          let yearArr = []
+          for (let y = yearMin; y <= yearMax; y++) {
+            yearArr.push({
+              val: y,
+              unit: '年'
+            })
+          }
+          cols[0] = yearArr
+        } else if (type.toLowerCase() === 'mm') {
+          let monthMin = 1
+          let monthMax = 12
+          if (minVal && minVal !== '~') {
+            monthMin = Number(minVal)
+          }
+          if (maxVal && maxVal !== '~') {
+            monthMax = Number(maxVal) > 12 ? 12 : Number(maxVal)
+          } else if (maxVal && maxVal === '~') {
+            monthMax = Number(new Date().getMonth()) + 1
+          }
+          let monthArr = []
+          for (let m = monthMin; m <= monthMax; m++) {
+            monthArr.push({
+              val: m,
+              unit: '月份'
+            })
+          }
+          cols[0] = monthArr
         } else if (type.toLowerCase() === 'sex') {
           cols[0] = [
             {
@@ -472,6 +705,45 @@ export default {
             {
               val: '1',
               display: '男士'
+            }
+          ]
+        } else if (type.toLowerCase() === 'constellation') {
+          cols[0] = [
+            {
+              val: '白羊座'
+            },
+            {
+              val: '金牛座'
+            },
+            {
+              val: '双子座'
+            },
+            {
+              val: '巨蟹座'
+            },
+            {
+              val: '狮子座'
+            },
+            {
+              val: '处女座'
+            },
+            {
+              val: '天秤座'
+            },
+            {
+              val: '天蝎座'
+            },
+            {
+              val: '射手座'
+            },
+            {
+              val: '摩羯座'
+            },
+            {
+              val: '水瓶座'
+            },
+            {
+              val: '双鱼座'
             }
           ]
         }
@@ -530,7 +802,7 @@ export default {
         }
         var unitColumnWidth = pickerWheelWrapElem.offsetWidth * 0.14
         var dataColumnWidth = (pickerWheelWrapElem.offsetWidth - unitColumn * unitColumnWidth - (dataColumn + unitColumn) * 1) / dataColumn
-        var currentOffsetLeft = 0
+        var currentOffsetLeft = 1
         for (let row = 0; row < cols.length; row++) {
           if (cols[row] && isArr(cols[row]) && cols[row].length > 0) {
             var initSelectedItemIndex = 0
@@ -542,6 +814,7 @@ export default {
             var pickerUnitWrapElem = null
             var pickerColmunWrapElem = document.createElement('div')
             pickerColmunWrapElem.classList.add('picker-data-wheel')
+            pickerColmunWrapElem.classList.add('data-wheel-' + row)
             pickerColmunWrapElem.style.width = dataColumnWidth + 'px'
             pickerColmunWrapElem.style.height = '100%'
             pickerColmunWrapElem.style.position = 'absolute'
@@ -551,9 +824,10 @@ export default {
             pickerColmunWrapElem.style.backgroundColor = wheelBg
             if (row > 0) {
               if (merge === true && pickerWheelWrapElem.lastChild.classList.contains('picker-data-wheel')) {
-                pickerColmunWrapElem.style.borderLeft = '1px solid rgba(255, 255, 255, 0)'
+                pickerColmunWrapElem.style.borderLeft = 'none'
               } else {
                 pickerColmunWrapElem.style.borderLeft = '1px solid ' + colLineColor
+                currentOffsetLeft += 1
               }
             }
             pickerWheelWrapElem.appendChild(pickerColmunWrapElem)
@@ -583,7 +857,9 @@ export default {
                 display: cols[row][index].display || '',
                 unit: cols[row][index].unit || null
               }
-              selectedFn(selected, arg)
+              if (row === cols.length - 1) {
+                selectedFn(selected, arg)
+              }
               setTimeout(() => {
                 elem.style.transform = `translateY(${(pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx - index * colLineHeightToPx + 1}px)`
               }, 200)
@@ -606,6 +882,7 @@ export default {
             if (cols[row][0].unit) {
               pickerUnitWrapElem = document.createElement('div')
               pickerUnitWrapElem.classList.add('picker-unit-wheel')
+              pickerUnitWrapElem.classList.add('unit-wheel-' + row)
               pickerUnitWrapElem.style.width = unitColumnWidth + 'px'
               pickerUnitWrapElem.style.height = '100%'
               pickerUnitWrapElem.style.position = 'absolute'
@@ -758,6 +1035,9 @@ export default {
                 pickerWheelTouchYStart = -1
                 currentTranslateY = -1
                 translateToY = -1
+                if (colCallBack && isFunction(colCallBack[row])) {
+                  colCallBack[row](selected, row)
+                }
               }, false)
               pickerDataWheelWrapElem.addEventListener('touchcancle', function () {
                 this.style.transitionDuration = '0.3s'
@@ -765,34 +1045,73 @@ export default {
                 var maxY = (pickerWheelWrapElem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx
                 if (translateToY < minY + colLineHeightToPx) {
                   // 选中最后一项
+                  let selectedItemUnit = rowData[rowData.length - 1].unit || rowData[0].unit || null
                   this.style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
-                  if (pickerUnitWheelWrapElem) {
-                    pickerUnitWheelWrapElem.style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
+                  if ((unitFollow === false && selectedItemUnit && selectedItemUnit !== selected[row].unit) || unitFollow === true) {
+                    if (pickerUnitWheelWrapElem) {
+                      pickerUnitWheelWrapElem.style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
+                    }
                   }
+                  selected[row] = {
+                    val: rowData[rowData.length - 1].val || '',
+                    display: rowData[rowData.length - 1].display || '',
+                    unit: rowData[rowData.length - 1].unit || null
+                  }
+                  selectedFn(selected, arg)
                 } else if (translateToY > maxY) {
                   // 选中最前一项
+                  let selectedItemUnit = rowData[0].unit || null
                   this.style.transform = `translateY(${maxY + 1}px)`
-                  if (pickerUnitWheelWrapElem) {
-                    pickerUnitWheelWrapElem.style.transform = `translateY(${maxY + 1}px)`
+                  if ((unitFollow === false && selectedItemUnit && selectedItemUnit !== selected[row].unit) || unitFollow === true) {
+                    if (pickerUnitWheelWrapElem) {
+                      pickerUnitWheelWrapElem.style.transform = `translateY(${maxY + 1}px)`
+                    }
                   }
+                  selected[row] = {
+                    val: rowData[0].val || '',
+                    display: rowData[0].display || '',
+                    unit: rowData[0].unit || null
+                  }
+                  selectedFn(selected, arg)
                 } else {
                   var overItemCount = Math.floor(Math.abs((translateToY - maxY) / colLineHeightToPx))
                   var bryond = Math.abs((translateToY - maxY) % colLineHeightToPx)
                   if (bryond < colLineHeightToPx / 2) {
+                    let selectedItemUnit = rowData[overItemCount].unit || rowData[0].unit || null
                     this.style.transform = `translateY(${maxY - overItemCount * colLineHeightToPx + 1}px)`
-                    if (pickerUnitWheelWrapElem) {
-                      pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - overItemCount * colLineHeightToPx + 1}px)`
+                    if ((unitFollow === false && selectedItemUnit && selectedItemUnit !== selected[row].unit) || unitFollow === true) {
+                      if (pickerUnitWheelWrapElem) {
+                        pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - overItemCount * colLineHeightToPx + 1}px)`
+                      }
                     }
+                    selected[row] = {
+                      val: rowData[overItemCount].val || '',
+                      display: rowData[overItemCount].display || '',
+                      unit: rowData[overItemCount].unit || null
+                    }
+                    selectedFn(selected, arg)
                   } else {
+                    let selectedItemUnit = rowData[overItemCount + 1].unit || rowData[0].unit || null
                     this.style.transform = `translateY(${maxY - (overItemCount + 1) * colLineHeightToPx + 1}px)`
-                    if (pickerUnitWheelWrapElem) {
-                      pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - (overItemCount + 1) * colLineHeightToPx + 1}px)`
+                    if ((unitFollow === false && selectedItemUnit && selectedItemUnit !== selected[row].unit) || unitFollow === true) {
+                      if (pickerUnitWheelWrapElem) {
+                        pickerUnitWheelWrapElem.style.transform = `translateY(${maxY - (overItemCount + 1) * colLineHeightToPx + 1}px)`
+                      }
                     }
+                    selected[row] = {
+                      val: rowData[overItemCount + 1].val || '',
+                      display: rowData[overItemCount + 1].display || '',
+                      unit: rowData[overItemCount + 1].unit || null
+                    }
+                    selectedFn(selected, arg)
                   }
                 }
                 pickerWheelTouchYStart = -1
                 currentTranslateY = -1
                 translateToY = -1
+                if (colCallBack && isFunction(colCallBack[row])) {
+                  colCallBack[row](selected, row)
+                }
               }, false)
             })(pickerDataWheelWrapElem, pickerUnitWheelWrapElem, cols[row], row)
           }
@@ -805,12 +1124,110 @@ export default {
         noColsDataTipElem.style.bottom = 0
         noColsDataTipElem.style.left = 0
         noColsDataTipElem.style.right = 0
-        noColsDataTipElem.innerHTML = '请设置clos属性或type属性'
-        noColsDataTipElem.style.textShadow = '2px 1px 18px rgba(0, 0, 0, .8)'
+        noColsDataTipElem.style.textShadow = '2px 1px 18px rgba(0, 0, 0, .6)'
         noColsDataTipElem.style.backgroundColor = 'rgba(173, 173, 173, 0.23)'
         noColsDataTipElem.style.textAlign = 'center'
         noColsDataTipElem.style.lineHeight = pickerWheelWrapElem.offsetHeight + 'px'
         pickerWheelWrapElem.appendChild(noColsDataTipElem)
+        var pickerNoColTipSpan = document.createElement('span')
+        pickerNoColTipSpan.innerHTML = '请设置clos属性或'
+        var pickerNoColTipA = document.createElement('a')
+        pickerNoColTipA.title = '点击查看type属性列表'
+        pickerNoColTipA.innerHTML = 'type属性'
+        pickerNoColTipA.href = 'javascript:void(0);'
+        pickerNoColTipA.onclick = function () {
+          showPickerInfoPop('属性 type 说明文档', pickerTypeDoc)
+        }
+        pickerNoColTipSpan.appendChild(pickerNoColTipA)
+        noColsDataTipElem.appendChild(pickerNoColTipSpan)
+      }
+    }
+  }
+}
+
+// 显示picker中的type属性列表说明区域
+function showPickerInfoPop (title, contentHtml, isNode) {
+  var curPickerTipElem = document.getElementById('picker-box').getElementsByClassName('picker-wheel-wrap')[0].getElementsByClassName('picker-info-doc-pop')[0]
+  if (curPickerTipElem) {
+    document.getElementById('picker-box').getElementsByClassName('picker-wheel-wrap')[0].removeChild(curPickerTipElem)
+  }
+  if (title) {
+    document.getElementById('picker-box').classList.add('picker-info-pop')
+    document.getElementById('picker-box').getElementsByClassName('picker-title')[0].innerHTML = title
+  }
+  var pickerTypeInfoWrap = document.createElement('div')
+  pickerTypeInfoWrap.classList.add('picker-info-doc-pop')
+  pickerTypeInfoWrap.style.position = 'absolute'
+  pickerTypeInfoWrap.style.top = 0
+  pickerTypeInfoWrap.style.left = 0
+  pickerTypeInfoWrap.style.width = 'calc(100% - 16px)'
+  pickerTypeInfoWrap.style.height = 'calc(100% - 8px)'
+  pickerTypeInfoWrap.style.backgroundColor = 'rgba(255, 255, 255, 1)'
+  pickerTypeInfoWrap.style.zIndex = 99999
+  pickerTypeInfoWrap.style.padding = '4px 8px'
+  pickerTypeInfoWrap.style.overflowX = 'hidden'
+  pickerTypeInfoWrap.style.overflowY = 'auto'
+  if (isNode) {
+    pickerTypeInfoWrap.appendChild(contentHtml)
+  } else {
+    pickerTypeInfoWrap.innerHTML = contentHtml
+  }
+  document.getElementById('picker-box').getElementsByClassName('picker-wheel-wrap')[0].appendChild(pickerTypeInfoWrap)
+}
+
+// 重置picker滚轮列内容
+function resetPickerItem (pickerItemIndex, rowData, colLineHeight, lineSelectedOffsetTop, selected, arg, selectedFn) {
+  var pickerDataItem = document.getElementById('picker-box').getElementsByClassName('data-wheel-' + pickerItemIndex)[0]
+  var pickerUnitItem = document.getElementById('picker-box').getElementsByClassName('unit-wheel-' + pickerItemIndex)[0]
+  if (rowData) {
+    pickerDataItem.childNodes[0].innerHTML = ''
+    for (let d = 0; d < rowData.length; d++) {
+      var pickerDatalem = document.createElement('span')
+      pickerDatalem.style.display = 'block'
+      pickerDatalem.innerHTML = rowData[d].display || rowData[d].val || ''
+      pickerDatalem.style.position = 'relative'
+      pickerDatalem.style.width = '100%'
+      pickerDatalem.style.height = colLineHeight
+      pickerDatalem.style.lineHeight = colLineHeight
+      pickerDatalem.style.textAlign = 'center'
+      pickerDatalem.setAttribute('picker-item-real-val', rowData[d].val || '')
+      pickerDataItem.childNodes[0].appendChild(pickerDatalem)
+    }
+    var colLineHeightToPx = 0
+    if (colLineHeight.indexOf('rem') > 0) {
+      colLineHeightToPx = Number(colLineHeight.match(/[-?\d.?]+/g)[0]) * 16
+    } else {
+      colLineHeightToPx = Number(colLineHeight.match(/[-?\d.?]+/g)[0])
+    }
+    var lineSelectedOffsetTopToPx = 0
+    if (lineSelectedOffsetTop.indexOf('rem') > 0) {
+      lineSelectedOffsetTopToPx = Number(lineSelectedOffsetTop.match(/[-?\d.?]+/g)[0]) * 16
+    } else {
+      lineSelectedOffsetTopToPx = Number(lineSelectedOffsetTop.match(/[-?\d.?]+/g)[0])
+    }
+    var minY = (pickerDataItem.offsetHeight - colLineHeightToPx) / 2 - lineSelectedOffsetTopToPx - pickerDataItem.childNodes[0].offsetHeight
+    var curTranY = Number(pickerDataItem.childNodes[0].style.transform.match(/[-?\d]+/g)[0])
+    if (Math.floor(minY + colLineHeightToPx + 1) > curTranY) {
+      pickerDataItem.childNodes[0].style.transform = `translateY(${minY + colLineHeightToPx + 1}px)`
+      selected[pickerItemIndex] = {
+        val: rowData[rowData.length - 1].val || '',
+        display: rowData[rowData.length - 1].display || '',
+        unit: rowData[rowData.length - 1].unit || null
+      }
+      selectedFn(selected, arg)
+    }
+    if (pickerUnitItem && rowData[0].unit) {
+      pickerUnitItem.childNodes[2].innerHTML = ''
+      for (let u = 0; u < rowData.length; u++) {
+        var pickerUnitElem = document.createElement('span')
+        pickerUnitElem.style.display = 'block'
+        pickerUnitElem.innerHTML = rowData[u].unit || rowData[0].unit
+        pickerUnitElem.style.position = 'relative'
+        pickerUnitElem.style.width = '100%'
+        pickerUnitElem.style.height = colLineHeight
+        pickerUnitElem.style.lineHeight = colLineHeight
+        pickerUnitElem.style.textAlign = 'center'
+        pickerUnitItem.childNodes[2].appendChild(pickerUnitElem)
       }
     }
   }
@@ -1109,7 +1526,7 @@ function rd (n, m) {
 
 // 判断某年某月有多少天
 function getDaysInMonth (year, month) {
-  month = parseInt(month, 10) + 1
+  month = parseInt(month, 10)
   var temp = new Date(year, month, 0)
   return temp.getDate()
 }

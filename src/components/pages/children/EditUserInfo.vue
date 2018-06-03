@@ -23,7 +23,7 @@
         <span>座驾</span>
         <input type="text" placeholder="请输入座驾" v-model="userInfo.carType">
       </div>
-      <div class="edit-item">
+      <div class="edit-item" v-picker="pickerConstellation">
         <span>星座</span>
         <input type="text" placeholder="请输入星座" v-model="userInfo.constellation">
       </div>
@@ -63,8 +63,14 @@ export default {
         arg: 'birthday',
         selectedFn: this.pickSelect,
         type: 'yyyy-mm-dd',
-        valRange: [ '1980-01-01', '~' ],
-        value: [ '1993', '11', '13' ]
+        valRange: [ '1980-01-01', '~' ]
+      },
+      pickerConstellation: {
+        context: this,
+        title: '请选择星座',
+        arg: 'constellation',
+        selectedFn: this.pickSelect,
+        type: 'constellation'
       }
     }
   },
@@ -83,6 +89,7 @@ export default {
       nikeName: this.$moment.wxUserInfo.nickname,
       sexVal: this.$moment.wxUserInfo.sex,
       sex: this.$moment.wxUserInfo.sex === '0' ? '女士' : (this.$moment.wxUserInfo.sex === '1' ? '男士' : ''),
+      birthdayVal: [],
       birthday: '',
       carType: '',
       constellation: '',
@@ -91,6 +98,8 @@ export default {
       intro: ''
     }
     this.pickerSex.value = [ this.userInfo.sexVal ]
+    this.pickerBirthday.value = this.userInfo.birthdayVal
+    this.pickerConstellation.value = this.userInfo.constellation
   },
   methods: {
     changeUserHead () {
@@ -118,6 +127,13 @@ export default {
         this.userInfo.sexVal = selected[0].val
         this.userInfo.sex = selected[0].display
         this.pickerSex.value = [ this.userInfo.sexVal ]
+      } else if (arg === 'birthday') {
+        this.userInfo.birthdayVal = [ selected[0].val, selected[1].val, selected[2].val ]
+        this.userInfo.birthday = selected[0].val + selected[0].unit + selected[1].val + selected[1].unit + selected[2].val + selected[2].unit
+        this.pickerBirthday.value = this.userInfo.birthdayVal
+      } else if (arg === 'constellation') {
+        this.userInfo.constellation = selected[0].val
+        this.pickerConstellation.value = [ this.userInfo.constellation ]
       }
     }
   }
