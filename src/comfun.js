@@ -80,6 +80,7 @@ export default {
             }
             context.$http.post(callUrl, formData, {
               'headers': {
+                'Content-Type': 'multipart/form-data',
                 'Access-Control-Allow-Origin': '*'
               },
               progress (event) {

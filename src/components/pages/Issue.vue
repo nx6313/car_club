@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="action-wrap">
-      <textarea placeholder="请输入发布内容" ref="issue-input-area" v-model="issueContentInput"/>
+      <div id="edit" ref="edit" class="placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入发布内容</div>
       <div class="word-count">
         <span>{{issueContentInput.length}}</span>
         <span>/</span>
@@ -12,17 +12,18 @@
           <span class="btn-delete ripple" v-if="imgVideo.type !== 'add-btn'" @click.stop="deleteImgVideo(index)"></span>
         </div>
       </transition-group>
+      <div id="face-wrap" ref="face-wrap"></div>
       <div class="accessory-wrap">
-        <span class="ripple"></span>
-        <span class="ripple"></span>
+        <span class="ripple" @click="selectFace"></span>
+        <span class="ripple" @click="aiteFriend"></span>
         <span class="ripple photo" @click="showVideoSelect" v-show="imgVideos.length === 1"></span>
       </div>
       <div class="issue-video-input-wrap">
-        <input id="issue-video-by-camcorder" ref="issue-video-by-camcorder" type="file" accept="video/*" capture="camcorder" @input="getVideo('camcorder', true)">
-        <input id="issue-video-by-photos" ref="issue-video-by-photos" type="file" accept="video/*" @input="getVideo('photos', true)">
+        <input v-if="clearShowCamcorder" id="issue-video-by-camcorder" ref="issue-video-by-camcorder" type="file" accept="video/*" capture="camcorder" @change="getVideo('camcorder', true)">
+        <input v-if="clearShowPhotos" id="issue-video-by-photos" ref="issue-video-by-photos" type="file" accept="video/*" @change="getVideo('photos', true)">
       </div>
     </div>
-    <div class="btn-issue-wrap">发布</div>
+    <div class="btn-issue-wrap" @click="sendIssue">发布</div>
   </div>
 </template>
 
@@ -39,11 +40,37 @@ export default {
         }
       ],
       maxWordNum: 600,
-      imgVideoTsName: 'issue-video'
+      imgVideoTsName: 'issue-video',
+      clearShowCamcorder: true,
+      clearShowPhotos: true
     }
   },
   methods: {
+    focusInput () {
+      this.$face_close()
+      if (event.target.classList.contains('placeholder')) {
+        event.target.classList.remove('placeholder')
+        event.target.innerHTML = ''
+      }
+    },
+    blurInput () {
+      this.$face_close()
+      if (!event.target.classList.contains('placeholder') && !event.target.classList.contains('inputing')) {
+        event.target.classList.add('placeholder')
+        event.target.innerHTML = '请输入发布内容'
+      }
+    },
+    contentInput () {
+      this.$face_close()
+      this.issueContentInput = event.target.innerText
+      if (event.target.innerHTML.length > 0) {
+        event.target.classList.add('inputing')
+      } else {
+        event.target.classList.remove('inputing')
+      }
+    },
     clickImgVideo (imgVideo) {
+      this.$face_close()
       if (imgVideo.type === 'add-btn') {
         this.$comfun.wxChooseImage(this, this.maxImgNum - this.imgVideos.length + 1).then((data) => {
           var localIds = data.localIds
@@ -84,19 +111,22 @@ export default {
               this.getVideo('photos')
             }
           }
-        ]
+        ],
+        showAfterFn: () => {
+          this.clearShowCamcorder = true
+          this.clearShowPhotos = true
+          this.$face_close()
+        }
       })
     },
     getVideo (type, finish) {
       if (type === 'camcorder') {
         if (finish === true) {
-          alert(1)
           let file = event.target.files[0]
+          this.clearShowCamcorder = false
           this.$comfun.http_file(this, this.$moment.urls.upload_video, 'uploadFile', file).then(response => {
-            event.target.value = ''
             this.$comfun.console(this, '视频上传结束', response)
           }, error => {
-            event.target.value = ''
             this.$comfun.console(this, '视频上传结束，出现错误', error)
           })
         } else {
@@ -104,25 +134,36 @@ export default {
         }
       } else if (type === 'photos') {
         if (finish === true) {
-          alert(2)
           let file = event.target.files[0]
+          this.clearShowPhotos = false
           this.$comfun.http_file(this, this.$moment.urls.upload_video, 'uploadFile', file).then(response => {
-            event.target.value = ''
             this.$comfun.console(this, '视频上传结束', response)
           }, error => {
-            event.target.value = ''
             this.$comfun.console(this, '视频上传结束，出现错误', error)
           })
         } else {
           this.$refs['issue-video-by-photos'].click()
         }
       }
+    },
+    selectFace () {
+      this.$face(this, {
+        rootElem: this.$refs['face-wrap']
+      })
+    },
+    aiteFriend () {
+      this.$face_close()
+    },
+    sendIssue () {
+      this.$face_close()
     }
   },
   watch: {
     issueContentInput (newValue, oldValue) {
       if (newValue.length > this.maxWordNum) {
-        this.issueContentInput = newValue.substr(0, this.maxWordNum)
+        this.$toast('您输入的内容太多了，删一点吧')
+        // this.issueContentInput = newValue.substr(0, this.maxWordNum)
+        // this.$refs.edit.innerHTML = this.issueContentInput
       }
     },
     imgVideos (newValue, oldValue) {
@@ -166,30 +207,24 @@ export default {
   font-size: 0.9rem;
 }
 
-.action-wrap>textarea {
+#edit {
   display: block;
   width: calc(100% - 16px - 16px);
   height: 8rem;
+  line-height: 1.2rem;
   border: none;
   outline: none;
   padding: 14px 16px 8px 16px;
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 0.9rem;
   resize: none;
   background: transparent;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
-.action-wrap>textarea::-webkit-input-placeholder { /* WebKit browsers */
-  color: #685d82;
-}
-.action-wrap>textarea:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-  color: #685d82;
-}
-.action-wrap>textarea::-moz-placeholder { /* Mozilla Firefox 19+ */
-  color: #685d82;
-}
-.action-wrap>textarea:-ms-input-placeholder { /* Internet Explorer 10+ */
-  color: #685d82;
+.placeholder {
+  color: #685d82 !important;
 }
 
 .action-wrap>div.word-count {
@@ -250,6 +285,11 @@ export default {
   background-size: auto 50%;
   background-image: url('./../../assets/camera.png');
   transition: all 0s;
+}
+
+#face-wrap {
+  background: #443763;
+  font-size: 0;
 }
 
 .action-wrap>div.accessory-wrap {

@@ -133,6 +133,7 @@ export default {
       }
       var params = option || {}
       var items = params.items || []
+      var showAfterFn = params.showAfterFn || function () {}
       var background = params.background || 'rgba(255, 255, 255, 1)'
       var color = params.color || 'rgba(58, 58, 58, 1)'
       var selectShadeElem = document.createElement('div')
@@ -206,6 +207,9 @@ export default {
       document.body.appendChild(selectElem)
       selectElem.style.top = `calc(50% - ${selectElem.clientHeight / 2}px - 20px)`
       selectElem.style.left = `calc(50% - ${selectElem.clientWidth / 2}px)`
+      if (showAfterFn && isFunction(showAfterFn)) {
+        showAfterFn()
+      }
       setTimeout(() => {
         selectElem.style.opacity = 1
       }, 10)
@@ -247,6 +251,102 @@ export default {
         return true
       }
       return false
+    }
+
+    // 表情选择弹出层
+    Vue.prototype.$face = function (context, option) {
+      if (document.getElementById('face-message-box')) {
+        context.$face_close()
+        return false
+      }
+      var params = option || {}
+      var delay = params.delay || 10
+      var rootElem = params.rootElem || document.body
+      var wrapPosition = rootElem.contains(document.body) ? 'absolute' : 'relative'
+      if (!rootElem.contains(document.body)) {
+        rootElem.style.position = 'relative'
+      }
+      // var tabBg = params.tabBg || 'rgba(255, 255, 255, 0)'
+      var background = params.background || 'rgba(255, 255, 255, 0)'
+      var color = params.color || 'rgba(58, 58, 58, 1)'
+      var width = params.width || '100vw'
+      setTimeout(() => {
+        if (rootElem.contains(document.body)) {
+          var faceShadeElem = document.createElement('div')
+          faceShadeElem.id = 'face-message-box-shade'
+          faceShadeElem.style.position = 'fixed'
+          faceShadeElem.style.width = '100vw'
+          faceShadeElem.style.height = '100vh'
+          faceShadeElem.style.top = 0
+          faceShadeElem.style.left = 0
+          faceShadeElem.style.transition = 'opacity 0.3s ease 0s'
+          faceShadeElem.style.opacity = 0
+          faceShadeElem.style.zIndex = 99999998
+          faceShadeElem.style.backgroundColor = 'rgba(0, 0, 0, 0)'
+          rootElem.appendChild(faceShadeElem)
+          faceShadeElem.onclick = function () {
+            rootElem.removeChild(faceShadeElem)
+            rootElem.removeChild(document.getElementById('face-message-box'))
+          }
+          setTimeout(() => {
+            faceShadeElem.style.opacity = 1
+          }, 10)
+        }
+        var faceElem = document.createElement('div')
+        faceElem.id = 'face-message-box'
+        faceElem.style.position = wrapPosition
+        faceElem.style.left = '50%'
+        faceElem.style.minWidth = width
+        faceElem.style.maxWidth = width
+        faceElem.style.whiteSpace = 'nowrap'
+        faceElem.style.display = 'inline-block'
+        if (rootElem.contains(document.body)) {
+          faceElem.style.opacity = 0
+          faceElem.style.height = '40vw'
+          faceElem.style.transition = 'opacity 0.5s ease 0s'
+        } else {
+          faceElem.style.opacity = 1
+          faceElem.style.height = 0
+          faceElem.style.transition = 'height 0.5s ease 0s'
+        }
+        faceElem.style.fontSize = '0.8rem'
+        faceElem.style.borderRadius = '1px'
+        faceElem.style.zIndex = 99999999
+        faceElem.style.background = background
+        faceElem.style.color = color
+        faceElem.style.overflow = 'hidden'
+        rootElem.appendChild(faceElem)
+        if (rootElem.contains(document.body)) {
+          faceElem.style.top = `calc(50% - ${faceElem.clientHeight / 2}px - 20px)`
+        }
+        faceElem.style.left = `calc(50% - ${faceElem.clientWidth / 2}px)`
+        setTimeout(() => {
+          if (rootElem.contains(document.body)) {
+            faceElem.style.opacity = 1
+          } else {
+            faceElem.style.height = '40vw'
+          }
+        }, 10)
+        var faceTabsWrapElem = document.createElement('div')
+        faceTabsWrapElem.style.position = 'relative'
+        faceElem.appendChild(faceTabsWrapElem)
+      }, delay)
+    }
+
+    // 关闭表情选择弹出层
+    Vue.prototype.$face_close = function () {
+      var facePop = document.getElementById('face-message-box')
+      if (facePop) {
+        if (facePop.parentElement.contains(document.body)) {
+          document.body.removeChild(document.getElementById('face-message-box-shade'))
+          document.body.removeChild(facePop)
+        } else {
+          facePop.style.height = 0
+          setTimeout(() => {
+            facePop.parentElement.removeChild(facePop)
+          }, 504)
+        }
+      }
     }
 
     Vue.prototype.$consolePopWindow = function (context) {
