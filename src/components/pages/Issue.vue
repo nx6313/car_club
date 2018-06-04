@@ -15,6 +15,11 @@
       <div class="accessory-wrap">
         <span class="ripple"></span>
         <span class="ripple"></span>
+        <span class="ripple photo" @click="showVideoSelect" v-show="imgVideos.length === 1"></span>
+      </div>
+      <div class="issue-video-input-wrap">
+        <input id="issue-video-by-camcorder" ref="issue-video-by-camcorder" type="file" accept="video/*" capture="camcorder" @input="getVideo('camcorder', true)">
+        <input id="issue-video-by-photos" ref="issue-video-by-photos" type="file" accept="video/*" @input="getVideo('photos', true)">
       </div>
     </div>
     <div class="btn-issue-wrap">发布</div>
@@ -64,6 +69,54 @@ export default {
     },
     deleteImgVideo (index) {
       this.imgVideos.splice(index, 1)
+    },
+    showVideoSelect () {
+      this.$select({
+        items: [
+          {
+            content: '拍摄',
+            callBack: () => {
+              this.getVideo('camcorder')
+            }
+          }, {
+            content: '从相册选择视频',
+            callBack: () => {
+              this.getVideo('photos')
+            }
+          }
+        ]
+      })
+    },
+    getVideo (type, finish) {
+      if (type === 'camcorder') {
+        if (finish === true) {
+          alert(1)
+          let file = event.target.files[0]
+          this.$comfun.http_file(this, this.$moment.urls.upload_video, 'uploadFile', file).then(response => {
+            event.target.value = ''
+            this.$comfun.console(this, '视频上传结束', response)
+          }, error => {
+            event.target.value = ''
+            this.$comfun.console(this, '视频上传结束，出现错误', error)
+          })
+        } else {
+          this.$refs['issue-video-by-camcorder'].click()
+        }
+      } else if (type === 'photos') {
+        if (finish === true) {
+          alert(2)
+          let file = event.target.files[0]
+          this.$comfun.http_file(this, this.$moment.urls.upload_video, 'uploadFile', file).then(response => {
+            event.target.value = ''
+            this.$comfun.console(this, '视频上传结束', response)
+          }, error => {
+            event.target.value = ''
+            this.$comfun.console(this, '视频上传结束，出现错误', error)
+          })
+        } else {
+          this.$refs['issue-video-by-photos'].click()
+        }
+      }
     }
   },
   watch: {
@@ -109,7 +162,7 @@ export default {
   line-height: 3rem;
   text-align: center;
   background: #110c1d;
-  color: #2c1f4a;
+  color: #a395c7;
   font-size: 0.9rem;
 }
 
@@ -223,5 +276,14 @@ export default {
 
 .action-wrap>div.accessory-wrap>span:nth-of-type(2) {
   background-image: url('./../../assets/aite-light.png');
+}
+
+.action-wrap>div.accessory-wrap>span:nth-of-type(3) {
+  background-image: url('./../../assets/photo-light.png');
+  margin-left: 0.8rem;
+}
+
+.action-wrap>div.issue-video-input-wrap {
+  display: none;
 }
 </style>

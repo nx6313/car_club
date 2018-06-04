@@ -29,7 +29,9 @@ export default {
       toastElem.style.color = color
       document.body.appendChild(toastElem)
       toastElem.style.left = `calc(50% - ${toastElem.clientWidth / 2}px)`
-      toastElem.style.opacity = 1
+      setTimeout(() => {
+        toastElem.style.opacity = 1
+      }, 10)
       var duration = params.duration || 1000
       toastOpacityTimer = setTimeout(() => {
         toastElem.style.opacity = 0
@@ -37,6 +39,176 @@ export default {
           document.body.removeChild(toastElem)
         }, 0.5 * 1000)
       }, duration)
+    }
+
+    // loading弹出层
+    Vue.prototype.$loading = function (content, option) {
+      if (document.getElementById('loading-message-box')) {
+        return false
+      }
+      var params = option || {}
+      var shade = params.shade === undefined ? true : params.shade
+      var background = params.background || 'rgba(255, 255, 255, 1)'
+      var color = params.color || 'rgba(58, 58, 58, 1)'
+      if (shade === true) {
+        var loadingShadeElem = document.createElement('div')
+        loadingShadeElem.id = 'loading-message-box-shade'
+        loadingShadeElem.style.position = 'fixed'
+        loadingShadeElem.style.width = '100vw'
+        loadingShadeElem.style.height = '100vh'
+        loadingShadeElem.style.top = 0
+        loadingShadeElem.style.left = 0
+        loadingShadeElem.style.transition = 'opacity 0.3s ease 0s'
+        loadingShadeElem.style.opacity = 0
+        loadingShadeElem.style.zIndex = 99999998
+        loadingShadeElem.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'
+        document.body.appendChild(loadingShadeElem)
+        setTimeout(() => {
+          loadingShadeElem.style.opacity = 1
+        }, 10)
+      }
+      var loadingElem = document.createElement('div')
+      loadingElem.id = 'loading-message-box'
+      loadingElem.style.position = 'absolute'
+      loadingElem.style.left = '50%'
+      loadingElem.style.minWidth = '66vw'
+      loadingElem.style.maxWidth = '66vw'
+      loadingElem.style.height = '20vw'
+      loadingElem.style.whiteSpace = 'nowrap'
+      loadingElem.style.display = 'inline-block'
+      loadingElem.style.transition = 'opacity 0.5s ease 0s'
+      loadingElem.style.opacity = 0
+      loadingElem.style.fontSize = '0.8rem'
+      loadingElem.style.borderRadius = '2px'
+      loadingElem.style.zIndex = 99999999
+      loadingElem.style.background = background
+      loadingElem.style.color = color
+      loadingElem.style.overflow = 'hidden'
+      document.body.appendChild(loadingElem)
+      loadingElem.style.top = `calc(50% - ${loadingElem.clientHeight / 2}px - 20px)`
+      loadingElem.style.left = `calc(50% - ${loadingElem.clientWidth / 2}px)`
+      setTimeout(() => {
+        loadingElem.style.opacity = 1
+      }, 10)
+      var loadingImgElem = document.createElement('div')
+      loadingImgElem.style.position = 'absolute'
+      loadingImgElem.style.top = 0
+      loadingImgElem.style.bottom = 0
+      loadingImgElem.style.left = 0
+      loadingImgElem.style.width = (loadingElem.clientHeight * 3 / 4) + 'px'
+      loadingImgElem.style.overflow = 'hidden'
+      loadingImgElem.innerHTML = getLoadingHtml(0.1, loadingElem.clientHeight * 3 / 4, loadingElem.clientHeight)
+      loadingElem.appendChild(loadingImgElem)
+      var loadingTipElem = document.createElement('div')
+      loadingTipElem.style.position = 'absolute'
+      loadingTipElem.style.top = 0
+      loadingTipElem.style.right = 0
+      loadingTipElem.style.width = (loadingElem.clientWidth - loadingImgElem.clientWidth - 10) + 'px'
+      loadingTipElem.style.height = loadingElem.clientHeight + 'px'
+      loadingTipElem.style.overflow = 'hidden'
+      var loadingContentElem = document.createElement('span')
+      loadingContentElem.style.position = 'absolute'
+      loadingContentElem.style.top = 0
+      loadingContentElem.style.bottom = 0
+      loadingContentElem.style.margin = 'auto 0'
+      loadingContentElem.innerHTML = content
+      loadingContentElem.style.height = '20px'
+      loadingContentElem.style.lineHeight = '20px'
+      loadingTipElem.appendChild(loadingContentElem)
+      loadingElem.appendChild(loadingTipElem)
+    }
+
+    // 关闭loading弹窗
+    Vue.prototype.$loading_close = function () {
+      if (document.getElementById('loading-message-box')) {
+        document.body.removeChild(document.getElementById('loading-message-box-shade'))
+        document.body.removeChild(document.getElementById('loading-message-box'))
+      }
+    }
+
+    // selected弹出层
+    Vue.prototype.$select = function (option) {
+      if (document.getElementById('select-message-box')) {
+        return false
+      }
+      var params = option || {}
+      var items = params.items || []
+      var background = params.background || 'rgba(255, 255, 255, 1)'
+      var color = params.color || 'rgba(58, 58, 58, 1)'
+      var selectShadeElem = document.createElement('div')
+      selectShadeElem.id = 'select-message-box-shade'
+      selectShadeElem.style.position = 'fixed'
+      selectShadeElem.style.width = '100vw'
+      selectShadeElem.style.height = '100vh'
+      selectShadeElem.style.top = 0
+      selectShadeElem.style.left = 0
+      selectShadeElem.style.transition = 'opacity 0.3s ease 0s'
+      selectShadeElem.style.opacity = 0
+      selectShadeElem.style.zIndex = 99999998
+      selectShadeElem.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'
+      document.body.appendChild(selectShadeElem)
+      setTimeout(() => {
+        selectShadeElem.style.opacity = 1
+      }, 10)
+      selectShadeElem.onclick = function () {
+        if (document.getElementById('select-message-box')) {
+          document.body.removeChild(document.getElementById('select-message-box-shade'))
+          document.body.removeChild(document.getElementById('select-message-box'))
+        }
+      }
+      var selectElem = document.createElement('div')
+      selectElem.id = 'select-message-box'
+      selectElem.style.position = 'absolute'
+      selectElem.style.left = '50%'
+      selectElem.style.minWidth = '66vw'
+      selectElem.style.maxWidth = '66vw'
+      selectElem.style.whiteSpace = 'nowrap'
+      selectElem.style.display = 'inline-block'
+      selectElem.style.transition = 'opacity 0.5s ease 0s'
+      selectElem.style.opacity = 0
+      selectElem.style.fontSize = '0.8rem'
+      selectElem.style.borderRadius = '2px'
+      selectElem.style.zIndex = 99999999
+      selectElem.style.background = background
+      selectElem.style.color = color
+      if (items && items.length > 0) {
+        for (let i = 0; i < items.length; i++) {
+          if (i > 0) {
+            let lineElem = document.createElement('span')
+            lineElem.style.display = 'block'
+            lineElem.style.width = '94%'
+            lineElem.style.marginLeft = '3%'
+            lineElem.style.height = '1px'
+            lineElem.style.backgroundColor = 'rgba(146, 146, 146, 0.1)'
+            selectElem.appendChild(lineElem)
+          }
+          let selectItemElem = document.createElement('div')
+          selectItemElem.classList.add('ripple')
+          selectItemElem.innerHTML = items[i].content
+          selectItemElem.style.padding = '1rem 1.8rem'
+          selectElem.appendChild(selectItemElem)
+          ;(function (target, callBack) {
+            target.onclick = function () {
+              if (callBack && isFunction(callBack)) {
+                let returnVal = callBack()
+                if (returnVal === false) {
+                  return returnVal
+                }
+              }
+              if (document.getElementById('select-message-box')) {
+                document.body.removeChild(document.getElementById('select-message-box-shade'))
+                document.body.removeChild(document.getElementById('select-message-box'))
+              }
+            }
+          })(selectItemElem, items[i].callBack)
+        }
+      }
+      document.body.appendChild(selectElem)
+      selectElem.style.top = `calc(50% - ${selectElem.clientHeight / 2}px - 20px)`
+      selectElem.style.left = `calc(50% - ${selectElem.clientWidth / 2}px)`
+      setTimeout(() => {
+        selectElem.style.opacity = 1
+      }, 10)
     }
 
     // 显示出指定图片的类似点赞效果
@@ -233,21 +405,21 @@ export default {
           consolePanlContentElem.innerHTML = ''
         }
       }
-      var consolePanlClearCacheElem = document.createElement('span')
-      consolePanlClearCacheElem.style.padding = '2px 10px'
-      consolePanlClearCacheElem.style.background = 'rgba(255, 255, 255, .8)'
-      consolePanlClearCacheElem.style.borderRadius = '20px'
-      consolePanlClearCacheElem.style.color = '#2E2E2E'
-      consolePanlClearCacheElem.style.boxShadow = 'rgba(115, 115, 115, 0.68) 0px 0px 4px inset'
-      consolePanlClearCacheElem.innerHTML = '清空Local Storage'
-      consolePanlClearCacheElem.style.cursor = 'pointer'
-      consolePanlClearCacheElem.style.outline = 'none'
-      consolePanlClearCacheElem.style.userSelect = 'none'
-      consolePanlClearCacheElem.style.msUserSelect = 'none'
-      consolePanlClearCacheElem.style.webkitUserSelect = 'none'
-      consolePanlClearCacheElem.style.marginLeft = '6px'
-      consolePanlTitleElem.appendChild(consolePanlClearCacheElem)
-      consolePanlClearCacheElem.onclick = function () {
+      var consolePanlSeeCacheElem = document.createElement('span')
+      consolePanlSeeCacheElem.style.padding = '2px 10px'
+      consolePanlSeeCacheElem.style.background = 'rgba(255, 255, 255, .8)'
+      consolePanlSeeCacheElem.style.borderRadius = '20px'
+      consolePanlSeeCacheElem.style.color = '#2E2E2E'
+      consolePanlSeeCacheElem.style.boxShadow = 'rgba(115, 115, 115, 0.68) 0px 0px 4px inset'
+      consolePanlSeeCacheElem.innerHTML = '查看Local Storage'
+      consolePanlSeeCacheElem.style.cursor = 'pointer'
+      consolePanlSeeCacheElem.style.outline = 'none'
+      consolePanlSeeCacheElem.style.userSelect = 'none'
+      consolePanlSeeCacheElem.style.msUserSelect = 'none'
+      consolePanlSeeCacheElem.style.webkitUserSelect = 'none'
+      consolePanlSeeCacheElem.style.marginLeft = '6px'
+      consolePanlTitleElem.appendChild(consolePanlSeeCacheElem)
+      consolePanlSeeCacheElem.onclick = function () {
         if (document.getElementById('console-copy')) {
           if (currentCopyElem) {
             currentCopyElem.style.color = 'rgb(170, 224, 252)'
@@ -255,11 +427,71 @@ export default {
           }
           document.body.removeChild(document.getElementById('console-copy'))
         }
-        window.localStorage.clear()
-        context.$toast('Local Storage 数据已清空')
+        if (document.getElementById('console-panl-localstorage-elem')) {
+          consolePanlSeeCacheElem.innerHTML = '查看Local Storage'
+          document.getElementById('console-panl-wrap').removeChild(document.getElementById('console-panl-localstorage-elem'))
+          return false
+        }
+        consolePanlSeeCacheElem.innerHTML = '关闭Local Storage'
+        var localStorageElem = document.createElement('div')
+        localStorageElem.id = 'console-panl-localstorage-elem'
+        localStorageElem.style.position = 'fixed'
+        localStorageElem.style.top = '20%'
+        localStorageElem.style.left = 0
+        localStorageElem.style.width = '100%'
+        localStorageElem.style.height = '60%'
+        localStorageElem.style.background = 'rgb(49, 49, 49)'
+        localStorageElem.style.color = '#E9E9E9'
+        localStorageElem.style.boxShadow = '0px 0px 80px 40px #8e8e8e'
+        localStorageElem.style.overflowX = 'hidden'
+        localStorageElem.style.overflowY = 'auto'
+        document.getElementById('console-panl-wrap').appendChild(localStorageElem)
+        localStorageElem.onclick = function () {
+          if (document.getElementById('console-copy')) {
+            if (currentCopyElem) {
+              currentCopyElem.style.color = 'rgb(170, 224, 252)'
+              currentCopyElem = null
+            }
+            document.body.removeChild(document.getElementById('console-copy'))
+          }
+          if (Number(consolePanlWrapElem.style.opacity) !== 1) {
+            consolePanlWrapElem.style.opacity = 1
+            consolePanlTipElem.innerHTML = '面板虚化'
+          }
+        }
+        var consolePanlClearCacheElem = document.createElement('span')
+        consolePanlClearCacheElem.style.position = 'fixed'
+        consolePanlClearCacheElem.style.right = '18px'
+        consolePanlClearCacheElem.style.width = '40px'
+        consolePanlClearCacheElem.style.height = '40px'
+        consolePanlClearCacheElem.style.lineHeight = '40px'
+        consolePanlClearCacheElem.style.textAlign = 'center'
+        consolePanlClearCacheElem.style.background = 'rgba(255, 192, 30, .4)'
+        consolePanlClearCacheElem.style.borderRadius = '60px'
+        consolePanlClearCacheElem.style.color = 'rgba(253, 247, 233, .8)'
+        consolePanlClearCacheElem.style.boxShadow = '0 0 20px 4px rgba(255, 192, 30, .8)'
+        consolePanlClearCacheElem.innerHTML = '清空'
+        consolePanlClearCacheElem.style.cursor = 'pointer'
+        consolePanlClearCacheElem.style.outline = 'none'
+        consolePanlClearCacheElem.style.userSelect = 'none'
+        consolePanlClearCacheElem.style.msUserSelect = 'none'
+        consolePanlClearCacheElem.style.webkitUserSelect = 'none'
+        consolePanlClearCacheElem.style.marginBottom = '20px'
+        consolePanlClearCacheElem.style.marginLeft = '6px'
+        consolePanlClearCacheElem.style.display = 'inline-block'
+        consolePanlClearCacheElem.style.marginTop = '16px'
+        localStorageElem.appendChild(consolePanlClearCacheElem)
+        // consolePanlClearCacheElem.style.marginTop = `-${consolePanlClearCacheElem.clientHeight + 6}px`
+        consolePanlClearCacheElem.onclick = function () {
+          window.localStorage.clear()
+          context.$toast('Local Storage 数据已清空')
+          writeToConsolePanl('清除后，Local Storage 中的用户数据', JSON.parse(window.localStorage.getItem('wx-user-info')), context, localStorageElem)
+        }
+        writeToConsolePanl('Local Storage 中的用户数据', JSON.parse(window.localStorage.getItem('wx-user-info')), context, localStorageElem)
       }
       var consolePanlContentElem = document.createElement('div')
       consolePanlContentElem.id = 'console-panl-content-elem'
+      consolePanlContentElem.style.position = 'relative'
       consolePanlContentElem.style.width = '100%'
       consolePanlContentElem.style.height = 'calc(100% - 34px)'
       consolePanlContentElem.style.overflowX = 'hidden'
@@ -346,7 +578,7 @@ export default {
             <p class="tip-round-block">当使用时间选择时，可以配合 valRange 属性（数组格式）使用，指明日期的可选范围，符号 ～ 表示至今</p>
           </li>
           <li>sex：选择性别
-            <p class="tip-round-block">输出：女士，对应值0；男士，对应值1</p>
+            <p class="tip-round-block">输出：女，对应值0；男，对应值1</p>
           </li>
           <li>constellation：选择星座
             <p class="tip-round-block">输出：星座字符串，对应值与显示值一致</p>
@@ -700,11 +932,11 @@ export default {
           cols[0] = [
             {
               val: '0',
-              display: '女士'
+              display: '女'
             },
             {
               val: '1',
-              display: '男士'
+              display: '男'
             }
           ]
         } else if (type.toLowerCase() === 'constellation') {
@@ -1234,8 +1466,11 @@ function resetPickerItem (pickerItemIndex, rowData, colLineHeight, lineSelectedO
 }
 
 // 将信息写入日志面板
-function writeToConsolePanl (contentHtml, jsonObj, vueContext) {
+function writeToConsolePanl (contentHtml, jsonObj, vueContext, rootElem) {
   var consolePanlContentElem = document.getElementById('console-panl-content-elem')
+  if (rootElem) {
+    consolePanlContentElem = rootElem
+  }
   if (consolePanlContentElem) {
     if (consolePanlContentElem.getElementsByClassName('add-val-item').length > 0) {
       var itemLineElem = document.createElement('span')
@@ -1246,15 +1481,16 @@ function writeToConsolePanl (contentHtml, jsonObj, vueContext) {
       itemLineElem.style.borderTop = '1px dotted #625A74'
       consolePanlContentElem.appendChild(itemLineElem)
     }
-    var addValElem = document.createElement('div')
-    addValElem.classList.add('add-val-item')
-    addValElem.innerHTML = contentHtml
-    addValElem.style.color = '#ffffff'
-    addValElem.style.transition = 'all 0.4s ease 0s'
-    addValElem.style.opacity = 0
-    addValElem.style.padding = '4px 8px'
-    consolePanlContentElem.appendChild(addValElem)
+    var addValElem = null
     if (jsonObj) {
+      addValElem = document.createElement('div')
+      addValElem.classList.add('add-val-item')
+      addValElem.innerHTML = contentHtml
+      addValElem.style.color = '#ffffff'
+      addValElem.style.transition = 'all 0.4s ease 0s'
+      addValElem.style.opacity = 0
+      addValElem.style.padding = '4px 8px'
+      consolePanlContentElem.appendChild(addValElem)
       var subjoinDataWrapElem = document.createElement('div')
       subjoinDataWrapElem.classList.add('json-obj-root-wrap')
       addValElem.appendChild(subjoinDataWrapElem)
@@ -1274,6 +1510,7 @@ function writeToConsolePanl (contentHtml, jsonObj, vueContext) {
         subjoinDataElem.onclick = function () {
           var beforePointerElem = this.getElementsByClassName('close-pointer')[0] || this.getElementsByClassName('open-pointer')[0]
           if (beforePointerElem.classList.contains('close-pointer')) {
+            event.preventDefault()
             beforePointerElem.classList.remove('close-pointer')
             beforePointerElem.classList.add('open-pointer')
             beforePointerElem.innerHTML = '&#x25bc;'
@@ -1292,9 +1529,13 @@ function writeToConsolePanl (contentHtml, jsonObj, vueContext) {
         subjoinDataElem.style.color = '#23CBEF'
         subjoinDataWrapElem.appendChild(subjoinDataElem)
       }
+    } else {
+      writeToConsolePanl(contentHtml, '数据为空', vueContext, rootElem)
     }
     setTimeout(() => {
-      addValElem.style.opacity = 1
+      if (addValElem) {
+        addValElem.style.opacity = 1
+      }
       var scrollH = consolePanlContentElem.scrollHeight
       consolePanlContentElem.scrollTo(0, ++scrollH)
     }, 10)
@@ -1341,6 +1582,7 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
             jsonItemElem.onclick = function () {
               var beforePointerElem = this.getElementsByClassName('close-pointer')[0] || this.getElementsByClassName('open-pointer')[0]
               if (beforePointerElem.classList.contains('close-pointer')) {
+                event.preventDefault()
                 beforePointerElem.classList.remove('close-pointer')
                 beforePointerElem.classList.add('open-pointer')
                 beforePointerElem.innerHTML = '&#x25bc;'
@@ -1498,6 +1740,33 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
       }
     }
   }
+}
+
+// 创建并返回loading动画
+function getLoadingHtml (scale, parentWidth, parentHeight) {
+  var scaleVal = scale || 1
+  var loadsterHtml = `
+    <div class="loadster" style="transform: scale(${scaleVal}, ${scaleVal}); margin-top: ${(parentHeight - scaleVal * 308) / 2}px;  margin-left: ${(parentWidth - scaleVal * 308) / 2}px;">
+      <div class="loadster__body">
+        <div class="body__gum"></div>
+      </div>
+      <div class="loadster__mask"></div>
+      <div class="loadster__head">
+        <div class="head__face"></div>
+        <div class="head__ear"></div>
+        <div class="head__eye"></div>
+        <div class="head__horn">
+          <div class="horn__circle"></div>
+        </div>
+        <div class="head__smile"></div>
+        <div class="head__hand"></div>
+      </div>
+      <div class="loadster__bottom">
+        <div class="bottom__foot"></div>
+      </div>
+    </div>
+  `
+  return loadsterHtml
 }
 
 // 判断obj是否为json对象或数组

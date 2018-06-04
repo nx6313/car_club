@@ -21,7 +21,7 @@
               <span @click.stop="lookComment">
                 <span>{{videoInfo.commentCount}}</span>
               </span>
-              <span></span>
+              <span @click="shareVideo"></span>
             </div>
           </div>
         </template>
@@ -386,6 +386,9 @@ export default {
     },
     lookComment () {
       this.$emit('look-comment', this.currentVideoInfo)
+    },
+    shareVideo () {
+      this.$loading('分享功能...')
     }
   }
 }

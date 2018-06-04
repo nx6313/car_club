@@ -68,6 +68,44 @@ export default {
           console.error('上下文对象或请求地址不能为空', 'http_post(context, url)')
         }
       },
+      http_file: function (context, url, aboutKey, file) {
+        if (context && url && file) {
+          context.$comfun.console(context, '要上传的视频对象', file)
+          const formData = new FormData()
+          formData.append(aboutKey, file)
+          var http = new Promise((resolve, reject) => {
+            var callUrl = context.$moment.server + url
+            if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
+              callUrl = url
+            }
+            context.$http.post(callUrl, formData, {
+              'headers': {
+                'Access-Control-Allow-Origin': '*'
+              },
+              progress (event) {
+                context.$comfun.console(context, '视频上传进度', parseFloat(event.loaded / event.total * 100))
+              }
+            }).then(response => {
+              context.$comfun.consoleBeautiful(context, '接口访问完成：url【' + url + '】', '#0FB0BF', 'https://img.zcool.cn/community/01db9f579571700000012e7e9da0fb.gif', {
+                '链接': callUrl,
+                '请求返回': response,
+                '要上传的视频对象': file
+              })
+              resolve(response)
+            }, response => {
+              context.$comfun.consoleBeautiful(context, '接口访问出错：url【' + url + '】', '#BF0F3D', 'https://img.zcool.cn/community/014db6579571700000012e7e602493.gif', {
+                '链接': callUrl,
+                '请求返回': response,
+                '要上传的视频对象': file
+              })
+              reject(response)
+            })
+          })
+          return http
+        } else {
+          console.error('上下文对象或请求地址不能为空', 'http_file(context, url)')
+        }
+      },
       console: function (context, tip, data, type) {
         context.$comfun.consoleBeautiful(context, tip, null, null, data, type)
       },
@@ -147,6 +185,17 @@ export default {
         }
         return theRequest
       },
+      // 更新localstorge中的用户信息
+      updateUserInfo: function (context, updateUserInfo) {
+        if (updateUserInfo) {
+          for (let key in updateUserInfo) {
+            if (context.$moment.wxUserInfo[key] !== undefined && context.$comfun.isNotNull(updateUserInfo[key])) {
+              context.$moment.wxUserInfo[key] = updateUserInfo[key]
+              window.localStorage.setItem('wx-user-info', JSON.stringify(context.$moment.wxUserInfo))
+            }
+          }
+        }
+      },
       // 将localStorage中保存的微信相关信息保存到本地
       getWxUserInfoDataToLocal: function (context, jsApiList) {
         var wxUserInfoData = window.localStorage.getItem('wx-user-info')
@@ -162,6 +211,12 @@ export default {
           context.$moment.wxUserInfo.headimgurl = wxUserInfoDataJson.headimgurl
           context.$moment.wxUserInfo.privilege = wxUserInfoDataJson.privilege
           context.$moment.wxUserInfo.unionid = wxUserInfoDataJson.unionid || ''
+          // 完善资料后的参数
+          context.$moment.wxUserInfo.birthday = wxUserInfoDataJson.birthday
+          context.$moment.wxUserInfo.carType = wxUserInfoDataJson.carType
+          context.$moment.wxUserInfo.constellation = wxUserInfoDataJson.constellation
+          context.$moment.wxUserInfo.phoneNum = wxUserInfoDataJson.phoneNum
+          context.$moment.wxUserInfo.intro = wxUserInfoDataJson.intro
           context.$comfun.wx_page_signature(context, jsApiList)
           // 显示日志面板
           if (context.$moment.wxIsDebug) {
@@ -172,7 +227,7 @@ export default {
       // 微信网页授权oauth2，scope：snsapi_base、snsapi_userinfo
       wx_oauth2: function (context, scope, jsApiList) {
         context.$comfun.getWxUserInfoDataToLocal(context, jsApiList)
-        if (!context.$comfun.isNotNull(context.$moment.wxUserInfo.openid)) {
+        if (!context.$comfun.isNotNull(context.$moment.wxUserInfo.openid) || !context.$comfun.isNotNull(context.$moment.wxUserInfo.accountId)) {
           var urlParams = context.$comfun.getRequest()
           if (!context.$comfun.isNotNull(urlParams.code)) {
             var oauth2Url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${context.$moment.wxAppId}&redirect_uri=${context.$moment.indexPage}&response_type=code&scope=${scope}&state=STATE#wechat_redirect`
@@ -181,12 +236,30 @@ export default {
             context.$comfun.wx_get_access_token_by_code(context)
           }
         } else {
-          context.$comfun.consoleBeautiful(context, '用户信息已存在，不再执行微信授权登录', null, null, context.$moment.wxUserInfo, 'info')
+          context.$loading('初始化账号信息中...')
+          context.$comfun.http_get(context, context.$moment.urls.get_user_info_by_id + '?id=' + context.$moment.wxUserInfo.accountId).then((response) => {
+            context.$loading_close()
+            if (response.body && response.body.code === '0000' && response.body.success === true) {
+              context.$moment.wxUserInfo.headimgurl = context.$comfun.isNotNull(response.body.data.headimg) ? response.body.data.headimg : ''
+              context.$moment.wxUserInfo.birthday = context.$comfun.isNotNull(response.body.data.birthday) ? response.body.data.birthday : ''
+              context.$moment.wxUserInfo.carType = context.$comfun.isNotNull(response.body.data.carList) ? response.body.data.carList : ''
+              context.$moment.wxUserInfo.constellation = context.$comfun.isNotNull(response.body.data.constellation) ? response.body.data.constellation : ''
+              context.$moment.wxUserInfo.phoneNum = context.$comfun.isNotNull(response.body.data.phone) ? response.body.data.phone : ''
+              context.$moment.wxUserInfo.address = context.$comfun.isNotNull(response.body.data.city) ? response.body.data.city : ''
+              context.$moment.wxUserInfo.intro = context.$comfun.isNotNull(response.body.data.signature) ? response.body.data.signature : ''
+              window.localStorage.setItem('wx-user-info', JSON.stringify(context.$moment.wxUserInfo))
+            } else {
+              context.$toast('初始化账号信息失败')
+            }
+          }, (response) => {
+            context.$loading_close()
+          })
         }
       },
       // 通过code换取网页授权access_token
       wx_get_access_token_by_code: function (context) {
         var accessTokenPromise = new Promise((resolve, reject) => {
+          context.$loading('初始化信息中...')
           var urlParams = context.$comfun.getRequest()
           context.$comfun.http_get(context, `${context.$moment.urls.get_user_info}${urlParams.code}`).then((response) => {
             if (response.body.data && response.body.data.openid) {
@@ -207,8 +280,11 @@ export default {
               } else {
                 window.location.replace(context.$moment.indexPage_)
               }
+            } else {
+              context.$loading_close()
             }
           }, (response) => {
+            context.$loading_close()
             reject(response)
           })
         })
@@ -218,11 +294,13 @@ export default {
       wx_page_signature: function (context, jsApiList) {
         var wxPageSignaturePromise = new Promise((resolve, reject) => {
           if (context.$comfun.isNotNull(context.$moment.wxUserInfo.openid)) {
+            context.$loading('初始化签名中...')
             var pageUrl = context.$moment.realm + context.$comfun.getCurrentUrl().pathname
             context.$comfun.http_post(context, `${context.$moment.urls.get_wx_page_signature}`, {
               url: pageUrl,
               openid: context.$moment.wxUserInfo.openid
             }).then((response) => {
+              context.$loading_close()
               if (response.body.data) {
                 context.$moment.wx.config({
                   debug: context.$moment.wxIsDebug,
@@ -234,6 +312,7 @@ export default {
                 })
               }
             }, (response) => {
+              context.$loading_close()
               reject(response)
             })
           } else {

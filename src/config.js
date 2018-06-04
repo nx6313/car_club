@@ -17,10 +17,13 @@ export default {
       server: 'http://' + HttpIp + ':' + HttpPort + '/',
       // 访问接口
       urls: {
+        get_user_info_by_id: '/user/info.json',
         get_user_info: '/user/wx/openid/',
         get_wx_page_signature: '/user/wx/signature.json',
         save_account_info: '/account/create.json',
-        save_wx_image: '/user/wx/savewximg.json'
+        save_wx_image: '/user/wx/savewximg.json',
+        save_user_info: '/user/save.json',
+        upload_video: '/uploadimg/upload_video.json'
       },
       // 微信是否开启调试模式，也会一并开启自定义的调试面板
       wxIsDebug: true,
@@ -31,6 +34,10 @@ export default {
       // 微信授权后指定的跳转页面
       indexPage: encodeURIComponent('http://l.dachangjr.com/dist/#/'),
       indexPage_: 'http://l.dachangjr.com/dist/',
+      // 微信功能页面授权接口列表
+      jsApiList: [
+        'chooseImage', 'uploadImage'
+      ],
       // 微信用户授权后，获取到的用户信息
       wxUserInfo: {
         accountId: '',
@@ -43,7 +50,14 @@ export default {
         headimgid: '',
         headimgurl: '',
         privilege: [],
-        unionid: ''
+        unionid: '',
+        // 完善资料后的参数
+        birthday: '',
+        carType: '',
+        constellation: '',
+        phoneNum: '',
+        address: '',
+        intro: ''
       },
       // 记录 一级页面 - 消息，关注好友列表是否展开。 -1 未记录、0 关闭、1 展开
       message_attention_friend_toggle_state: -1,

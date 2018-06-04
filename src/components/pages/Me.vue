@@ -89,8 +89,24 @@ export default {
     }
   },
   created () {
+  },
+  mounted () {
+    var currentRouterPath = this.$router.currentRoute.path
+    var tabElems = document.getElementById('content-wrap').getElementsByClassName('tab-item')
+    for (var t = 0; t < tabElems.length; t++) {
+      tabElems[t].classList.remove('selected')
+    }
+    if (currentRouterPath === '/me' || currentRouterPath === '/me/' || currentRouterPath === '/me/child-video') {
+      tabElems[0].classList.add('selected')
+    } else if (currentRouterPath === '/me/child-state') {
+      tabElems[1].classList.add('selected')
+    }
+  },
+  activated () {
     var address = ''
-    if (this.$moment.wxUserInfo.province && this.$moment.wxUserInfo.city) {
+    if (this.$moment.wxUserInfo.address) {
+      address = this.$moment.wxUserInfo.address
+    } else if (this.$moment.wxUserInfo.province && this.$moment.wxUserInfo.city) {
       address = this.$moment.wxUserInfo.province + '，' + this.$moment.wxUserInfo.city
     } else if (this.$moment.wxUserInfo.province) {
       address = this.$moment.wxUserInfo.province
@@ -103,9 +119,9 @@ export default {
       sex: this.$moment.wxUserInfo.sex,
       address: address,
       age: null,
-      constellation: '',
-      carType: '',
-      intro: '',
+      constellation: this.$moment.wxUserInfo.constellation,
+      carType: this.$moment.wxUserInfo.carType,
+      intro: this.$moment.wxUserInfo.intro,
       praiseCount: 0,
       attentionCount: 0,
       fansCount: 0
@@ -113,18 +129,6 @@ export default {
     this.videoInfo = {
       videoCount: 20,
       stateCount: 10
-    }
-  },
-  mounted () {
-    var currentRouterPath = this.$router.currentRoute.path
-    var tabElems = document.getElementById('content-wrap').getElementsByClassName('tab-item')
-    for (var t = 0; t < tabElems.length; t++) {
-      tabElems[t].classList.remove('selected')
-    }
-    if (currentRouterPath === '/me' || currentRouterPath === '/me/' || currentRouterPath === '/me/child-video') {
-      tabElems[0].classList.add('selected')
-    } else if (currentRouterPath === '/me/child-state') {
-      tabElems[1].classList.add('selected')
     }
   }
 }

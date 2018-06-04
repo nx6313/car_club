@@ -4,6 +4,7 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import './main.css'
+import './plugins/loading.css'
 
 Vue.config.productionTip = false
 Vue.config.devtools = true

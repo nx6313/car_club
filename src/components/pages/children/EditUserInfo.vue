@@ -9,7 +9,7 @@
     <div class="edit-item-wrap">
       <div class="edit-item">
         <span>昵称</span>
-        <input type="text" placeholder="请输入昵称" v-model="userInfo.nikeName">
+        <input type="text" placeholder="请输入昵称" v-model.trim="userInfo.nikeName">
       </div>
       <div class="edit-item" v-picker="pickerSex">
         <span>性别</span>
@@ -21,7 +21,7 @@
       </div>
       <div class="edit-item">
         <span>座驾</span>
-        <input type="text" placeholder="请输入座驾" v-model="userInfo.carType">
+        <input type="text" placeholder="请输入座驾" v-model.trim="userInfo.carType">
       </div>
       <div class="edit-item" v-picker="pickerConstellation">
         <span>星座</span>
@@ -29,18 +29,18 @@
       </div>
       <div class="edit-item">
         <span>手机号</span>
-        <input type="text" placeholder="请输入手机号" v-model="userInfo.phoneNum">
+        <input type="text" placeholder="请输入手机号" v-model.number.trim="userInfo.phoneNum">
       </div>
       <div class="edit-item">
         <span>常驻城市</span>
-        <input type="text" placeholder="请输入常驻城市" v-model="userInfo.address">
+        <input type="text" placeholder="请输入常驻城市" v-model.trim="userInfo.address">
       </div>
       <div class="edit-item">
         <span>个性签名</span>
-        <textarea type="text" placeholder="请填写个性签名" v-model="userInfo.intro"></textarea>
+        <textarea type="text" placeholder="请填写个性签名" v-model.trim="userInfo.intro"></textarea>
       </div>
     </div>
-    <div class="btn-edit-info-wrap">保存</div>
+    <div class="btn-edit-info-wrap" @click="saveUserInfo">保存</div>
   </div>
 </template>
 
@@ -76,7 +76,9 @@ export default {
   },
   created () {
     var address = ''
-    if (this.$moment.wxUserInfo.province && this.$moment.wxUserInfo.city) {
+    if (this.$moment.wxUserInfo.address) {
+      address = this.$moment.wxUserInfo.address
+    } else if (this.$moment.wxUserInfo.province && this.$moment.wxUserInfo.city) {
       address = this.$moment.wxUserInfo.province + '，' + this.$moment.wxUserInfo.city
     } else if (this.$moment.wxUserInfo.province) {
       address = this.$moment.wxUserInfo.province
@@ -84,18 +86,17 @@ export default {
       address = this.$moment.wxUserInfo.city
     }
     this.userInfo = {
-      headId: null,
       headImg: this.$moment.wxUserInfo.headimgurl,
       nikeName: this.$moment.wxUserInfo.nickname,
-      sexVal: this.$moment.wxUserInfo.sex,
-      sex: this.$moment.wxUserInfo.sex === '0' ? '女士' : (this.$moment.wxUserInfo.sex === '1' ? '男士' : ''),
-      birthdayVal: [],
-      birthday: '',
-      carType: '',
-      constellation: '',
-      phoneNum: '',
+      sexVal: String(this.$moment.wxUserInfo.sex),
+      sex: String(this.$moment.wxUserInfo.sex) === '0' ? '女' : (String(this.$moment.wxUserInfo.sex) === '1' ? '男' : ''),
+      birthdayVal: this.$comfun.isNotNull(this.$moment.wxUserInfo.birthday) ? this.$moment.wxUserInfo.birthday.split('-') : [],
+      birthday: this.$comfun.isNotNull(this.$moment.wxUserInfo.birthday) ? (this.$moment.wxUserInfo.birthday + '-').replace('-', '年').replace('-', '月').replace('-', '日') : '',
+      carType: this.$moment.wxUserInfo.carType,
+      constellation: this.$moment.wxUserInfo.constellation,
+      phoneNum: this.$moment.wxUserInfo.phoneNum,
       address: address,
-      intro: ''
+      intro: this.$moment.wxUserInfo.intro
     }
     this.pickerSex.value = [ this.userInfo.sexVal ]
     this.pickerBirthday.value = this.userInfo.birthdayVal
@@ -106,14 +107,15 @@ export default {
       this.$comfun.wxChooseImage(this, 1).then((data) => {
         var localIds = data.localIds
         if (localIds && localIds.length > 0) {
-          this.userInfo.headImg = localIds[0]
           this.$comfun.wxUploadImage(this, localIds[0]).then((data) => {
             var serverId = data.serverId
             this.$comfun.saveWxImg(this, serverId).then((response) => {
-              if (response.body.code === '0000' && response.body.success === true) {
+              if (response.body && response.body.code === '0000' && response.body.success === true) {
                 this.$toast('图片保存成功')
-                this.userInfo.headId = response.body.data.id
-                this.$moment.wxUserInfo.headimgid = response.body.data.id
+                this.userInfo.headImg = response.body.data.path
+                this.$comfun.updateUserInfo(this, {
+                  headimgurl: response.body.data.path
+                })
               } else {
                 this.$toast('图片保存至服务器失败')
               }
@@ -135,6 +137,38 @@ export default {
         this.userInfo.constellation = selected[0].val
         this.pickerConstellation.value = [ this.userInfo.constellation ]
       }
+    },
+    saveUserInfo () {
+      if (this.$moment.wxUserInfo.accountId === '') {
+        this.$toast('用户信息尚未初始化')
+        return false
+      }
+      let birthdayData = ''
+      if (this.userInfo.birthday) {
+        birthdayData = this.userInfo.birthdayVal[0] + '-' + this.userInfo.birthdayVal[1] + '-' + this.userInfo.birthdayVal[2]
+      }
+      this.$loading('保存资料中...')
+      this.$comfun.http_post(this, this.$moment.urls.save_user_info, {
+        accountId: this.$moment.wxUserInfo.accountId,
+        headimg: this.userInfo.headImg,
+        nickName: this.userInfo.nikeName,
+        sex: this.userInfo.sexVal,
+        birthday: birthdayData,
+        signature: this.userInfo.intro,
+        carList: this.userInfo.carType,
+        constellation: this.userInfo.constellation,
+        phone: this.userInfo.phoneNum,
+        // province: this.userInfo.province,
+        city: this.userInfo.address
+        // country: this.userInfo.country
+      }).then((response) => {
+        this.$loading_close()
+        if (response.body && response.body.code === '0000' && response.body.success === true) {
+          this.$toast('保存资料成功')
+        } else {
+          this.$toast('保存资料失败')
+        }
+      })
     }
   }
 }
