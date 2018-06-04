@@ -259,6 +259,34 @@ export default {
         context.$face_close()
         return false
       }
+      var faceImgs = [
+        {
+          title: '默认',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        }
+      ]
       var params = option || {}
       var delay = params.delay || 10
       var rootElem = params.rootElem || document.body
@@ -266,10 +294,11 @@ export default {
       if (!rootElem.contains(document.body)) {
         rootElem.style.position = 'relative'
       }
-      // var tabBg = params.tabBg || 'rgba(255, 255, 255, 0)'
+      var tabBg = params.tabBg || 'rgba(81, 69, 125, 0.48)'
       var background = params.background || 'rgba(255, 255, 255, 0)'
       var color = params.color || 'rgba(58, 58, 58, 1)'
       var width = params.width || '100vw'
+      var callBack = params.callBack || function () {}
       setTimeout(() => {
         if (rootElem.contains(document.body)) {
           var faceShadeElem = document.createElement('div')
@@ -326,10 +355,88 @@ export default {
           } else {
             faceElem.style.height = '40vw'
           }
+          var faceTabsWrapElem = document.createElement('div')
+          faceTabsWrapElem.style.position = 'relative'
+          faceTabsWrapElem.style.backgroundColor = tabBg
+          faceTabsWrapElem.style.height = '2rem'
+          faceTabsWrapElem.style.lineHeight = '2rem'
+          faceElem.appendChild(faceTabsWrapElem)
+          var faceContentWrapElem = document.createElement('div')
+          faceContentWrapElem.style.position = 'relative'
+          faceContentWrapElem.style.height = `${document.body.clientWidth * 0.4 - faceTabsWrapElem.clientHeight}px`
+          faceContentWrapElem.style.overflow = 'hidden'
+          faceElem.appendChild(faceContentWrapElem)
+          for (let f = 0; f < faceImgs.length; f++) {
+            var faceTabElem = document.createElement('span')
+            faceTabElem.style.display = 'inline-block'
+            faceTabElem.style.width = '2rem'
+            faceTabElem.style.textAlign = 'center'
+            faceTabElem.style.position = 'absolute'
+            faceTabElem.style.top = 0
+            faceTabElem.style.fontSize = '0.7rem'
+            faceTabElem.style.color = '#efefef'
+            faceTabElem.style.padding = '0 10px'
+            faceTabElem.innerHTML = faceImgs[f].title
+            faceTabsWrapElem.appendChild(faceTabElem)
+            if (f === 0) {
+              var faceTabIndicatorElem = document.createElement('div')
+              faceTabIndicatorElem.style.position = 'absolute'
+              faceTabIndicatorElem.style.bottom = 0
+              faceTabIndicatorElem.style.left = `${f * faceTabElem.clientWidth}px`
+              faceTabIndicatorElem.style.width = `${faceTabElem.clientWidth}px`
+              faceTabIndicatorElem.style.height = '2px'
+              faceTabIndicatorElem.style.backgroundColor = 'rgba(120, 108, 158, 0.4)'
+              faceTabsWrapElem.appendChild(faceTabIndicatorElem)
+            }
+            faceTabElem.style.left = `${f * faceTabElem.clientWidth}px`
+            var faceItem = document.createElement('div')
+            faceItem.style.position = 'absolute'
+            faceItem.style.width = faceContentWrapElem.clientWidth + 'px'
+            faceItem.style.top = 0
+            faceItem.style.left = `${f * faceContentWrapElem.clientWidth}px`
+            faceItem.style.wordWrap = 'break-word'
+            faceItem.style.display = 'flex'
+            faceItem.style.flexDirection = 'row'
+            faceItem.style.flexWrap = 'wrap'
+            faceItem.style.justifyContent = 'flex-start'
+            faceContentWrapElem.appendChild(faceItem)
+            if (faceImgs[f].faces.length > 0) {
+              for (let c = 0; c < faceImgs[f].faces.length; c++) {
+                var fw = document.createElement('div')
+                fw.style.position = 'relative'
+                fw.style.display = 'inline-block'
+                fw.style.width = `${faceItem.clientWidth / 10}px`
+                fw.style.height = `${faceItem.clientWidth / 10}px`
+                fw.style.lineHeight = `${faceItem.clientWidth / 10}px`
+                fw.style.textAlign = 'center'
+                faceItem.appendChild(fw)
+                var faceImg = document.createElement('img')
+                faceImg.style.width = '60%'
+                faceImg.style.height = '60%'
+                faceImg.style.display = 'inline-block'
+                faceImg.style.position = 'absolute'
+                faceImg.style.top = 0
+                faceImg.style.bottom = 0
+                faceImg.style.left = 0
+                faceImg.style.right = 0
+                faceImg.style.margin = 'auto'
+                faceImg.src = faceImgs[f].faces[c]
+                fw.appendChild(faceImg)
+                ;(function (target, face) {
+                  target.onclick = function () {
+                    if (callBack && isFunction(callBack)) {
+                      var selectFaceImg = document.createElement('img')
+                      selectFaceImg.style.width = '1.1rem'
+                      selectFaceImg.style.height = '1.1rem'
+                      selectFaceImg.src = face
+                      callBack(selectFaceImg)
+                    }
+                  }
+                })(fw, faceImgs[f].faces[c])
+              }
+            }
+          }
         }, 10)
-        var faceTabsWrapElem = document.createElement('div')
-        faceTabsWrapElem.style.position = 'relative'
-        faceElem.appendChild(faceTabsWrapElem)
       }, delay)
     }
 
@@ -343,7 +450,9 @@ export default {
         } else {
           facePop.style.height = 0
           setTimeout(() => {
-            facePop.parentElement.removeChild(facePop)
+            if (facePop.parentElement) {
+              facePop.parentElement.removeChild(facePop)
+            }
           }, 504)
         }
       }

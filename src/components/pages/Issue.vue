@@ -148,7 +148,14 @@ export default {
     },
     selectFace () {
       this.$face(this, {
-        rootElem: this.$refs['face-wrap']
+        rootElem: this.$refs['face-wrap'],
+        callBack: (faceImg) => {
+          if (this.$refs.edit.classList.contains('placeholder')) {
+            this.$refs.edit.classList.remove('placeholder')
+            this.$refs.edit.innerHTML = ''
+          }
+          this.$refs.edit.appendChild(faceImg)
+        }
       })
     },
     aiteFriend () {
