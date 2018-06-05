@@ -92,7 +92,8 @@ export default {
         },
         {
           title: '戳一戳',
-          size: 'middle',
+          size: 'big',
+          type: 'chat',
           faces: [
             require('@/assets/faces/chuo/1.gif'), require('@/assets/faces/chuo/2.gif'),
             require('@/assets/faces/chuo/3.gif'), require('@/assets/faces/chuo/4.gif'),
@@ -103,20 +104,6 @@ export default {
             require('@/assets/faces/chuo/13.gif'), require('@/assets/faces/chuo/14.gif'),
             require('@/assets/faces/chuo/15.gif'), require('@/assets/faces/chuo/16.gif'),
             require('@/assets/faces/chuo/17.gif'), require('@/assets/faces/chuo/18.gif')
-          ]
-        },
-        {
-          title: '闯堂兔',
-          size: 'big',
-          faces: [
-            require('@/assets/faces/ctangtu/1.gif'), require('@/assets/faces/ctangtu/2.gif'),
-            require('@/assets/faces/ctangtu/3.gif'), require('@/assets/faces/ctangtu/4.gif'),
-            require('@/assets/faces/ctangtu/5.gif'), require('@/assets/faces/ctangtu/6.gif'),
-            require('@/assets/faces/ctangtu/7.gif'), require('@/assets/faces/ctangtu/8.gif'),
-            require('@/assets/faces/ctangtu/9.gif'), require('@/assets/faces/ctangtu/10.gif'),
-            require('@/assets/faces/ctangtu/11.gif'), require('@/assets/faces/ctangtu/12.gif'),
-            require('@/assets/faces/ctangtu/13.gif'), require('@/assets/faces/ctangtu/14.gif'),
-            require('@/assets/faces/ctangtu/15.gif'), require('@/assets/faces/ctangtu/16.gif')
           ]
         }
       ]

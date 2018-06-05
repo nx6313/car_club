@@ -447,7 +447,7 @@ export default {
           let faceTabLeft = 0
           let curFaceShowIndex = 0
           for (let f = 0; f < faceImgs.length; f++) {
-            if (faceImgs[f].faces.length > 0 && (type === 'all' || faceImgs[f].type === undefined || faceImgs[f].type === type)) {
+            if (faceImgs[f].faces.length > 0 && (faceImgs[f].type === undefined || faceImgs[f].type === type)) {
               var faceTabElem = document.createElement('span')
               faceTabElem.classList.add('face-tab-item-' + f)
               faceTabElem.style.display = 'inline-block'
@@ -536,7 +536,7 @@ export default {
                       if (size === 'big') {
                         selectFaceImg.style.width = '3rem'
                         selectFaceImg.style.height = '3rem'
-                        selectFaceImgHtml = `<img src="${face}" style="width: 3rem; height: 3rem;">`
+                        selectFaceImgHtml = `<img src="${face}" style="width: 4rem; height: 4rem;">`
                       } else if (size === 'middle') {
                         selectFaceImg.style.width = '1.8rem'
                         selectFaceImg.style.height = '1.8rem'

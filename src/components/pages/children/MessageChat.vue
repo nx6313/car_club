@@ -16,13 +16,13 @@
         </div>
       </div>
     </transition-group>
-    <div id="face-wrap" ref="face-wrap"></div>
     <div class="chat-input-wrap">
       <div id="edit" ref="edit" class="placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入消息内容</div>
       <span @click="selectFace"></span>
       <span class="chat-add-btn" style="display: block;" ref="chat-add-btn"></span>
       <span class="chat-send-btn ripple" style="display: none;" ref="chat-send-btn" @click="chatSend">发送</span>
     </div>
+    <div id="face-wrap" ref="face-wrap"></div>
   </div>
 </template>
 
@@ -119,6 +119,8 @@ export default {
     },
     selectFace () {
       this.$face(this, {
+        rootElem: this.$refs['face-wrap'],
+        type: 'chat',
         callBack: (faceImg, isBig, faceImgHtml) => {
           if (isBig === true) {
             this.chatSend(faceImgHtml, true)
