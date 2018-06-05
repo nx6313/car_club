@@ -26,6 +26,7 @@ export default {
                 '链接': callUrl,
                 '请求返回': response
               })
+              context.$loading_close()
               reject(response)
             })
           })
@@ -60,6 +61,7 @@ export default {
                 '请求返回': response,
                 '相关参数': paramsData
               })
+              context.$loading_close()
               reject(response)
             })
           })
@@ -68,7 +70,7 @@ export default {
           console.error('上下文对象或请求地址不能为空', 'http_post(context, url)')
         }
       },
-      http_file: function (context, url, aboutKey, file) {
+      http_file: function (context, url, aboutKey, file, progressFn) {
         if (context && url && file) {
           context.$comfun.console(context, '要上传的视频对象', file)
           const formData = new FormData()
@@ -85,6 +87,9 @@ export default {
               },
               progress (event) {
                 context.$comfun.console(context, '视频上传进度', parseFloat(event.loaded / event.total * 100))
+                if (progressFn && typeof progressFn === 'function' && Object.prototype.toString.call(progressFn).toLowerCase() === '[object function]') {
+                  progressFn(parseFloat(event.loaded / event.total))
+                }
               }
             }).then(response => {
               context.$comfun.consoleBeautiful(context, '接口访问完成：url【' + url + '】', '#0FB0BF', 'https://img.zcool.cn/community/01db9f579571700000012e7e9da0fb.gif', {
@@ -99,6 +104,7 @@ export default {
                 '请求返回': response,
                 '要上传的视频对象': file
               })
+              context.$loading_close()
               reject(response)
             })
           })
@@ -153,6 +159,32 @@ export default {
           // 释放内存
           clipboard.destroy()
         })
+      },
+      // 封装生成视频对象，调用腾讯视频的js接口
+      createVideo: function (context, rootId, option, loop) {
+        var params = option || {}
+        var TcPlayer = context.$moment.player
+        var width = 0
+        var height = 0
+        if (rootId) {
+          width = document.getElementById(rootId).clientWidth
+          height = document.getElementById(rootId).clientHeight
+        }
+        params.width = width // 视频的显示宽度，请尽量使用视频分辨率宽度
+        params.height = height // 视频的显示高度，请尽量使用视频分辨率高度
+        params.flash = false
+        // params.h5_flv = true
+        params.x5_player = true
+        params.x5_type = 'H5'
+        var player = new TcPlayer(rootId, option)
+        player.listener = function (msg) {
+          if (loop === true) {
+            if (msg.type === 'ended') {
+              player.play()
+            }
+          }
+        }
+        return player
       },
       // 判断字符串是否为空
       isNotNull: function (str) {

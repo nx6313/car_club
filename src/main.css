@@ -102,3 +102,12 @@ p.tip-round-block {
     border-radius: 4px;
     padding: 6px 8px;
 }
+
+@keyframes moveflash {
+    0% {
+        transform: translateX(-68%);
+    }
+    100% {
+        transform: translateX(68%);
+    }
+}

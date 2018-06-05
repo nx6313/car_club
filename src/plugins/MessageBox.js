@@ -46,10 +46,49 @@ export default {
       if (document.getElementById('loading-message-box')) {
         return false
       }
+      var loadingObj = null
       var params = option || {}
+      var context = params.context
+      var current = params.current === undefined ? 0 : params.current // 当前进度的百分比
+      var completeTip = params.completeTip || '已完成' // 进度完成后的提示文字
       var shade = params.shade === undefined ? true : params.shade
+      var progress = params.progress === undefined ? false : params.progress
       var background = params.background || 'rgba(255, 255, 255, 1)'
       var color = params.color || 'rgba(58, 58, 58, 1)'
+      if (progress === true) {
+        loadingObj = {
+          update: (newProgress) => {
+            if (document.getElementById('loading-message-box')) {
+              var progressLoading = document.getElementById('loading-message-box').getElementsByClassName('loading-progress-wrap')[0]
+              if (progressLoading) {
+                progressLoading.getElementsByClassName('loading-progress-current')[0].style.width = `${progressLoading.clientWidth * newProgress}px`
+              }
+              if (Number(newProgress) === 1) {
+                // document.getElementById('loading-message-box').getElementsByClassName('loading-tip')[0].innerHTML = completeTip
+                if (context) {
+                  context.$toast(completeTip)
+                }
+                document.body.removeChild(document.getElementById('loading-message-box-shade'))
+                document.body.removeChild(document.getElementById('loading-message-box'))
+              }
+            }
+          },
+          complete: () => {
+            if (document.getElementById('loading-message-box')) {
+              var progressLoading = document.getElementById('loading-message-box').getElementsByClassName('loading-progress-wrap')[0]
+              if (progressLoading) {
+                progressLoading.getElementsByClassName('loading-progress-current')[0].style.width = `${progressLoading.clientWidth * 1}px`
+              }
+              // document.getElementById('loading-message-box').getElementsByClassName('loading-tip')[0].innerHTML = completeTip
+              if (context) {
+                context.$toast(completeTip)
+              }
+              document.body.removeChild(document.getElementById('loading-message-box-shade'))
+              document.body.removeChild(document.getElementById('loading-message-box'))
+            }
+          }
+        }
+      }
       if (shade === true) {
         var loadingShadeElem = document.createElement('div')
         loadingShadeElem.id = 'loading-message-box-shade'
@@ -107,15 +146,55 @@ export default {
       loadingTipElem.style.height = loadingElem.clientHeight + 'px'
       loadingTipElem.style.overflow = 'hidden'
       var loadingContentElem = document.createElement('span')
+      loadingContentElem.classList.add('loading-tip')
       loadingContentElem.style.position = 'absolute'
-      loadingContentElem.style.top = 0
-      loadingContentElem.style.bottom = 0
-      loadingContentElem.style.margin = 'auto 0'
+      if (progress === true) {
+        loadingContentElem.style.fontSize = '0.8rem'
+        loadingContentElem.style.fontWeight = 'bold'
+      } else {
+        loadingContentElem.style.top = 0
+        loadingContentElem.style.bottom = 0
+        loadingContentElem.style.margin = 'auto 0'
+      }
       loadingContentElem.innerHTML = content
       loadingContentElem.style.height = '20px'
       loadingContentElem.style.lineHeight = '20px'
       loadingTipElem.appendChild(loadingContentElem)
+      if (progress === true) {
+        var loadingProgressElem = document.createElement('div')
+        loadingProgressElem.classList.add('loading-progress-wrap')
+        loadingProgressElem.style.position = 'absolute'
+        loadingProgressElem.style.width = '92%'
+        loadingProgressElem.style.height = '4px'
+        loadingProgressElem.style.fontSize = '0px'
+        loadingProgressElem.style.backgroundColor = 'rgba(243, 239, 251, .6)'
+        loadingProgressElem.style.borderRadius = '4px'
+        loadingProgressElem.style.overflow = 'hidden'
+        loadingTipElem.appendChild(loadingProgressElem)
+        var loadingCurrentProgressElem = document.createElement('div')
+        loadingCurrentProgressElem.classList.add('loading-progress-current')
+        loadingCurrentProgressElem.style.height = '100%'
+        loadingCurrentProgressElem.style.width = '0px'
+        loadingCurrentProgressElem.style.background = 'linear-gradient(to left, #583D9B, #1499CA, #5E3D9B)'
+        loadingCurrentProgressElem.style.transition = 'width 0.3s ease 0s'
+        loadingCurrentProgressElem.style.overflow = 'hidden'
+        loadingProgressElem.appendChild(loadingCurrentProgressElem)
+        var progressingElem = document.createElement('div')
+        progressingElem.style.position = 'absolute'
+        progressingElem.style.top = 0
+        progressingElem.style.height = '100%'
+        progressingElem.style.width = '100%'
+        progressingElem.style.background = 'linear-gradient(to left, rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, .4), rgba(243, 239, 251, .6), rgba(243, 239, 251, .8), rgba(243, 239, 251, .6), rgba(243, 239, 251, .4), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0))'
+        progressingElem.style.animation = 'moveflash 4s ease 0s infinite'
+        loadingProgressElem.appendChild(progressingElem)
+      }
       loadingElem.appendChild(loadingTipElem)
+      if (progress === true) {
+        loadingContentElem.style.top = `${(loadingTipElem.clientHeight - loadingContentElem.clientHeight) / 2 - 6}px`
+        loadingProgressElem.style.top = `${(loadingTipElem.clientHeight - loadingProgressElem.clientHeight) / 2 + 11}px`
+        loadingCurrentProgressElem.style.width = `${loadingProgressElem.clientWidth * current}px`
+      }
+      return loadingObj
     }
 
     // 关闭loading弹窗
@@ -285,6 +364,201 @@ export default {
             require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
             require('@/assets/faces/default/099@2x.gif')
           ]
+        },
+        {
+          title: '兔斯基1',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基2',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基3',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基4',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基5',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基6',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基7',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基8',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基9',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基10',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基11',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基12',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基13',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基14',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
+        },
+        {
+          title: '兔斯基15',
+          faces: [
+            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
+            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
+            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
+            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
+            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
+            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
+            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
+            require('@/assets/faces/default/099@2x.gif')
+          ]
         }
       ]
       var params = option || {}
@@ -360,37 +634,62 @@ export default {
           faceTabsWrapElem.style.backgroundColor = tabBg
           faceTabsWrapElem.style.height = '2rem'
           faceTabsWrapElem.style.lineHeight = '2rem'
+          faceTabsWrapElem.style.overflowX = 'auto'
+          faceTabsWrapElem.style.overflowY = 'hidden'
           faceElem.appendChild(faceTabsWrapElem)
           var faceContentWrapElem = document.createElement('div')
           faceContentWrapElem.style.position = 'relative'
           faceContentWrapElem.style.height = `${document.body.clientWidth * 0.4 - faceTabsWrapElem.clientHeight}px`
           faceContentWrapElem.style.overflow = 'hidden'
           faceElem.appendChild(faceContentWrapElem)
+          let faceTabLeft = 0
           for (let f = 0; f < faceImgs.length; f++) {
             var faceTabElem = document.createElement('span')
             faceTabElem.style.display = 'inline-block'
-            faceTabElem.style.width = '2rem'
             faceTabElem.style.textAlign = 'center'
             faceTabElem.style.position = 'absolute'
             faceTabElem.style.top = 0
             faceTabElem.style.fontSize = '0.7rem'
             faceTabElem.style.color = '#efefef'
-            faceTabElem.style.padding = '0 10px'
+            faceTabElem.style.padding = '0 12px'
             faceTabElem.innerHTML = faceImgs[f].title
             faceTabsWrapElem.appendChild(faceTabElem)
+            ;(function (target) {
+              target.onclick = function () {
+                // var index = target.parentNode.findIndex(target)
+                // console.log(index)
+                var faceTabIndicator = document.getElementById('face-message-box').getElementsByClassName('face-tab-indicator')[0]
+                if (faceTabIndicator) {
+                  faceTabIndicator.style.width = target.clientWidth + 'px'
+                  faceTabIndicator.style.left = target.offsetLeft + 'px'
+                }
+              }
+            })(faceTabElem)
             if (f === 0) {
               var faceTabIndicatorElem = document.createElement('div')
+              faceTabIndicatorElem.classList.add('face-tab-indicator')
               faceTabIndicatorElem.style.position = 'absolute'
               faceTabIndicatorElem.style.bottom = 0
-              faceTabIndicatorElem.style.left = `${f * faceTabElem.clientWidth}px`
+              faceTabIndicatorElem.style.left = `${faceTabLeft}px`
               faceTabIndicatorElem.style.width = `${faceTabElem.clientWidth}px`
               faceTabIndicatorElem.style.height = '2px'
               faceTabIndicatorElem.style.backgroundColor = 'rgba(120, 108, 158, 0.4)'
+              faceTabIndicatorElem.style.transition = 'all 0.4s ease 0s'
               faceTabsWrapElem.appendChild(faceTabIndicatorElem)
             }
-            faceTabElem.style.left = `${f * faceTabElem.clientWidth}px`
+            faceTabElem.style.left = `${faceTabLeft}px`
+            faceTabLeft += faceTabElem.clientWidth
+            var faceItemTransWrap = document.createElement('div')
+            faceItemTransWrap.style.position = 'absolute'
+            faceItemTransWrap.style.width = faceContentWrapElem.clientWidth + 'px'
+            faceItemTransWrap.style.height = faceContentWrapElem.clientHeight + 'px'
+            faceItemTransWrap.style.top = 0
+            faceItemTransWrap.style.left = `${f * faceContentWrapElem.clientWidth}px`
+            faceItemTransWrap.style.overflowX = 'hidden'
+            faceItemTransWrap.style.overflowY = 'auto'
+            faceContentWrapElem.appendChild(faceItemTransWrap)
             var faceItem = document.createElement('div')
-            faceItem.style.position = 'absolute'
+            faceItem.style.position = 'relative'
             faceItem.style.width = faceContentWrapElem.clientWidth + 'px'
             faceItem.style.top = 0
             faceItem.style.left = `${f * faceContentWrapElem.clientWidth}px`
@@ -399,7 +698,7 @@ export default {
             faceItem.style.flexDirection = 'row'
             faceItem.style.flexWrap = 'wrap'
             faceItem.style.justifyContent = 'flex-start'
-            faceContentWrapElem.appendChild(faceItem)
+            faceItemTransWrap.appendChild(faceItem)
             if (faceImgs[f].faces.length > 0) {
               for (let c = 0; c < faceImgs[f].faces.length; c++) {
                 var fw = document.createElement('div')
@@ -1980,7 +2279,7 @@ function getLoadingHtml (scale, parentWidth, parentHeight) {
 
 // 判断obj是否为json对象或数组
 function isJsonOrArr (obj) {
-  var isjson = typeof obj === 'object' && (Object.prototype.toString.call(obj).toLowerCase() === '[object object]' || Object.prototype.toString.call(obj).toLowerCase() === '[object array]')
+  var isjson = typeof obj === 'object' && (Object.prototype.toString.call(obj).toLowerCase() === '[object object]' || Object.prototype.toString.call(obj).toLowerCase() === '[object array]' || Object.prototype.toString.call(obj).toLowerCase() === '[object file]')
   return isjson
 }
 

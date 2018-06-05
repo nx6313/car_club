@@ -9,6 +9,8 @@ var WxSecret = '6c11623d913f9f030bb4a09e6765d360'
 export default {
   install: function (Vue, options) {
     var AppConfig = {
+      /* eslint-disable */
+      player: TcPlayer, // 腾讯视频播放器对象
       // 微信包
       wx: wx,
       // 域名地址
@@ -23,7 +25,8 @@ export default {
         save_account_info: '/account/create.json',
         save_wx_image: '/user/wx/savewximg.json',
         save_user_info: '/user/save.json',
-        upload_video: '/uploadimg/upload_video.json'
+        upload_video: '/uploadimg/upload_video.json',
+        save_issue: '/news/create.json'
       },
       // 微信是否开启调试模式，也会一并开启自定义的调试面板
       wxIsDebug: true,
@@ -69,4 +72,8 @@ export default {
 
     Object.defineProperty(Vue.prototype, '$moment', { value: AppConfig })
   }
+}
+
+function handler (req, res) {
+
 }

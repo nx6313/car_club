@@ -3,9 +3,11 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import VueSocketio from 'vue-socket.io'
 import './main.css'
 import './plugins/loading.css'
 
+Vue.use(VueSocketio, 'http://socketserver.com:1923')
 Vue.config.productionTip = false
 Vue.config.devtools = true
 Vue.config.errorHandler = function (err, vm, info) {

@@ -8,15 +8,16 @@
         <span>{{maxWordNum}}</span>
       </div>
       <transition-group :name="imgVideoTsName" tag="div" class="issue-video-wrap" ref="issue-video-item-wrap">
-        <div v-if="imgVideos.length > 0" v-for="(imgVideo, index) in imgVideos" :key="index" :class="[imgVideo.type === 'add-btn' ? ['issue-video-item-add', 'ripple'] : '', 'issue-video-item']" :style="(imgVideo.type !== 'add-btn' && imgVideo.cover) ? { 'background-image': 'url(' + imgVideo.cover + ')' } : ''" @click="clickImgVideo(imgVideo)">
+        <div v-if="imgVideos.length > 0" v-for="(imgVideo, index) in imgVideos" :key="index" :class="[imgVideo.type === 'add-btn' ? ['issue-video-item-add', 'ripple'] : '', 'issue-video-item']" :style="(imgVideo.type === 'img' && imgVideo.cover) ? { 'background-image': 'url(' + imgVideo.cover + ')' } : ''" @click="clickImgVideo(imgVideo)">
           <span class="btn-delete ripple" v-if="imgVideo.type !== 'add-btn'" @click.stop="deleteImgVideo(index)"></span>
+          <div class="video-show" :id="'video-show-' + index" :ref="'video-show-' + index" v-if="imgVideo.type === 'video'"></div>
         </div>
       </transition-group>
       <div id="face-wrap" ref="face-wrap"></div>
       <div class="accessory-wrap">
         <span class="ripple" @click="selectFace"></span>
         <span class="ripple" @click="aiteFriend"></span>
-        <span class="ripple photo" @click="showVideoSelect" v-show="imgVideos.length === 1"></span>
+        <span class="ripple photo" @click="showVideoSelect" v-show="imgVideos.length === maxVideoNum && canSelectVideo"></span>
       </div>
       <div class="issue-video-input-wrap">
         <input v-if="clearShowCamcorder" id="issue-video-by-camcorder" ref="issue-video-by-camcorder" type="file" accept="video/*" capture="camcorder" @change="getVideo('camcorder', true)">
@@ -33,7 +34,10 @@ export default {
   data () {
     return {
       maxImgNum: 9,
+      maxVideoNum: 1,
+      canSelectVideo: true,
       issueContentInput: '',
+      issueContentInputHtml: '',
       imgVideos: [
         {
           type: 'add-btn'
@@ -63,6 +67,7 @@ export default {
     contentInput () {
       this.$face_close()
       this.issueContentInput = event.target.innerText
+      this.issueContentInputHtml = event.target.innerHTML
       if (event.target.innerHTML.length > 0) {
         event.target.classList.add('inputing')
       } else {
@@ -76,14 +81,15 @@ export default {
           var localIds = data.localIds
           if (localIds && localIds.length > 0) {
             for (var l = 0; l < localIds.length; l++) {
-              this.imgVideos.splice(0, 0, {
-                type: 'img',
-                cover: localIds[l]
-              })
               this.$comfun.wxUploadImage(this, localIds[l]).then((data) => {
                 var serverId = data.serverId
                 this.$comfun.saveWxImg(this, serverId).then((response) => {
                   if (response.body.code === '0000' && response.body.success === true) {
+                    this.imgVideos.splice(0, 0, {
+                      type: 'img',
+                      cover: localIds[l],
+                      id: response.body.data.id
+                    })
                   } else {
                     this.$toast('图片保存至服务器失败')
                   }
@@ -95,7 +101,15 @@ export default {
       }
     },
     deleteImgVideo (index) {
-      this.imgVideos.splice(index, 1)
+      if (this.canSelectVideo) {
+        this.imgVideos.splice(index, 1)
+      } else {
+        this.canSelectVideo = true
+        this.imgVideos.splice(index, 1)
+        this.imgVideos.splice(this.maxVideoNum, this.maxVideoNum, {
+          type: 'add-btn'
+        })
+      }
     },
     showVideoSelect () {
       this.$select({
@@ -124,10 +138,40 @@ export default {
         if (finish === true) {
           let file = event.target.files[0]
           this.clearShowCamcorder = false
-          this.$comfun.http_file(this, this.$moment.urls.upload_video, 'uploadFile', file).then(response => {
-            this.$comfun.console(this, '视频上传结束', response)
-          }, error => {
-            this.$comfun.console(this, '视频上传结束，出现错误', error)
+          let videoProgress = this.$loading('视频正在上传中', {
+            context: this,
+            progress: true,
+            completeTip: '视频上传完成'
+          })
+          this.$comfun.http_file(this, this.$moment.urls.upload_video, 'uploadFile', file, (progress) => {
+            videoProgress.update(progress)
+          }).then(response => {
+            if (response.body && response.body.code === '0000' && response.body.success === true) {
+              videoProgress.complete()
+              this.imgVideos.splice(0, 0, {
+                type: 'video',
+                src: response.body.data.path,
+                id: response.body.data.id
+              })
+              this.imgVideos.splice(this.maxVideoNum, 1)
+              setTimeout(() => {
+                this.$comfun.createVideo(this, 'video-show-0', {
+                  m3u8: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
+                  flv: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
+                  autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
+                  // 'coverpic': 'http://www.test.com/myimage.jpg',
+                  controls: 'none'
+                }, true)
+              }, 10)
+              if (this.imgVideos.length >= this.maxVideoNum) {
+                this.canSelectVideo = false
+              }
+            } else {
+              this.$comfun.loading_close()
+              this.$toast('视频上传失败')
+            }
+          }, () => {
+            this.$comfun.loading_close()
           })
         } else {
           this.$refs['issue-video-by-camcorder'].click()
@@ -136,10 +180,40 @@ export default {
         if (finish === true) {
           let file = event.target.files[0]
           this.clearShowPhotos = false
-          this.$comfun.http_file(this, this.$moment.urls.upload_video, 'uploadFile', file).then(response => {
-            this.$comfun.console(this, '视频上传结束', response)
-          }, error => {
-            this.$comfun.console(this, '视频上传结束，出现错误', error)
+          let videoProgress = this.$loading('视频正在上传中', {
+            context: this,
+            progress: true,
+            completeTip: '视频上传完成'
+          })
+          this.$comfun.http_file(this, this.$moment.urls.upload_video, 'uploadFile', file, (progress) => {
+            videoProgress.update(progress)
+          }).then(response => {
+            if (response.body && response.body.code === '0000' && response.body.success === true) {
+              videoProgress.complete()
+              this.imgVideos.splice(0, 0, {
+                type: 'video',
+                src: response.body.data.path,
+                id: response.body.data.id
+              })
+              this.imgVideos.splice(this.maxVideoNum, 1)
+              setTimeout(() => {
+                this.$comfun.createVideo(this, 'video-show-0', {
+                  // m3u8: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
+                  flv: 'http://172.18.168.44:9007/wximg/123.flv', // 请替换成实际可用的播放地址
+                  autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
+                  // 'coverpic': 'http://www.test.com/myimage.jpg',
+                  controls: 'none'
+                }, true)
+              }, 10)
+              if (this.imgVideos.length >= this.maxVideoNum) {
+                this.canSelectVideo = false
+              }
+            } else {
+              this.$comfun.loading_close()
+              this.$toast('视频上传失败')
+            }
+          }, () => {
+            this.$comfun.loading_close()
           })
         } else {
           this.$refs['issue-video-by-photos'].click()
@@ -152,9 +226,11 @@ export default {
         callBack: (faceImg) => {
           if (this.$refs.edit.classList.contains('placeholder')) {
             this.$refs.edit.classList.remove('placeholder')
+            this.$refs.edit.classList.add('inputing')
             this.$refs.edit.innerHTML = ''
           }
           this.$refs.edit.appendChild(faceImg)
+          this.issueContentInputHtml = this.$refs.edit.innerHTML
         }
       })
     },
@@ -163,6 +239,48 @@ export default {
     },
     sendIssue () {
       this.$face_close()
+      if (this.issueContentInputHtml === '') {
+        this.$toast('写点什么吧')
+        return false
+      }
+      let type = '1' // 1：文字；2：图片；3：视频
+      if (this.imgVideos[0].type === 'img') {
+        type = '2'
+      } else if (this.imgVideos[0].type === 'video') {
+        type = '3'
+      }
+      let fileList = []
+      for (let d = 0; d < this.imgVideos.length; d++) {
+        if (this.imgVideos[d].type !== 'add-btn' && this.imgVideos[d].id) {
+          fileList.push({
+            id: this.imgVideos[d].id,
+            sort: d
+          })
+        }
+      }
+      this.$loading('发布中，请稍后...')
+      this.$comfun.http_post(this, this.$moment.urls.save_issue, {
+        accountId: this.$moment.wxUserInfo.accountId,
+        content: this.issueContentInputHtml,
+        fileList: fileList,
+        type: type
+      }).then((response) => {
+        this.$loading_close()
+        if (response.body && response.body.code === '0000' && response.body.success === true) {
+          this.$toast('发布成功')
+          this.$refs.edit.innerHTML = ''
+          this.imgVideos = [
+            {
+              type: 'add-btn'
+            }
+          ]
+          this.canSelectVideo = true
+          this.issueContentInput = ''
+          this.issueContentInputHtml = ''
+          this.clearShowCamcorder = true
+          this.clearShowPhotos = true
+        }
+      })
     }
   },
   watch: {
@@ -285,6 +403,15 @@ export default {
   background-position: center;
   background-size: 50% 50%;
   background-image: url('./../../assets/close.png');
+  z-index: 999999999;
+}
+
+.action-wrap>div.issue-video-wrap>div.issue-video-item>div.video-show {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .action-wrap>div.issue-video-wrap>div.issue-video-item-add {
