@@ -3,7 +3,7 @@
     <transition-group :name="chatContentListTrsName" tag="div" class="chat-content-wrap" ref="chat-content-wrap">
       <div v-for="(chat, index) in chatList" :key="index" :class="['chat-item', chat.isMe ? 'right' : 'left']">
         <span class="head" :style="chat.head ? { 'background-image': 'url(' + chat.head + ')' } : ''"></span>
-        <div class="content-wrap">
+        <div :class="['content-wrap', chat.isBig === true ? 'content-wrap-big-img' : '']">
           <div class="chat-time-name" v-if="chat.isMe">
             <span>{{chat.time}}</span>
             <span>{{chat.nikeName}}</span>
@@ -12,13 +12,14 @@
             <span>{{chat.nikeName}}</span>
             <span>{{chat.time}}</span>
           </div>
-          <div class="chat-content" v-html="chat.content"></div>
+          <div :class="['chat-content', chat.isBig === true ? 'chat-content-big-img' : '']" v-html="chat.content"></div>
         </div>
       </div>
     </transition-group>
+    <div id="face-wrap" ref="face-wrap"></div>
     <div class="chat-input-wrap">
-      <textarea placeholder="请输入消息内容" ref="chat-input-area" v-model="chatContentInput"/>
-      <span></span>
+      <div id="edit" ref="edit" class="placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入消息内容</div>
+      <span @click="selectFace"></span>
       <span class="chat-add-btn" style="display: block;" ref="chat-add-btn"></span>
       <span class="chat-send-btn ripple" style="display: none;" ref="chat-send-btn" @click="chatSend">发送</span>
     </div>
@@ -33,11 +34,11 @@ export default {
       friendResiveTimer: null,
       chatContentListTrsName: 'me-chat',
       chatContentInput: '',
+      chatContentInputHtml: '',
       chatList: []
     }
   },
   activated () {
-    // this.$refs['chat-input-area'].focus()
     this.chatList = this.$moment.message_chat_content[this.$route.params.chatid] || []
     this.scrollTobottom()
   },
@@ -46,6 +47,30 @@ export default {
     this.chatList = []
   },
   methods: {
+    focusInput () {
+      this.$face_close()
+      if (event.target.classList.contains('placeholder')) {
+        event.target.classList.remove('placeholder')
+        event.target.innerHTML = ''
+      }
+    },
+    blurInput () {
+      this.$face_close()
+      if (!event.target.classList.contains('placeholder') && !event.target.classList.contains('inputing')) {
+        event.target.classList.add('placeholder')
+        event.target.innerHTML = '请输入消息内容'
+      }
+    },
+    contentInput () {
+      this.$face_close()
+      this.chatContentInput = event.target.innerText
+      this.chatContentInputHtml = event.target.innerHTML
+      if (event.target.innerHTML.length > 0) {
+        event.target.classList.add('inputing')
+      } else {
+        event.target.classList.remove('inputing')
+      }
+    },
     scrollTobottom () {
       setTimeout(() => {
         var currentpos = this.$refs['chat-content-wrap'].$el.scrollHeight * 100
@@ -60,32 +85,60 @@ export default {
           nikeName: '刘德华',
           time: '2/18 16:23:30',
           content: this.chatList[this.chatList.length - 1].content,
-          isMe: false
+          isMe: false,
+          isBig: this.chatList[this.chatList.length - 1].isBig
         }
         this.chatList.push(newResiveData)
         this.$moment.message_chat_content[this.$route.params.chatid] = this.chatList
         this.scrollTobottom()
       }, 3000)
     },
-    chatSend () {
+    chatSend (chatContent, isBig) {
+      var thisChatContent = chatContent || this.chatContentInputHtml.trim()
       this.chatContentListTrsName = 'me-chat'
       var newSendData = {
         head: 'http://img01.store.sogou.com/app/a/10010016/80f52439c4ed48b974a3a756cb5b9bfe',
         nikeName: '刘德华',
         time: '2/18 16:23:30',
-        content: this.chatContentInput.trim().replace(new RegExp('\\n', 'gm'), '<br>'),
-        isMe: true
+        content: thisChatContent,
+        isMe: true,
+        isBig: isBig === undefined ? false : isBig
       }
       this.chatList.push(newSendData)
       this.$moment.message_chat_content[this.$route.params.chatid] = this.chatList
       this.scrollTobottom()
+      this.$refs.edit.innerHTML = ''
       this.chatContentInput = ''
-      // this.$refs['chat-input-area'].focus()
+      this.chatContentInputHtml = ''
+      if (!this.$refs.edit.classList.contains('placeholder') && this.$refs.edit.classList.contains('inputing')) {
+        this.$refs.edit.classList.remove('inputing')
+        this.$refs.edit.classList.add('placeholder')
+        this.$refs.edit.innerHTML = '请输入消息内容'
+      }
       this.friendResive()
+    },
+    selectFace () {
+      this.$face(this, {
+        callBack: (faceImg, isBig, faceImgHtml) => {
+          if (isBig === true) {
+            this.chatSend(faceImgHtml, true)
+          } else {
+            if (this.$refs.edit.classList.contains('placeholder')) {
+              this.$refs.edit.classList.remove('placeholder')
+              this.$refs.edit.classList.add('inputing')
+              this.$refs.edit.innerHTML = ''
+            }
+            this.$refs.edit.appendChild(faceImg)
+            this.chatContentInput = this.$refs.edit.innerText
+            this.chatContentInputHtml = this.$refs.edit.innerHTML
+            console.log(this.chatContentInput, this.chatContentInputHtml)
+          }
+        }
+      })
     }
   },
   watch: {
-    chatContentInput (newValue, oldValue) {
+    chatContentInputHtml (newValue, oldValue) {
       var chatAddBtn = this.$refs['chat-add-btn']
       var chatSendBtn = this.$refs['chat-send-btn']
       if (newValue.trim()) {
@@ -187,6 +240,10 @@ export default {
   z-index: -1;
 }
 
+.chat-content-wrap>div.chat-item>div.content-wrap-big-img::after {
+  background-color: transparent !important;
+}
+
 .chat-content-wrap>div.chat-item>div.content-wrap>div.chat-time-name {
   position: relative;
   display: block;
@@ -204,6 +261,10 @@ export default {
   max-width: 100%;
   word-break: break-all;
   word-wrap: break-word;
+}
+
+.chat-content-wrap>div.chat-item>div.content-wrap>div.chat-content-big-img {
+  background-color: transparent !important;
 }
 
 .chat-content-wrap>div.left>div.content-wrap {
@@ -328,7 +389,7 @@ export default {
   display: none;
 }
 
-.chat-input-wrap>textarea {
+#edit {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -341,22 +402,19 @@ export default {
   outline: none;
   border-radius: calc(2rem - 16px);
   background-color: #433564;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 8px 2.2rem 8px 20px;
   color: #ffffff;
-  font-size: 1rem;
-  resize: none;
+  font-size: 0.9rem;
 }
 
-.chat-input-wrap>textarea::-webkit-input-placeholder { /* WebKit browsers */
-  color: #685d82;
+.placeholder {
+  color: #685d82 !important;
 }
-.chat-input-wrap>textarea:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-  color: #685d82;
-}
-.chat-input-wrap>textarea::-moz-placeholder { /* Mozilla Firefox 19+ */
-  color: #685d82;
-}
-.chat-input-wrap>textarea:-ms-input-placeholder { /* Internet Explorer 10+ */
-  color: #685d82;
+
+#face-wrap {
+  background: #443763;
+  font-size: 0;
 }
 </style>

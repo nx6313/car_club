@@ -338,229 +338,7 @@ export default {
         context.$face_close()
         return false
       }
-      var faceImgs = [
-        {
-          title: '默认',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基1',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基2',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基3',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基4',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基5',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基6',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基7',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基8',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基9',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基10',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基11',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基12',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基13',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基14',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        },
-        {
-          title: '兔斯基15',
-          faces: [
-            require('@/assets/faces/default/002@2x.gif'), require('@/assets/faces/default/005@2x.gif'),
-            require('@/assets/faces/default/006@2x.gif'), require('@/assets/faces/default/010@2x.gif'),
-            require('@/assets/faces/default/011@2x.gif'), require('@/assets/faces/default/014@2x.gif'),
-            require('@/assets/faces/default/019@2x.gif'), require('@/assets/faces/default/020@2x.gif'),
-            require('@/assets/faces/default/021@2x.gif'), require('@/assets/faces/default/026@2x.gif'),
-            require('@/assets/faces/default/038@2x.gif'), require('@/assets/faces/default/044@2x.gif'),
-            require('@/assets/faces/default/097@2x.gif'), require('@/assets/faces/default/098@2x.gif'),
-            require('@/assets/faces/default/099@2x.gif')
-          ]
-        }
-      ]
+      var faceImgs = context.$moment.face_imgs
       var params = option || {}
       var delay = params.delay || 10
       var rootElem = params.rootElem || document.body
@@ -572,7 +350,15 @@ export default {
       var background = params.background || 'rgba(255, 255, 255, 0)'
       var color = params.color || 'rgba(58, 58, 58, 1)'
       var width = params.width || '100vw'
+      var height = params.height || '11rem'
+      var type = params.type || 'all'
       var callBack = params.callBack || function () {}
+      var facePopHeightToPx = 0
+      if (height.indexOf('rem') > 0) {
+        facePopHeightToPx = Number(height.match(/[-?\d.?]+/g)[0]) * 16
+      } else {
+        facePopHeightToPx = Number(height.match(/[-?\d.?]+/g)[0])
+      }
       setTimeout(() => {
         if (rootElem.contains(document.body)) {
           var faceShadeElem = document.createElement('div')
@@ -605,7 +391,7 @@ export default {
         faceElem.style.display = 'inline-block'
         if (rootElem.contains(document.body)) {
           faceElem.style.opacity = 0
-          faceElem.style.height = '40vw'
+          faceElem.style.height = height
           faceElem.style.transition = 'opacity 0.5s ease 0s'
         } else {
           faceElem.style.opacity = 1
@@ -623,11 +409,17 @@ export default {
           faceElem.style.top = `calc(50% - ${faceElem.clientHeight / 2}px - 20px)`
         }
         faceElem.style.left = `calc(50% - ${faceElem.clientWidth / 2}px)`
+        if (rootElem.contains(document.body)) {
+          faceElem.style.opacity = 1
+        } else {
+          faceElem.style.height = height
+        }
         setTimeout(() => {
-          if (rootElem.contains(document.body)) {
-            faceElem.style.opacity = 1
-          } else {
-            faceElem.style.height = '40vw'
+          let showFaceTabCount = 0
+          for (let f = 0; f < faceImgs.length; f++) {
+            if (faceImgs[f].faces.length > 0 && (type === 'all' || faceImgs[f].type === undefined || faceImgs[f].type === type)) {
+              showFaceTabCount++
+            }
           }
           var faceTabsWrapElem = document.createElement('div')
           faceTabsWrapElem.style.position = 'relative'
@@ -639,79 +431,94 @@ export default {
           faceElem.appendChild(faceTabsWrapElem)
           var faceContentWrapElem = document.createElement('div')
           faceContentWrapElem.style.position = 'relative'
-          faceContentWrapElem.style.height = `${document.body.clientWidth * 0.4 - faceTabsWrapElem.clientHeight}px`
+          faceContentWrapElem.style.width = `${faceElem.clientWidth}px`
+          faceContentWrapElem.style.height = `${facePopHeightToPx - faceTabsWrapElem.clientHeight}px`
           faceContentWrapElem.style.overflow = 'hidden'
           faceElem.appendChild(faceContentWrapElem)
+          var faceContentTransElem = document.createElement('div')
+          faceContentTransElem.classList.add('face-content-trans')
+          faceContentTransElem.style.position = 'relative'
+          faceContentTransElem.style.width = `${faceElem.clientWidth * showFaceTabCount}px`
+          faceContentTransElem.style.height = `${facePopHeightToPx - faceTabsWrapElem.clientHeight}px`
+          faceContentTransElem.style.overflow = 'hidden'
+          faceContentTransElem.style.transition = 'all 0.4s ease 0s'
+          faceContentTransElem.style.transform = 'translateX(0px)'
+          faceContentWrapElem.appendChild(faceContentTransElem)
           let faceTabLeft = 0
+          let curFaceShowIndex = 0
           for (let f = 0; f < faceImgs.length; f++) {
-            var faceTabElem = document.createElement('span')
-            faceTabElem.style.display = 'inline-block'
-            faceTabElem.style.textAlign = 'center'
-            faceTabElem.style.position = 'absolute'
-            faceTabElem.style.top = 0
-            faceTabElem.style.fontSize = '0.7rem'
-            faceTabElem.style.color = '#efefef'
-            faceTabElem.style.padding = '0 12px'
-            faceTabElem.innerHTML = faceImgs[f].title
-            faceTabsWrapElem.appendChild(faceTabElem)
-            ;(function (target) {
-              target.onclick = function () {
-                // var index = target.parentNode.findIndex(target)
-                // console.log(index)
-                var faceTabIndicator = document.getElementById('face-message-box').getElementsByClassName('face-tab-indicator')[0]
-                if (faceTabIndicator) {
-                  faceTabIndicator.style.width = target.clientWidth + 'px'
-                  faceTabIndicator.style.left = target.offsetLeft + 'px'
+            if (faceImgs[f].faces.length > 0 && (type === 'all' || faceImgs[f].type === undefined || faceImgs[f].type === type)) {
+              var faceTabElem = document.createElement('span')
+              faceTabElem.classList.add('face-tab-item-' + f)
+              faceTabElem.style.display = 'inline-block'
+              faceTabElem.style.textAlign = 'center'
+              faceTabElem.style.position = 'absolute'
+              faceTabElem.style.top = 0
+              faceTabElem.style.fontSize = '0.7rem'
+              faceTabElem.style.color = '#efefef'
+              faceTabElem.style.padding = '0 12px'
+              faceTabElem.innerHTML = faceImgs[f].title
+              faceTabsWrapElem.appendChild(faceTabElem)
+              ;(function (target) {
+                target.onclick = function () {
+                  var index = Number(target.classList[0].substr('face-tab-item-'.length))
+                  var faceTabIndicator = document.getElementById('face-message-box').getElementsByClassName('face-tab-indicator')[0]
+                  if (faceTabIndicator) {
+                    faceTabIndicator.style.width = target.clientWidth + 'px'
+                    faceTabIndicator.style.left = target.offsetLeft + 'px'
+                  }
+                  var faceAllTabsContentWrap = document.getElementById('face-message-box').getElementsByClassName('face-content-trans')[0]
+                  if (faceAllTabsContentWrap) {
+                    faceAllTabsContentWrap.style.transform = `translateX(-${faceElem.clientWidth * index}px)`
+                  }
                 }
+              })(faceTabElem)
+              if (curFaceShowIndex === 0) {
+                var faceTabIndicatorElem = document.createElement('div')
+                faceTabIndicatorElem.classList.add('face-tab-indicator')
+                faceTabIndicatorElem.style.position = 'absolute'
+                faceTabIndicatorElem.style.bottom = 0
+                faceTabIndicatorElem.style.left = `${faceTabLeft}px`
+                faceTabIndicatorElem.style.width = `${faceTabElem.clientWidth}px`
+                faceTabIndicatorElem.style.height = '2px'
+                faceTabIndicatorElem.style.backgroundColor = 'rgba(120, 108, 158, 0.4)'
+                faceTabIndicatorElem.style.transition = 'all 0.4s ease 0s'
+                faceTabsWrapElem.appendChild(faceTabIndicatorElem)
               }
-            })(faceTabElem)
-            if (f === 0) {
-              var faceTabIndicatorElem = document.createElement('div')
-              faceTabIndicatorElem.classList.add('face-tab-indicator')
-              faceTabIndicatorElem.style.position = 'absolute'
-              faceTabIndicatorElem.style.bottom = 0
-              faceTabIndicatorElem.style.left = `${faceTabLeft}px`
-              faceTabIndicatorElem.style.width = `${faceTabElem.clientWidth}px`
-              faceTabIndicatorElem.style.height = '2px'
-              faceTabIndicatorElem.style.backgroundColor = 'rgba(120, 108, 158, 0.4)'
-              faceTabIndicatorElem.style.transition = 'all 0.4s ease 0s'
-              faceTabsWrapElem.appendChild(faceTabIndicatorElem)
-            }
-            faceTabElem.style.left = `${faceTabLeft}px`
-            faceTabLeft += faceTabElem.clientWidth
-            var faceItemTransWrap = document.createElement('div')
-            faceItemTransWrap.style.position = 'absolute'
-            faceItemTransWrap.style.width = faceContentWrapElem.clientWidth + 'px'
-            faceItemTransWrap.style.height = faceContentWrapElem.clientHeight + 'px'
-            faceItemTransWrap.style.top = 0
-            faceItemTransWrap.style.left = `${f * faceContentWrapElem.clientWidth}px`
-            faceItemTransWrap.style.overflowX = 'hidden'
-            faceItemTransWrap.style.overflowY = 'auto'
-            faceContentWrapElem.appendChild(faceItemTransWrap)
-            var faceItem = document.createElement('div')
-            faceItem.style.position = 'relative'
-            faceItem.style.width = faceContentWrapElem.clientWidth + 'px'
-            faceItem.style.top = 0
-            faceItem.style.left = `${f * faceContentWrapElem.clientWidth}px`
-            faceItem.style.wordWrap = 'break-word'
-            faceItem.style.display = 'flex'
-            faceItem.style.flexDirection = 'row'
-            faceItem.style.flexWrap = 'wrap'
-            faceItem.style.justifyContent = 'flex-start'
-            faceItemTransWrap.appendChild(faceItem)
-            if (faceImgs[f].faces.length > 0) {
+              faceTabElem.style.left = `${faceTabLeft}px`
+              faceTabLeft += faceTabElem.clientWidth
+              var faceItemTransWrap = document.createElement('div')
+              faceItemTransWrap.style.position = 'absolute'
+              faceItemTransWrap.style.width = faceContentWrapElem.clientWidth + 'px'
+              faceItemTransWrap.style.height = faceContentWrapElem.clientHeight + 'px'
+              faceItemTransWrap.style.top = 0
+              faceItemTransWrap.style.left = `${f * faceContentWrapElem.clientWidth}px`
+              faceItemTransWrap.style.overflowX = 'hidden'
+              faceItemTransWrap.style.overflowY = 'auto'
+              faceContentTransElem.appendChild(faceItemTransWrap)
+              var faceItem = document.createElement('div')
+              faceItem.style.position = 'relative'
+              faceItem.style.width = faceContentWrapElem.clientWidth + 'px'
+              faceItem.style.top = 0
+              faceItem.style.left = 0
+              faceItem.style.wordWrap = 'break-word'
+              faceItem.style.display = 'flex'
+              faceItem.style.flexDirection = 'row'
+              faceItem.style.flexWrap = 'wrap'
+              faceItem.style.justifyContent = 'flex-start'
+              faceItemTransWrap.appendChild(faceItem)
               for (let c = 0; c < faceImgs[f].faces.length; c++) {
                 var fw = document.createElement('div')
                 fw.style.position = 'relative'
                 fw.style.display = 'inline-block'
-                fw.style.width = `${faceItem.clientWidth / 10}px`
-                fw.style.height = `${faceItem.clientWidth / 10}px`
-                fw.style.lineHeight = `${faceItem.clientWidth / 10}px`
+                fw.style.width = `${faceItem.clientWidth / 8}px`
+                fw.style.height = `${faceItem.clientWidth / 8}px`
+                fw.style.lineHeight = `${faceItem.clientWidth / 8}px`
                 fw.style.textAlign = 'center'
                 faceItem.appendChild(fw)
                 var faceImg = document.createElement('img')
-                faceImg.style.width = '60%'
-                faceImg.style.height = '60%'
+                faceImg.style.width = '70%'
+                faceImg.style.height = '70%'
                 faceImg.style.display = 'inline-block'
                 faceImg.style.position = 'absolute'
                 faceImg.style.top = 0
@@ -721,18 +528,30 @@ export default {
                 faceImg.style.margin = 'auto'
                 faceImg.src = faceImgs[f].faces[c]
                 fw.appendChild(faceImg)
-                ;(function (target, face) {
+                ;(function (target, face, size) {
                   target.onclick = function () {
                     if (callBack && isFunction(callBack)) {
+                      var selectFaceImgHtml
                       var selectFaceImg = document.createElement('img')
-                      selectFaceImg.style.width = '1.1rem'
-                      selectFaceImg.style.height = '1.1rem'
+                      if (size === 'big') {
+                        selectFaceImg.style.width = '3rem'
+                        selectFaceImg.style.height = '3rem'
+                        selectFaceImgHtml = `<img src="${face}" style="width: 3rem; height: 3rem;">`
+                      } else if (size === 'middle') {
+                        selectFaceImg.style.width = '1.8rem'
+                        selectFaceImg.style.height = '1.8rem'
+                      } else {
+                        selectFaceImg.style.width = '1.2rem'
+                        selectFaceImg.style.height = '1.2rem'
+                      }
+                      selectFaceImg.style.verticalAlign = 'middle'
                       selectFaceImg.src = face
-                      callBack(selectFaceImg)
+                      callBack(selectFaceImg, size === 'big' ? true : undefined, selectFaceImgHtml)
                     }
                   }
-                })(fw, faceImgs[f].faces[c])
+                })(fw, faceImgs[f].faces[c], faceImgs[f].size)
               }
+              curFaceShowIndex++
             }
           }
         }, 10)

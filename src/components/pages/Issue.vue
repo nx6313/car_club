@@ -172,6 +172,7 @@ export default {
             }
           }, () => {
             this.$comfun.loading_close()
+            this.$toast('视频上传失败')
           })
         } else {
           this.$refs['issue-video-by-camcorder'].click()
@@ -214,6 +215,7 @@ export default {
             }
           }, () => {
             this.$comfun.loading_close()
+            this.$toast('视频上传失败')
           })
         } else {
           this.$refs['issue-video-by-photos'].click()
@@ -230,6 +232,7 @@ export default {
             this.$refs.edit.innerHTML = ''
           }
           this.$refs.edit.appendChild(faceImg)
+          this.issueContentInput = this.$refs.edit.innerText
           this.issueContentInputHtml = this.$refs.edit.innerHTML
         }
       })
@@ -261,7 +264,7 @@ export default {
       this.$loading('发布中，请稍后...')
       this.$comfun.http_post(this, this.$moment.urls.save_issue, {
         accountId: this.$moment.wxUserInfo.accountId,
-        content: this.issueContentInputHtml,
+        content: this.issueContentInputHtml.trim(),
         fileList: fileList,
         type: type
       }).then((response) => {
@@ -279,6 +282,11 @@ export default {
           this.issueContentInputHtml = ''
           this.clearShowCamcorder = true
           this.clearShowPhotos = true
+          if (!this.$refs.edit.classList.contains('placeholder') && this.$refs.edit.classList.contains('inputing')) {
+            this.$refs.edit.classList.remove('inputing')
+            this.$refs.edit.classList.add('placeholder')
+            this.$refs.edit.innerHTML = '请输入发布内容'
+          }
         }
       })
     }

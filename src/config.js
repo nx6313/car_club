@@ -67,7 +67,59 @@ export default {
       // 记录 一级页面 - 关注，关注页面当前浏览到的位置。
       attention_page_scroll_top: 0,
       // 记录 二级页面 - 聊天，记录用户的聊天内容。
-      message_chat_content: {}
+      message_chat_content: {},
+      face_imgs: [
+        {
+          title: '默认',
+          faces: [
+            require('@/assets/faces/default/1.gif'), require('@/assets/faces/default/2.gif'),
+            require('@/assets/faces/default/3.gif'), require('@/assets/faces/default/4.gif'),
+            require('@/assets/faces/default/5.gif'), require('@/assets/faces/default/6.gif'),
+            require('@/assets/faces/default/7.gif'), require('@/assets/faces/default/8.gif'),
+            require('@/assets/faces/default/9.gif'), require('@/assets/faces/default/10.gif'),
+            require('@/assets/faces/default/11.gif'), require('@/assets/faces/default/12.gif'),
+            require('@/assets/faces/default/13.gif'), require('@/assets/faces/default/14.gif'),
+            require('@/assets/faces/default/15.gif'), require('@/assets/faces/default/16.gif'),
+            require('@/assets/faces/default/17.gif'), require('@/assets/faces/default/18.gif'),
+            require('@/assets/faces/default/19.gif'), require('@/assets/faces/default/20.gif'),
+            require('@/assets/faces/default/21.gif'), require('@/assets/faces/default/22.gif'),
+            require('@/assets/faces/default/23.gif'), require('@/assets/faces/default/24.gif'),
+            require('@/assets/faces/default/25.gif'), require('@/assets/faces/default/26.gif'),
+            require('@/assets/faces/default/27.gif'), require('@/assets/faces/default/28.gif'),
+            require('@/assets/faces/default/29.gif'), require('@/assets/faces/default/30.gif'),
+            require('@/assets/faces/default/31.gif')
+          ]
+        },
+        {
+          title: '戳一戳',
+          size: 'middle',
+          faces: [
+            require('@/assets/faces/chuo/1.gif'), require('@/assets/faces/chuo/2.gif'),
+            require('@/assets/faces/chuo/3.gif'), require('@/assets/faces/chuo/4.gif'),
+            require('@/assets/faces/chuo/5.gif'), require('@/assets/faces/chuo/6.gif'),
+            require('@/assets/faces/chuo/7.gif'), require('@/assets/faces/chuo/8.gif'),
+            require('@/assets/faces/chuo/9.gif'), require('@/assets/faces/chuo/10.gif'),
+            require('@/assets/faces/chuo/11.gif'), require('@/assets/faces/chuo/12.gif'),
+            require('@/assets/faces/chuo/13.gif'), require('@/assets/faces/chuo/14.gif'),
+            require('@/assets/faces/chuo/15.gif'), require('@/assets/faces/chuo/16.gif'),
+            require('@/assets/faces/chuo/17.gif'), require('@/assets/faces/chuo/18.gif')
+          ]
+        },
+        {
+          title: '闯堂兔',
+          size: 'big',
+          faces: [
+            require('@/assets/faces/ctangtu/1.gif'), require('@/assets/faces/ctangtu/2.gif'),
+            require('@/assets/faces/ctangtu/3.gif'), require('@/assets/faces/ctangtu/4.gif'),
+            require('@/assets/faces/ctangtu/5.gif'), require('@/assets/faces/ctangtu/6.gif'),
+            require('@/assets/faces/ctangtu/7.gif'), require('@/assets/faces/ctangtu/8.gif'),
+            require('@/assets/faces/ctangtu/9.gif'), require('@/assets/faces/ctangtu/10.gif'),
+            require('@/assets/faces/ctangtu/11.gif'), require('@/assets/faces/ctangtu/12.gif'),
+            require('@/assets/faces/ctangtu/13.gif'), require('@/assets/faces/ctangtu/14.gif'),
+            require('@/assets/faces/ctangtu/15.gif'), require('@/assets/faces/ctangtu/16.gif')
+          ]
+        }
+      ]
     }
 
     Object.defineProperty(Vue.prototype, '$moment', { value: AppConfig })
