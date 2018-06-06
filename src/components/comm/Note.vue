@@ -8,7 +8,7 @@
       </div>
     </div>
     <div class="content-wrap">
-      <span>{{note.uttererContent | contentMore(40, isOnContentFilter)}}</span>
+      <span v-html="note.uttererContent"></span>
       <span v-if="note.uttererContent.length > 40 && isOnContentFilter" @click="toggleAllContent">全文</span>
       <span v-if="note.uttererContent.length > 40 && !isOnContentFilter" @click="toggleAllContent">收起</span>
     </div>
@@ -144,6 +144,11 @@ export default {
   display: block;
   line-height: 23px;
   color: #d0c8e1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .note-item>div.content-wrap>span:nth-of-type(2) {

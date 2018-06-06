@@ -26,7 +26,8 @@ export default {
         save_wx_image: '/user/wx/savewximg.json',
         save_user_info: '/user/save.json',
         upload_video: '/uploadimg/upload_video.json',
-        save_issue: '/news/create.json'
+        save_issue: '/news/create.json',
+        get_new_info: '/news/getNewinfo.json'
       },
       // 微信是否开启调试模式，也会一并开启自定义的调试面板
       wxIsDebug: true,
@@ -66,6 +67,8 @@ export default {
       message_attention_friend_toggle_state: -1,
       // 记录 一级页面 - 关注，关注页面当前浏览到的位置。
       attention_page_scroll_top: 0,
+      // 记录 一级页面 - 关注，关注页面列表数据。
+      attention_page_data_list: [],
       // 记录 二级页面 - 聊天，记录用户的聊天内容。
       message_chat_content: {},
       face_imgs: [

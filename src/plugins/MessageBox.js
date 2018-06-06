@@ -812,9 +812,14 @@ export default {
         consolePanlClearCacheElem.onclick = function () {
           window.localStorage.clear()
           context.$toast('Local Storage 数据已清空')
-          writeToConsolePanl('清除后，Local Storage 中的用户数据', JSON.parse(window.localStorage.getItem('wx-user-info')), context, localStorageElem)
+          localStorageElem.innerHTML = ''
+          for (let ls = 0; ls < window.localStorage.length; ls++) {
+            writeToConsolePanl('Local Storage 中的 ' + window.localStorage.key(ls) + ' 数据', JSON.parse(window.localStorage.getItem(window.localStorage.key(ls))), context, localStorageElem)
+          }
         }
-        writeToConsolePanl('Local Storage 中的用户数据', JSON.parse(window.localStorage.getItem('wx-user-info')), context, localStorageElem)
+        for (let ls = 0; ls < window.localStorage.length; ls++) {
+          writeToConsolePanl('Local Storage 中的 ' + window.localStorage.key(ls) + ' 数据', JSON.parse(window.localStorage.getItem(window.localStorage.key(ls))), context, localStorageElem)
+        }
       }
       var consolePanlContentElem = document.createElement('div')
       consolePanlContentElem.id = 'console-panl-content-elem'
@@ -1829,9 +1834,9 @@ function writeToConsolePanl (contentHtml, jsonObj, vueContext, rootElem) {
         subjoinDataElem.style.whiteSpace = 'nowrap'
         subjoinDataElem.style.textOverflow = 'ellipsis'
         if (isArr(jsonObj)) {
-          subjoinDataElem.innerHTML = '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;(' + jsonObj.length + ') ' + JSON.stringify(jsonObj)
+          subjoinDataElem.innerHTML = '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;(' + jsonObj.length + ') ' + JSON.stringify(jsonObj).substr(0, 30) + '...'
         } else {
-          subjoinDataElem.innerHTML = '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;' + JSON.stringify(jsonObj)
+          subjoinDataElem.innerHTML = '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;' + JSON.stringify(jsonObj).substr(0, 30) + '...'
         }
         subjoinDataWrapElem.appendChild(subjoinDataElem)
         subjoinDataElem.onclick = function () {
@@ -1892,15 +1897,15 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
           jsonItemElem.style.whiteSpace = 'nowrap'
           jsonItemElem.style.textOverflow = 'ellipsis'
           if (isArr(jsonObj[j])) {
-            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + j + '</span>：' + '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;(' + jsonObj[j].length + ') ' + JSON.stringify(jsonObj[j])
+            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + j + '</span>：' + '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;(' + jsonObj[j].length + ') ' + JSON.stringify(jsonObj[j]).substr(0, 30) + '...'
           } else {
-            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + j + '</span>：' + '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;' + JSON.stringify(jsonObj[j])
+            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + j + '</span>：' + '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;' + JSON.stringify(jsonObj[j]).substr(0, 30) + '...'
           }
         } else {
           if (isFunction(jsonObj[j])) {
             jsonItemElem.innerHTML = '<span style="color: #F78585;">' + j + '</span>：' + 'function () { ~ }'
           } else {
-            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + j + '</span>：' + jsonObj[j]
+            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + j + '</span>：' + String(jsonObj[j]).replace(/<[^>]+>/g, '')
           }
         }
         jsonItemWrapElem.appendChild(jsonItemElem)
@@ -1985,15 +1990,15 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
           jsonItemElem.style.whiteSpace = 'nowrap'
           jsonItemElem.style.textOverflow = 'ellipsis'
           if (isArr(jsonObj[k])) {
-            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + k + '</span>：' + '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;(' + jsonObj[k].length + ') ' + JSON.stringify(jsonObj[k])
+            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + k + '</span>：' + '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;(' + jsonObj[k].length + ') ' + JSON.stringify(jsonObj[k]).substr(0, 30) + '...'
           } else {
-            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + k + '</span>：' + '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;' + JSON.stringify(jsonObj[k])
+            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + k + '</span>：' + '<span class="close-pointer">&#x27b4;</span>&nbsp;&nbsp;' + JSON.stringify(jsonObj[k]).substr(0, 30) + '...'
           }
         } else {
           if (isFunction(jsonObj[k])) {
             jsonItemElem.innerHTML = '<span style="color: #F78585;">' + k + '</span>：' + 'function () { ~ }'
           } else {
-            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + k + '</span>：' + jsonObj[k]
+            jsonItemElem.innerHTML = '<span style="color: #F78585;">' + k + '</span>：' + String(jsonObj[k]).replace(/<[^>]+>/g, '')
           }
         }
         jsonItemWrapElem.appendChild(jsonItemElem)

@@ -81,13 +81,14 @@ export default {
           var localIds = data.localIds
           if (localIds && localIds.length > 0) {
             for (var l = 0; l < localIds.length; l++) {
-              this.$comfun.wxUploadImage(this, localIds[l]).then((data) => {
+              let uploadImgLocalId = localIds[l]
+              this.$comfun.wxUploadImage(this, uploadImgLocalId).then((data) => {
                 var serverId = data.serverId
                 this.$comfun.saveWxImg(this, serverId).then((response) => {
                   if (response.body.code === '0000' && response.body.success === true) {
                     this.imgVideos.splice(0, 0, {
                       type: 'img',
-                      cover: localIds[l],
+                      cover: uploadImgLocalId,
                       id: response.body.data.id
                     })
                   } else {
@@ -151,7 +152,8 @@ export default {
               this.imgVideos.splice(0, 0, {
                 type: 'video',
                 src: response.body.data.path,
-                id: response.body.data.id
+                id: response.body.data.id,
+                cover: response.body.data.face
               })
               this.imgVideos.splice(this.maxVideoNum, 1)
               setTimeout(() => {
@@ -159,7 +161,7 @@ export default {
                   m3u8: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
                   flv: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
                   autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
-                  // 'coverpic': 'http://www.test.com/myimage.jpg',
+                  coverpic: this.imgVideos[this.imgVideos.length - 1].cover,
                   controls: 'none'
                 }, true)
               }, 10)
@@ -194,15 +196,16 @@ export default {
               this.imgVideos.splice(0, 0, {
                 type: 'video',
                 src: response.body.data.path,
-                id: response.body.data.id
+                id: response.body.data.id,
+                cover: response.body.data.face
               })
               this.imgVideos.splice(this.maxVideoNum, 1)
               setTimeout(() => {
                 this.$comfun.createVideo(this, 'video-show-0', {
-                  // m3u8: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
-                  flv: 'http://172.18.168.44:9007/wximg/123.flv', // 请替换成实际可用的播放地址
+                  m3u8: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
+                  flv: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
                   autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
-                  // 'coverpic': 'http://www.test.com/myimage.jpg',
+                  coverpic: this.imgVideos[this.imgVideos.length - 1].cover,
                   controls: 'none'
                 }, true)
               }, 10)

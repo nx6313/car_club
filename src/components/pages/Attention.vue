@@ -18,65 +18,52 @@ export default {
       noteList: []
     }
   },
-  mounted () {
-    this.noteList = [
-      {
-        id: 0,
-        uttererHead: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd',
-        uttererNickName: '俱乐部之友爱',
-        uttererTime: '2分钟之前',
-        uttererContent: '国台办发言人马晓光先生在上次发布会的时候已经明确表示过，解放军军演和空军绕岛飞行，传达的信息是十分清晰和明确的，就是针对“台独”分裂势力及其活动所做',
-        imgsOrVideos: [
-          {
-            id: 0,
-            img: 'http://pic.58pic.com/58pic/14/91/93/83M58PICPv5_1024.jpg'
-          },
-          {
-            id: 1,
-            video: 'http://img.zcool.cn/community/010f5c586df97ba8012060c8656bf3.jpg@900w_1l_2o_100sh.jpg'
-          },
-          {
-            id: 2,
-            img: 'http://img3.redocn.com/tupian/20150318/keaichangjinglukongbaipaizihanguochahua_4024842.jpg'
-          },
-          {
-            id: 3,
-            img: 'http://img.zcool.cn/community/01f9df56fccb6c32f875a944518d4c.JPG'
-          },
-          {
-            id: 4,
-            img: 'http://pic32.photophoto.cn/20140731/0022005246652881_b.jpg'
-          },
-          {
-            id: 5,
-            img: 'http://img.zcool.cn/community/01858e591fe6a6b5b3086ed473c1d0.jpg'
-          }
-        ],
-        ifLike: false,
-        likeMans: [ '令狐大侠', '刘德华', '张学友', '贾斯汀', '成龙', '鹿晗', '黄渤', '黄磊', '孙红雷', '谢逊', '张三丰' ],
-        comments: [ '令狐冲：这里是测试的评论测试是测试的评论测试是测试的评论测试的评论', 'remmen1025：这里是测试的评论测试的评论', '张学友：这里是测试的评论测试的评论' ]
-      },
-      {
-        id: 1,
-        uttererHead: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd',
-        uttererNickName: '俱乐部之友爱',
-        uttererTime: '2分钟之前',
-        uttererContent: '国台办发言人马晓光先生在上次发布会的时候已经明确表示过',
-        imgsOrVideos: [
-          {
-            id: 0,
-            img: 'http://pic.58pic.com/58pic/14/91/93/83M58PICPv5_1024.jpg'
-          }
-        ],
-        ifLike: false,
-        likeMans: [ '令狐大侠', '刘德华', '张学友', '贾斯汀', '成龙', '鹿晗', '黄渤', '黄磊', '孙红雷', '谢逊', '张三丰' ],
-        comments: [ '令狐冲：这里是测试的评论测试是测试的评论测试是测试的评论测试的评论', 'remmen1025：这里是测试的评论测试的评论', '张学友：这里是测试的评论测试的评论' ]
-      }
-    ]
-  },
   activated () {
-    var contentWrapElem = document.getElementById('content-wrap')
-    contentWrapElem.scrollTop = this.$moment.attention_page_scroll_top
+    this.noteList = this.$moment.attention_page_data_list
+    this.$comfun.http_post(this, this.$moment.urls.get_new_info, {
+      // accountId: this.$moment.wxUserInfo.accountId
+    }).then((response) => {
+      if (response.body.code === '0000' && response.body.success === true) {
+        if (response.body.data.dataList.length > 0 && (this.$moment.attention_page_data_list.length === 0 || this.$moment.attention_page_data_list.length !== response.body.data.dataList.length)) {
+          this.noteList = []
+          for (let d = 0; d < response.body.data.dataList.length; d++) {
+            let attentionData = response.body.data.dataList[d]
+            let imgsOrVideos = []
+            if (attentionData.fileList && attentionData.fileList.length > 0) {
+              for (let f = 0; f < attentionData.fileList.length; f++) {
+                if (String(attentionData.fileList[f].type) === '0') { // 图片资源
+                  imgsOrVideos.push({
+                    id: attentionData.fileList[f].id,
+                    img: attentionData.fileList[f].fileAddress
+                  })
+                } else if (String(attentionData.fileList[f].type) === '1') { // 视频资源
+                  imgsOrVideos.push({
+                    id: attentionData.fileList[f].id,
+                    video: attentionData.fileList[f].face,
+                    resouce: attentionData.fileList[f].fileAddress
+                  })
+                }
+              }
+            }
+            this.noteList.push({
+              id: attentionData.id,
+              uttererHead: attentionData.userHeadimg,
+              uttererNickName: attentionData.username,
+              uttererTime: attentionData.creationDate,
+              uttererContent: attentionData.content,
+              imgsOrVideos: imgsOrVideos,
+              ifLike: false,
+              likeMans: [ '令狐大侠', '刘德华', '张学友', '贾斯汀', '成龙', '鹿晗', '黄渤', '黄磊', '孙红雷', '谢逊', '张三丰' ],
+              comments: [ '令狐冲：这里是测试的评论测试是测试的评论测试是测试的评论测试的评论', 'remmen1025：这里是测试的评论测试的评论', '张学友：这里是测试的评论测试的评论' ]
+            })
+          }
+          this.$moment.attention_page_data_list = this.noteList
+        } else {
+          var contentWrapElem = document.getElementById('content-wrap')
+          contentWrapElem.scrollTop = this.$moment.attention_page_scroll_top
+        }
+      }
+    })
   },
   deactivated () {
     var contentWrapElem = document.getElementById('content-wrap')
