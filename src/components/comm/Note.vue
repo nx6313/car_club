@@ -4,7 +4,7 @@
       <span class="head" :style="note.uttererHead ? { 'background-image': 'url(' + note.uttererHead + ')' } : ''"></span>
       <div class="nike-name-time flex-col flex-b">
         <span>{{note.uttererNickName}}</span>
-        <span>{{note.uttererTime}}</span>
+        <span>{{note.uttererTime | dateToCur(this, 2 * 24 * 60 * 60 * 1000)}}</span>
       </div>
     </div>
     <div class="content-wrap">
@@ -13,12 +13,12 @@
       <span v-if="note.uttererContent.length > 40 && !isOnContentFilter" @click="toggleAllContent">收起</span>
     </div>
     <div class="imgs-video-wrap" v-if="note.imgsOrVideos.length > 0">
-      <span v-for="imgvideo in note.imgsOrVideos" :key="imgvideo.id" :style="(imgvideo.img || imgvideo.video) ? { 'background-image': 'url(' + (imgvideo.img || imgvideo.video) + ')' } : ''" :class="imgvideo.video ? 'isVideo' : ''"></span>
+      <span v-for="imgvideo in note.imgsOrVideos" :key="imgvideo.id" :style="(imgvideo.img || imgvideo.video) ? { 'background-image': 'url(' + (imgvideo.img || imgvideo.video) + ')' } : ''" :class="imgvideo.video ? (['isVideo', imgvideo.width > imgvideo.height ? 'vertical' : '']) : ''"></span>
     </div>
     <div class="like-wrap" :style="note.imgsOrVideos.length > 0 ? { 'margin-top': '10px' } : { 'margin-top': '0px' }">
       <div class="like-icon-btn-wrap">
         <span :class="note.ifLike ? 'hasLike' : ''" @click="support"></span>
-        <span></span>
+        <span @click="toComment"></span>
         <span></span>
       </div>
       <div class="like-tip-wrap">
@@ -47,6 +47,21 @@ export default {
     }
   },
   filters: {
+    dateToCur (value, context, maxDiff) {
+      let maxDiffVal = maxDiff === undefined ? 0 : maxDiff
+      let date = new Date(value).getTime()
+      let cur = Date.now()
+      let diff = cur - date
+      if (maxDiffVal > 0) {
+        if (diff > maxDiffVal) {
+          return context.$comfun.formatDate(new Date(value), 'yy-MM-dd hh:mm:ss')
+        } else {
+          return context.$comfun.formatDiffMilliseconds(diff) + ' 前'
+        }
+      } else {
+        return context.$comfun.formatDate(new Date(value), 'yy-MM-dd hh:mm:ss')
+      }
+    },
     contentMore (value, max, isOn) {
       if (isOn && value.length > max) {
         return value.substr(0, max) + ' ...'
@@ -81,10 +96,23 @@ export default {
     support () {
       this.note.ifLike = !this.note.ifLike
       if (this.note.ifLike) {
+        this.$comfun.http_post(this, this.$moment.urls.praise + '?id=' + this.note.id, {
+          accountId: this.$moment.wxUserInfo.accountId
+        }).then((response) => {
+
+        })
         this.$toast('点赞成功')
       } else {
+        this.$comfun.http_post(this, this.$moment.urls.praise + '?id=' + this.note.id, {
+          accountId: this.$moment.wxUserInfo.accountId
+        }).then((response) => {
+
+        })
         this.$toast('点赞取消')
       }
+    },
+    toComment () {
+      this.$emit('to-comment', this.note.id)
     }
   }
 }
@@ -179,6 +207,10 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% auto;
+}
+
+.note-item>div.imgs-video-wrap>span.vertical {
+  background-size: auto 100%;
 }
 
 .note-item>div.imgs-video-wrap>span.isVideo::before {

@@ -27,7 +27,8 @@ export default {
         save_user_info: '/user/save.json',
         upload_video: '/uploadimg/upload_video.json',
         save_issue: '/news/create.json',
-        get_new_info: '/news/getNewinfo.json'
+        get_new_info: '/news/getNewinfo.json',
+        praise: '/news/praise.json'
       },
       // 微信是否开启调试模式，也会一并开启自定义的调试面板
       wxIsDebug: true,

@@ -53,6 +53,7 @@ export default {
         event.target.classList.remove('placeholder')
         event.target.innerHTML = ''
       }
+      event.target.focus()
     },
     blurInput () {
       this.$face_close()
@@ -399,14 +400,14 @@ export default {
   margin: auto 0;
   display: inline-block;
   width: calc(100% - 3.8rem - 20px - 2.2rem - 2px);
-  height: calc(2rem - 16px);
+  height: calc(2rem - 14px);
   border: none;
   outline: none;
   border-radius: calc(2rem - 16px);
   background-color: #433564;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 8px 2.2rem 8px 20px;
+  padding: 6px 2.2rem 8px 20px;
   color: #ffffff;
   font-size: 0.9rem;
 }

@@ -193,6 +193,60 @@ export default {
         }
         return true
       },
+      // 日期格式转字符串，指定格式
+      // 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符
+      // 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
+      // 例子：
+      // (new Date()).format("yyyy-MM-dd hh:mm:ss.S") ==> 2006-07-02 08:09:04.423
+      // (new Date()).format("yyyy-M-d h:m:s.S") ==> 2006-7-2 8:9:4.18
+      formatDate: function (date, fmt) {
+        var o = {
+          'M+': date.getMonth() + 1, // 月份
+          'd+': date.getDate(), // 日
+          'h+': date.getHours(), // 小时
+          'm+': date.getMinutes(), // 分
+          's+': date.getSeconds(), // 秒
+          'q+': Math.floor((date.getMonth() + 3) / 3), // 季度
+          'S': date.getMilliseconds() // 毫秒
+        }
+        if (/(y+)/.test(fmt)) {
+          fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length))
+        }
+        for (var k in o) {
+          if (new RegExp('(' + k + ')').test(fmt)) {
+            fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (('00' + o[k]).substr(('' + o[k]).length)))
+          }
+        }
+        return fmt
+      },
+      // 将相差的毫秒数转为时间
+      formatDiffMilliseconds (diffMilliseconds) {
+        let dayMill = 24 * 60 * 60 * 1000
+        let hourMill = 60 * 60 * 1000
+        let minuteMill = 60 * 1000
+        let secondMill = 1000
+        let day = Math.floor(diffMilliseconds / dayMill)
+        let dayResidue = diffMilliseconds % dayMill
+        let hour = Math.floor(dayResidue / hourMill)
+        let hourResidue = dayResidue % hourMill
+        let minute = Math.floor(hourResidue / minuteMill)
+        let minuteResidue = hourResidue % minuteMill
+        let second = Math.floor(minuteResidue / secondMill)
+        let returnVal = ''
+        if (day > 0) {
+          returnVal += day + ' 天 '
+        }
+        if (hour > 0) {
+          returnVal += hour + ' 小时 '
+        }
+        if (minute > 0) {
+          returnVal += minute + ' 分钟 '
+        }
+        if (day === 0 && hour === 0 && minute === 0) {
+          returnVal = second + ' 秒 '
+        }
+        return returnVal
+      },
       // 获取当前浏览器访问地址，会将地址，参数部分，#部分分别放入json返回
       getCurrentUrl: function (encodeURIFlag) {
         var pathname = location.pathname

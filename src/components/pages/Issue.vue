@@ -56,6 +56,7 @@ export default {
         event.target.classList.remove('placeholder')
         event.target.innerHTML = ''
       }
+      event.target.focus()
     },
     blurInput () {
       this.$face_close()
@@ -153,18 +154,24 @@ export default {
                 type: 'video',
                 src: response.body.data.path,
                 id: response.body.data.id,
-                cover: response.body.data.face
+                cover: response.body.data.face,
+                width: Number(response.body.data.width),
+                height: Number(response.body.data.height)
               })
               this.imgVideos.splice(this.maxVideoNum, 1)
               setTimeout(() => {
-                this.$comfun.createVideo(this, 'video-show-0', {
-                  m3u8: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
-                  flv: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
-                  autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
-                  coverpic: this.imgVideos[this.imgVideos.length - 1].cover,
-                  controls: 'none'
-                }, true)
-              }, 10)
+                if (this.imgVideos[this.imgVideos.length - 1].width > this.imgVideos[this.imgVideos.length - 1].height) {
+                  this.$refs['video-show-' + (this.imgVideos.length - 1)][0].classList.add('video-vertical')
+                }
+                this.$refs['video-show-' + (this.imgVideos.length - 1)][0].style.backgroundImage = 'url(' + this.imgVideos[this.imgVideos.length - 1].cover + ')'
+              //   this.$comfun.createVideo(this, 'video-show-' + (this.imgVideos.length - 1), {
+              //     m3u8: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
+              //     flv: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
+              //     autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
+              //     coverpic: this.imgVideos[this.imgVideos.length - 1].cover,
+              //     controls: 'none'
+              //   }, true)
+              }, 20)
               if (this.imgVideos.length >= this.maxVideoNum) {
                 this.canSelectVideo = false
               }
@@ -197,18 +204,24 @@ export default {
                 type: 'video',
                 src: response.body.data.path,
                 id: response.body.data.id,
-                cover: response.body.data.face
+                cover: response.body.data.face,
+                width: Number(response.body.data.width),
+                height: Number(response.body.data.height)
               })
               this.imgVideos.splice(this.maxVideoNum, 1)
               setTimeout(() => {
-                this.$comfun.createVideo(this, 'video-show-0', {
-                  m3u8: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
-                  flv: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
-                  autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
-                  coverpic: this.imgVideos[this.imgVideos.length - 1].cover,
-                  controls: 'none'
-                }, true)
-              }, 10)
+                if (this.imgVideos[this.imgVideos.length - 1].width > this.imgVideos[this.imgVideos.length - 1].height) {
+                  this.$refs['video-show-' + (this.imgVideos.length - 1)][0].classList.add('video-vertical')
+                }
+                this.$refs['video-show-' + (this.imgVideos.length - 1)][0].style.backgroundImage = 'url(' + this.imgVideos[this.imgVideos.length - 1].cover + ')'
+              //   this.$comfun.createVideo(this, 'video-show-' + (this.imgVideos.length - 1), {
+              //     m3u8: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
+              //     flv: this.imgVideos[this.imgVideos.length - 1].src, // 请替换成实际可用的播放地址
+              //     autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
+              //     coverpic: this.imgVideos[this.imgVideos.length - 1].cover,
+              //     controls: 'none'
+              //   }, true)
+              }, 20)
               if (this.imgVideos.length >= this.maxVideoNum) {
                 this.canSelectVideo = false
               }
@@ -423,6 +436,30 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
+  background-color: #1f1f1f;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% auto;
+}
+
+.action-wrap>div.issue-video-wrap>div.issue-video-item>div.video-show::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: auto;
+  width: 50%;
+  height: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto 100%;
+  background-image: url('./../../assets/play.png');
+}
+
+.action-wrap>div.issue-video-wrap>div.issue-video-item>div.video-vertical {
+  background-size: auto 100%;
 }
 
 .action-wrap>div.issue-video-wrap>div.issue-video-item-add {
@@ -433,6 +470,7 @@ export default {
 }
 
 #face-wrap {
+  position: relative;
   background: #443763;
   font-size: 0;
 }

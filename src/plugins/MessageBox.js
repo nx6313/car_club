@@ -334,26 +334,35 @@ export default {
 
     // 表情选择弹出层
     Vue.prototype.$face = function (context, option) {
+      var params = option || {}
+      var closeFn = params.closeFn || function () {}
       if (document.getElementById('face-message-box')) {
+        if (closeFn && isFunction(closeFn)) {
+          closeFn()
+        }
         context.$face_close()
         return false
       }
       var faceImgs = context.$moment.face_imgs
-      var params = option || {}
+      var showFn = params.showFn || function () {}
       var delay = params.delay || 10
+      var otherClass = params.otherClass || ''
       var rootElem = params.rootElem || document.body
       var wrapPosition = rootElem.contains(document.body) ? 'absolute' : 'relative'
-      if (!rootElem.contains(document.body)) {
-        rootElem.style.position = 'relative'
-      }
+      // if (!rootElem.contains(document.body)) {
+      //   rootElem.style.position = 'relative'
+      // }
       var tabBg = params.tabBg || 'rgba(81, 69, 125, 0.48)'
       var background = params.background || 'rgba(255, 255, 255, 0)'
       var color = params.color || 'rgba(58, 58, 58, 1)'
       var width = params.width || '100vw'
-      var height = params.height || '11rem'
+      var height = params.height || '9rem'
       var type = params.type || 'all'
       var callBack = params.callBack || function () {}
       var facePopHeightToPx = 0
+      if (showFn && isFunction(showFn)) {
+        showFn()
+      }
       if (height.indexOf('rem') > 0) {
         facePopHeightToPx = Number(height.match(/[-?\d.?]+/g)[0]) * 16
       } else {
@@ -363,6 +372,7 @@ export default {
         if (rootElem.contains(document.body)) {
           var faceShadeElem = document.createElement('div')
           faceShadeElem.id = 'face-message-box-shade'
+          faceShadeElem.classList.add(otherClass)
           faceShadeElem.style.position = 'fixed'
           faceShadeElem.style.width = '100vw'
           faceShadeElem.style.height = '100vh'
@@ -383,6 +393,7 @@ export default {
         }
         var faceElem = document.createElement('div')
         faceElem.id = 'face-message-box'
+        faceElem.classList.add(otherClass)
         faceElem.style.position = wrapPosition
         faceElem.style.left = '50%'
         faceElem.style.minWidth = width
@@ -422,6 +433,7 @@ export default {
             }
           }
           var faceTabsWrapElem = document.createElement('div')
+          faceTabsWrapElem.classList.add(otherClass)
           faceTabsWrapElem.style.position = 'relative'
           faceTabsWrapElem.style.backgroundColor = tabBg
           faceTabsWrapElem.style.height = '2rem'
@@ -430,6 +442,7 @@ export default {
           faceTabsWrapElem.style.overflowY = 'hidden'
           faceElem.appendChild(faceTabsWrapElem)
           var faceContentWrapElem = document.createElement('div')
+          faceContentWrapElem.classList.add(otherClass)
           faceContentWrapElem.style.position = 'relative'
           faceContentWrapElem.style.width = `${faceElem.clientWidth}px`
           faceContentWrapElem.style.height = `${facePopHeightToPx - faceTabsWrapElem.clientHeight}px`
@@ -437,6 +450,7 @@ export default {
           faceElem.appendChild(faceContentWrapElem)
           var faceContentTransElem = document.createElement('div')
           faceContentTransElem.classList.add('face-content-trans')
+          faceContentTransElem.classList.add(otherClass)
           faceContentTransElem.style.position = 'relative'
           faceContentTransElem.style.width = `${faceElem.clientWidth * showFaceTabCount}px`
           faceContentTransElem.style.height = `${facePopHeightToPx - faceTabsWrapElem.clientHeight}px`
@@ -450,6 +464,7 @@ export default {
             if (faceImgs[f].faces.length > 0 && (faceImgs[f].type === undefined || faceImgs[f].type === type)) {
               var faceTabElem = document.createElement('span')
               faceTabElem.classList.add('face-tab-item-' + f)
+              faceTabElem.classList.add(otherClass)
               faceTabElem.style.display = 'inline-block'
               faceTabElem.style.textAlign = 'center'
               faceTabElem.style.position = 'absolute'
@@ -476,6 +491,7 @@ export default {
               if (curFaceShowIndex === 0) {
                 var faceTabIndicatorElem = document.createElement('div')
                 faceTabIndicatorElem.classList.add('face-tab-indicator')
+                faceTabIndicatorElem.classList.add(otherClass)
                 faceTabIndicatorElem.style.position = 'absolute'
                 faceTabIndicatorElem.style.bottom = 0
                 faceTabIndicatorElem.style.left = `${faceTabLeft}px`
@@ -488,6 +504,7 @@ export default {
               faceTabElem.style.left = `${faceTabLeft}px`
               faceTabLeft += faceTabElem.clientWidth
               var faceItemTransWrap = document.createElement('div')
+              faceItemTransWrap.classList.add(otherClass)
               faceItemTransWrap.style.position = 'absolute'
               faceItemTransWrap.style.width = faceContentWrapElem.clientWidth + 'px'
               faceItemTransWrap.style.height = faceContentWrapElem.clientHeight + 'px'
@@ -497,6 +514,7 @@ export default {
               faceItemTransWrap.style.overflowY = 'auto'
               faceContentTransElem.appendChild(faceItemTransWrap)
               var faceItem = document.createElement('div')
+              faceItem.classList.add(otherClass)
               faceItem.style.position = 'relative'
               faceItem.style.width = faceContentWrapElem.clientWidth + 'px'
               faceItem.style.top = 0
@@ -509,6 +527,7 @@ export default {
               faceItemTransWrap.appendChild(faceItem)
               for (let c = 0; c < faceImgs[f].faces.length; c++) {
                 var fw = document.createElement('div')
+                fw.classList.add(otherClass)
                 fw.style.position = 'relative'
                 fw.style.display = 'inline-block'
                 fw.style.width = `${faceItem.clientWidth / 8}px`
@@ -517,6 +536,7 @@ export default {
                 fw.style.textAlign = 'center'
                 faceItem.appendChild(fw)
                 var faceImg = document.createElement('img')
+                faceImg.classList.add(otherClass)
                 faceImg.style.width = '70%'
                 faceImg.style.height = '70%'
                 faceImg.style.display = 'inline-block'
@@ -533,6 +553,7 @@ export default {
                     if (callBack && isFunction(callBack)) {
                       var selectFaceImgHtml
                       var selectFaceImg = document.createElement('img')
+                      selectFaceImg.classList.add(otherClass)
                       if (size === 'big') {
                         selectFaceImg.style.width = '3rem'
                         selectFaceImg.style.height = '3rem'
