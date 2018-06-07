@@ -5,10 +5,10 @@
       <div class="content-wrap">
         <span>{{detailData.nikeName}}</span>
         <span v-if="detailData.content">{{detailData.content}}</span>
-        <div v-if="detailData.assets.length > 0">
-          <span v-for="(asset, index) in detailData.assets" :key="index" :style="(asset.img || asset.video) ? { 'background-image': 'url(' + (asset.img || asset.video) + ')' } : ''"></span>
+        <div class="assets-item-wrap" v-if="detailData.assets.length > 0">
+          <span v-for="(asset, index) in detailData.assets" :key="index" :style="(asset.img || asset.video) ? { 'background-image': 'url(' + (asset.img || asset.video) + ')' } : ''" :class="asset.video ? (['isVideo', asset.width > asset.height ? 'vertical' : '']) : ''"></span>
         </div>
-        <div>
+        <div class="time-read-delete-wrap">
           <span>{{detailData.time}}</span>
           <span>{{detailData.readNum}}阅读</span>
           <span class="btn-delete">删除</span>
@@ -79,6 +79,9 @@ export default {
         },
         {
           img: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
+        },
+        {
+          video: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
         }
       ],
       time: '2018年5月19日 15:49:51',
@@ -171,8 +174,113 @@ export default {
 
 .state-info-wrap>div.content-wrap {
   position: relative;
-  width: calc(100% - 2.2rem);
-  margin-left: 2.2rem;
+  width: calc(100% - 2.9rem);
+  margin-left: 2.9rem;
+  margin-top: -2.2rem;
+}
+
+.state-info-wrap>div.content-wrap>span:nth-of-type(1) {
+  position: relative;
+  display: block;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.state-info-wrap>div.content-wrap>span:nth-of-type(2) {
+  position: relative;
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.state-info-wrap>div.content-wrap>div.assets-item-wrap {
+  position: relative;
+  width: 82%;
+  font-size: 0;
+  margin-top: 1rem;
+  display: -webkit-flex; /* Safari */
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.state-info-wrap>div.content-wrap>div.assets-item-wrap>span {
+  position: relative;
+  display: inline-block;
+  width: calc((100% - 15px) / 3);
+  height: 0;
+  padding-bottom: calc((100% - 15px) / 3);
+  margin: 0 5px 5px 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% auto;
+}
+
+.state-info-wrap>div.content-wrap>div.assets-item-wrap>span.vertical {
+  background-size: auto 100%;
+}
+
+.state-info-wrap>div.content-wrap>div.assets-item-wrap>span.isVideo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .4);
+}
+
+.state-info-wrap>div.content-wrap>div.assets-item-wrap>span.isVideo::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: auto;
+  width: 50%;
+  height: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto 100%;
+  background-image: url('./../../../assets/play.png');
+}
+
+.state-info-wrap>div.content-wrap>div.time-read-delete-wrap {
+  margin-top: 0.8rem;
+  color: #8b7caf;
+}
+
+.state-info-wrap>div.content-wrap>div.time-read-delete-wrap>span {
+  position: relative;
+  display: inline-block;
+}
+
+.state-info-wrap>div.content-wrap>div.time-read-delete-wrap>span:nth-of-type(1) {
+  margin-right: 0.4rem;
+}
+
+.state-info-wrap>div.content-wrap>div.time-read-delete-wrap>span:nth-of-type(1)::after {
+  content: '';
+  position: absolute;
+  top: 0.4rem;
+  right: -0.6rem;
+  width: 4px;
+  height: 4px;
+  border-radius: 4px;
+  background: #8b7caf;
+}
+
+.state-info-wrap>div.content-wrap>div.time-read-delete-wrap>span:nth-of-type(2) {
+  margin-left: 0.4rem;
+}
+
+.state-info-wrap>div.content-wrap>div.time-read-delete-wrap>span:nth-of-type(3) {
+  margin-left: 0.8rem;
+  color: #b8a6e3;
+  font-size: 0.8rem;
 }
 
 .comment-wrap {

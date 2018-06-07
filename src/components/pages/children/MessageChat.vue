@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <div @touchstart="touchStart" @touchmove="touchMove">
     <transition-group :name="chatContentListTrsName" tag="div" class="chat-content-wrap" ref="chat-content-wrap">
       <div v-for="(chat, index) in chatList" :key="index" :class="['chat-item', chat.isMe ? 'right' : 'left']">
         <span class="head" :style="chat.head ? { 'background-image': 'url(' + chat.head + ')' } : ''"></span>
-        <div :class="['content-wrap', chat.isBig === true ? 'content-wrap-big-img' : '']">
+        <div class="content-wrap">
           <div class="chat-time-name" v-if="chat.isMe">
             <span>{{chat.time}}</span>
             <span>{{chat.nikeName}}</span>
@@ -12,17 +12,17 @@
             <span>{{chat.nikeName}}</span>
             <span>{{chat.time}}</span>
           </div>
-          <div :class="['chat-content', chat.isBig === true ? 'chat-content-big-img' : '']" v-html="chat.content"></div>
+          <div :class="['chat-content', chat.isBig === true ? 'chat-content-big-img' : '', chat.isMe ? 'chat-content-self' : 'chat-content-friend']" v-html="chat.content"></div>
         </div>
       </div>
     </transition-group>
-    <div class="chat-input-wrap">
-      <div id="edit" ref="edit" class="placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入消息内容</div>
-      <span @click="selectFace"></span>
-      <span class="chat-add-btn" style="display: block;" ref="chat-add-btn"></span>
-      <span class="chat-send-btn ripple" style="display: none;" ref="chat-send-btn" @click="chatSend">发送</span>
+    <div id="face-wrap" ref="face-wrap" class="touchIgnore"></div>
+    <div class="chat-input-wrap touchIgnore">
+      <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入消息内容</div>
+      <span class="touchIgnore" @click="selectFace"></span>
+      <span class="chat-add-btn touchIgnore" style="display: block;" ref="chat-add-btn"></span>
+      <span class="chat-send-btn ripple touchIgnore" style="display: none;" ref="chat-send-btn" @click="chatSend($event)">发送</span>
     </div>
-    <div id="face-wrap" ref="face-wrap"></div>
   </div>
 </template>
 
@@ -68,8 +68,22 @@ export default {
       this.chatContentInputHtml = event.target.innerHTML
       if (event.target.innerHTML.length > 0) {
         event.target.classList.add('inputing')
+        setTimeout(() => {
+          var currentpos = this.$refs.edit.scrollHeight * 100
+          this.$refs.edit.scrollTop = currentpos
+        }, 100)
       } else {
         event.target.classList.remove('inputing')
+      }
+    },
+    touchStart () {
+      if (!event.target.classList.contains('touchIgnore')) {
+        this.$face_close()
+      }
+    },
+    touchMove () {
+      if (!event.target.classList.contains('touchIgnore')) {
+        this.$face_close()
       }
     },
     scrollTobottom () {
@@ -94,7 +108,7 @@ export default {
         this.scrollTobottom()
       }, 3000)
     },
-    chatSend (chatContent, isBig) {
+    chatSend (event, chatContent, isBig) {
       var thisChatContent = chatContent || this.chatContentInputHtml.trim()
       this.chatContentListTrsName = 'me-chat'
       var newSendData = {
@@ -116,15 +130,17 @@ export default {
         this.$refs.edit.classList.add('placeholder')
         this.$refs.edit.innerHTML = '请输入消息内容'
       }
+      this.$face_close()
       this.friendResive()
     },
     selectFace () {
       this.$face(this, {
         rootElem: this.$refs['face-wrap'],
         type: 'chat',
+        otherClass: 'touchIgnore',
         callBack: (faceImg, isBig, faceImgHtml) => {
           if (isBig === true) {
-            this.chatSend(faceImgHtml, true)
+            this.chatSend(event, faceImgHtml, true)
           } else {
             if (this.$refs.edit.classList.contains('placeholder')) {
               this.$refs.edit.classList.remove('placeholder')
@@ -134,7 +150,10 @@ export default {
             this.$refs.edit.appendChild(faceImg)
             this.chatContentInput = this.$refs.edit.innerText
             this.chatContentInputHtml = this.$refs.edit.innerHTML
-            console.log(this.chatContentInput, this.chatContentInputHtml)
+            setTimeout(() => {
+              var currentpos = this.$refs.edit.scrollHeight * 100
+              this.$refs.edit.scrollTop = currentpos
+            }, 100)
           }
         }
       })
@@ -233,20 +252,6 @@ export default {
   width: calc(100% - 3rem - 0.6rem - 0.6rem);
 }
 
-.chat-content-wrap>div.chat-item>div.content-wrap::after {
-  content: '';
-  position: absolute;
-  width: 0.6rem;
-  height: 1rem;
-  background-color: #5c4592;
-  top: 2rem;
-  z-index: -1;
-}
-
-.chat-content-wrap>div.chat-item>div.content-wrap-big-img::after {
-  background-color: transparent !important;
-}
-
 .chat-content-wrap>div.chat-item>div.content-wrap>div.chat-time-name {
   position: relative;
   display: block;
@@ -266,18 +271,45 @@ export default {
   word-wrap: break-word;
 }
 
+.chat-content-wrap>div.chat-item>div.content-wrap>div.chat-content::after {
+  content: '';
+  position: absolute;
+  width: 0.6rem;
+  height: 1rem;
+  background-color: #5c4592;
+  top: 0.4rem;
+  z-index: -1;
+}
+
+.chat-content-wrap>div.left>div.content-wrap>div.chat-content::after {
+  transform: skewX(30deg) rotate(190deg);
+  left: -0.08rem;
+}
+
+.chat-content-wrap>div.right>div.content-wrap>div.chat-content::after {
+  transform: skewX(330deg) rotate(170deg);
+  right: -0.08rem;
+}
+
 .chat-content-wrap>div.chat-item>div.content-wrap>div.chat-content-big-img {
   background-color: transparent !important;
+}
+
+.chat-content-wrap>div.chat-item>div.content-wrap>div.chat-content-big-img::after {
+  background-color: transparent !important;
+}
+
+.chat-content-wrap>div.chat-item>div.content-wrap>div.chat-content-friend {
+  background-color: #2c1f4a;
+}
+
+.chat-content-wrap>div.chat-item>div.content-wrap>div.chat-content-friend::after {
+  background-color: #2c1f4a;
 }
 
 .chat-content-wrap>div.left>div.content-wrap {
   text-align: left;
   margin-left: calc(3rem + 0.6rem + 0.6rem);
-}
-
-.chat-content-wrap>div.left>div.content-wrap::after {
-  transform: skewX(30deg) rotate(190deg);
-  left: -0.08rem;
 }
 
 .chat-content-wrap>div.left>div.content-wrap>div.chat-time-name {
@@ -299,11 +331,6 @@ export default {
 
 .chat-content-wrap>div.right>div.content-wrap {
   text-align: right;
-}
-
-.chat-content-wrap>div.right>div.content-wrap::after {
-  transform: skewX(330deg) rotate(170deg);
-  right: -0.08rem;
 }
 
 .chat-content-wrap>div.right>div.content-wrap>div.chat-time-name {
@@ -412,11 +439,19 @@ export default {
   font-size: 0.9rem;
 }
 
+#edit::-webkit-scrollbar {
+  display: none;
+}
+
 .placeholder {
   color: #685d82 !important;
 }
 
 #face-wrap {
+  position: fixed;
+  width: 100%;
+  bottom: 3.2rem;
+  left: 0;
   background: #443763;
   font-size: 0;
 }

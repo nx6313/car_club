@@ -6,7 +6,7 @@
     <div class="comment-wrap touchIgnore close" ref="comment_wrap">
       <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入评论内容</div>
       <span class="touchIgnore" @click.passive="selectFace"></span>
-      <span class="chat-send-btn ripple touchIgnore" ref="chat-send-btn" @click="chatSend">评论</span>
+      <span class="chat-send-btn ripple touchIgnore" ref="chat-send-btn" @click="commentSend">评论</span>
     </div>
   </div>
 </template>
@@ -48,6 +48,10 @@ export default {
       this.commentContentInputHtml = event.target.innerHTML
       if (event.target.innerHTML.length > 0) {
         event.target.classList.add('inputing')
+        setTimeout(() => {
+          var currentpos = this.$refs.edit.scrollHeight * 100
+          this.$refs.edit.scrollTop = currentpos
+        }, 100)
       } else {
         event.target.classList.remove('inputing')
       }
@@ -59,7 +63,7 @@ export default {
         this.$refs.comment_wrap.setAttribute('class', 'comment-wrap touchIgnore close')
       }
     },
-    chatSend (chatContent, isBig) {
+    commentSend () {
       this.$refs.edit.innerHTML = ''
       this.commentContentInput = ''
       this.commentContentInputHtml = ''
@@ -73,20 +77,19 @@ export default {
       this.$face(this, {
         rootElem: this.$refs['face-wrap'],
         otherClass: 'touchIgnore',
-        callBack: (faceImg, isBig, faceImgHtml) => {
-          if (isBig === true) {
-            this.chatSend(faceImgHtml, true)
-          } else {
-            if (this.$refs.edit.classList.contains('placeholder')) {
-              this.$refs.edit.classList.remove('placeholder')
-              this.$refs.edit.classList.add('inputing')
-              this.$refs.edit.innerHTML = ''
-            }
-            this.$refs.edit.appendChild(faceImg)
-            this.commentContentInput = this.$refs.edit.innerText
-            this.commentContentInputHtml = this.$refs.edit.innerHTML
-            console.log(this.commentContentInput, this.commentContentInputHtml)
+        callBack: (faceImg) => {
+          if (this.$refs.edit.classList.contains('placeholder')) {
+            this.$refs.edit.classList.remove('placeholder')
+            this.$refs.edit.classList.add('inputing')
+            this.$refs.edit.innerHTML = ''
           }
+          this.$refs.edit.appendChild(faceImg)
+          this.commentContentInput = this.$refs.edit.innerText
+          this.commentContentInputHtml = this.$refs.edit.innerHTML
+          setTimeout(() => {
+            var currentpos = this.$refs.edit.scrollHeight * 100
+            this.$refs.edit.scrollTop = currentpos
+          }, 100)
         }
       })
     },
