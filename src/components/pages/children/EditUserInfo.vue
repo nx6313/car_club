@@ -162,7 +162,6 @@ export default {
         city: this.userInfo.address
         // country: this.userInfo.country
       }).then((response) => {
-        this.$loading_close()
         if (response.body && response.body.code === '0000' && response.body.success === true) {
           this.$toast('保存资料成功')
         } else {

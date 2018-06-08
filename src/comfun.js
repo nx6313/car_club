@@ -20,6 +20,7 @@ export default {
                 '链接': callUrl,
                 '请求返回': response
               })
+              context.$loading_close()
               resolve(response)
             }, response => {
               context.$comfun.consoleBeautiful(context, '接口访问出错：url【' + url + '】', '#BF0F3D', 'https://img.zcool.cn/community/014db6579571700000012e7e602493.gif', {
@@ -54,6 +55,7 @@ export default {
                 '请求返回': response,
                 '相关参数': paramsData
               })
+              context.$loading_close()
               resolve(response)
             }, response => {
               context.$comfun.consoleBeautiful(context, '接口访问出错：url【' + url + '】', '#BF0F3D', 'https://img.zcool.cn/community/014db6579571700000012e7e602493.gif', {
@@ -97,6 +99,7 @@ export default {
                 '请求返回': response,
                 '要上传的视频对象': file
               })
+              context.$loading_close()
               resolve(response)
             }, response => {
               context.$comfun.consoleBeautiful(context, '接口访问出错：url【' + url + '】', '#BF0F3D', 'https://img.zcool.cn/community/014db6579571700000012e7e602493.gif', {
@@ -325,7 +328,6 @@ export default {
         } else {
           context.$loading('初始化账号信息中...')
           context.$comfun.http_get(context, context.$moment.urls.get_user_info_by_id + '?id=' + context.$moment.wxUserInfo.accountId).then((response) => {
-            context.$loading_close()
             if (response.body && response.body.code === '0000' && response.body.success === true) {
               context.$moment.wxUserInfo.headimgurl = context.$comfun.isNotNull(response.body.data.headimg) ? response.body.data.headimg : ''
               context.$moment.wxUserInfo.birthday = context.$comfun.isNotNull(response.body.data.birthday) ? response.body.data.birthday : ''
@@ -338,8 +340,6 @@ export default {
             } else {
               context.$toast('初始化账号信息失败')
             }
-          }, (response) => {
-            context.$loading_close()
           })
         }
       },
@@ -367,11 +367,8 @@ export default {
               } else {
                 window.location.replace(context.$moment.indexPage_)
               }
-            } else {
-              context.$loading_close()
             }
           }, (response) => {
-            context.$loading_close()
             reject(response)
           })
         })
@@ -387,7 +384,6 @@ export default {
               url: pageUrl,
               openid: context.$moment.wxUserInfo.openid
             }).then((response) => {
-              context.$loading_close()
               if (response.body.data) {
                 context.$moment.wx.config({
                   debug: context.$moment.wxIsDebug,
@@ -399,7 +395,6 @@ export default {
                 })
               }
             }, (response) => {
-              context.$loading_close()
               reject(response)
             })
           } else {

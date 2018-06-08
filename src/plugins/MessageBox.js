@@ -1,4 +1,5 @@
 var toastOpacityTimer, toastRemoveTimer
+var toptipOpacityTimer, toptipRemoveTimer
 export default {
   install: function (Vue, options) {
     // toast弹出层
@@ -39,6 +40,55 @@ export default {
           document.body.removeChild(toastElem)
         }, 0.5 * 1000)
       }, duration)
+    }
+
+    // toptip弹出层
+    Vue.prototype.$toptip = function (content, option) {
+      if (document.getElementById('toptip-message-box')) {
+        document.body.removeChild(document.getElementById('toptip-message-box'))
+        clearTimeout(toptipOpacityTimer)
+        clearTimeout(toptipRemoveTimer)
+      }
+      var params = option || {}
+      var background = params.background || 'rgb(65, 75, 125)'
+      var color = params.color || 'rgb(227, 240, 243)'
+      var toptipElem = document.createElement('span')
+      toptipElem.id = 'toptip-message-box'
+      toptipElem.style.position = 'absolute'
+      toptipElem.style.left = 0
+      toptipElem.style.top = 0
+      toptipElem.style.width = '100%'
+      toptipElem.style.padding = '0.3rem 0'
+      toptipElem.style.whiteSpace = 'nowrap'
+      toptipElem.style.display = 'inline-block'
+      toptipElem.style.transition = 'all 0.3s ease 0s'
+      toptipElem.style.transform = 'translateY(-100%)'
+      toptipElem.style.fontSize = '0.8rem'
+      toptipElem.style.textAlign = 'center'
+      toptipElem.innerHTML = content
+      toptipElem.style.zIndex = 999999999
+      toptipElem.style.background = background
+      toptipElem.style.color = color
+      document.body.appendChild(toptipElem)
+      setTimeout(() => {
+        toptipElem.style.transform = 'translateY(0)'
+      }, 10)
+      var duration = params.duration || 4000
+      toptipOpacityTimer = setTimeout(() => {
+        toptipElem.style.transform = 'translateY(-100%)'
+        toptipRemoveTimer = setTimeout(() => {
+          document.body.removeChild(toptipElem)
+        }, 0.5 * 1000)
+      }, duration)
+    }
+
+    // 关闭toptip弹出层
+    Vue.prototype.$toptip_close = function () {
+      if (document.getElementById('toptip-message-box')) {
+        document.body.removeChild(document.getElementById('toptip-message-box'))
+        clearTimeout(toptipOpacityTimer)
+        clearTimeout(toptipRemoveTimer)
+      }
     }
 
     // loading弹出层
@@ -603,20 +653,27 @@ export default {
 
     // 关闭表情选择弹出层
     Vue.prototype.$face_close = function () {
-      var facePop = document.getElementById('face-message-box')
-      if (facePop) {
-        if (facePop.parentElement.contains(document.body)) {
-          document.body.removeChild(document.getElementById('face-message-box-shade'))
-          document.body.removeChild(facePop)
+      var faceClosePromise = new Promise((resolve, reject) => {
+        var facePop = document.getElementById('face-message-box')
+        if (facePop) {
+          if (facePop.parentElement.contains(document.body)) {
+            document.body.removeChild(document.getElementById('face-message-box-shade'))
+            document.body.removeChild(facePop)
+            resolve(true)
+          } else {
+            facePop.style.height = 0
+            setTimeout(() => {
+              if (facePop.parentElement) {
+                facePop.parentElement.removeChild(facePop)
+              }
+              resolve(true)
+            }, 504)
+          }
         } else {
-          facePop.style.height = 0
-          setTimeout(() => {
-            if (facePop.parentElement) {
-              facePop.parentElement.removeChild(facePop)
-            }
-          }, 504)
+          resolve(false)
         }
-      }
+      })
+      return faceClosePromise
     }
 
     Vue.prototype.$consolePopWindow = function (context) {

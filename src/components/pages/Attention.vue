@@ -23,7 +23,10 @@ export default {
     return {
       commentContentInput: '',
       commentContentInputHtml: '',
-      noteList: []
+      noteList: [],
+      commentAttentionIndex: -1,
+      commentAttentionId: null,
+      commentAttentionAboutAccountId: null
     }
   },
   methods: {
@@ -58,12 +61,39 @@ export default {
     },
     touchMove () {
       if (!event.target.classList.contains('touchIgnore')) {
-        this.$face_close()
-        this.$refs.comment_wrap.style.transform = 'translateY(100%)'
-        this.$refs.comment_wrap.setAttribute('class', 'comment-wrap touchIgnore close')
+        this.$face_close().then(() => {
+          this.$refs.comment_wrap.style.transform = 'translateY(100%)'
+          this.$refs.comment_wrap.setAttribute('class', 'comment-wrap touchIgnore close')
+          this.commentAttentionId = null
+          this.commentAttentionAboutAccountId = null
+          this.commentAttentionIndex = -1
+        })
       }
     },
     commentSend () {
+      this.$face_close()
+      if (this.commentContentInput.trim() === '' && this.commentContentInputHtml.trim() === '') {
+        this.$toast('评论的内容不能为空哦')
+        return false
+      }
+      this.$loading('正在发表评论...')
+      let thisCommentData = this.$refs.edit.innerHTML.trim()
+      this.$comfun.http_post(this, this.$moment.urls.save_comment, {
+        fromAccountId: this.$moment.wxUserInfo.accountId,
+        toAccountId: this.commentAttentionAboutAccountId,
+        newsId: this.commentAttentionId,
+        content: thisCommentData
+      }).then((response) => {
+        if (response.body.code === '0000' && response.body.success === true) {
+          this.$toast('发表评论成功')
+          var commentAtt = this.noteList[this.commentAttentionIndex]
+          if (commentAtt && commentAtt.comments) {
+            commentAtt.comments.unshift(this.$moment.wxUserInfo.nickname + '：' + thisCommentData)
+          }
+        } else {
+          this.$toast('发表评论失败')
+        }
+      })
       this.$refs.edit.innerHTML = ''
       this.commentContentInput = ''
       this.commentContentInputHtml = ''
@@ -93,7 +123,7 @@ export default {
         }
       })
     },
-    toComment (attentionId) {
+    toComment (attentionId, aboutAccountId) {
       this.$face_close()
       this.$refs.edit.classList.remove('inputing')
       this.$refs.edit.classList.add('placeholder')
@@ -101,21 +131,41 @@ export default {
       if (this.$refs.comment_wrap.classList.contains('close')) {
         this.$refs.comment_wrap.classList.remove('close')
         this.$refs.comment_wrap.classList.add('open')
-        this.$refs.comment_wrap.classList.add('comment-' + attentionId)
+        this.$refs.comment_wrap.id = 'comment-' + attentionId
         this.$refs.comment_wrap.style.transform = 'translateY(0)'
+        this.commentAttentionId = attentionId
+        this.commentAttentionAboutAccountId = aboutAccountId
+        for (let a = 0; a < this.noteList.length; a++) {
+          if (this.noteList[a].id === attentionId) {
+            this.commentAttentionIndex = a
+            break
+          }
+        }
       } else {
-        if (this.$refs.comment_wrap.classList.contains('comment-' + attentionId)) {
+        if (this.$refs.comment_wrap.id === 'comment-' + attentionId) {
           this.$refs.comment_wrap.classList.remove('open')
           this.$refs.comment_wrap.classList.add('close')
           this.$refs.comment_wrap.style.transform = 'translateY(100%)'
           this.$refs.comment_wrap.setAttribute('class', 'comment-wrap touchIgnore close')
+          this.commentAttentionId = null
+          this.commentAttentionAboutAccountId = null
+          this.commentAttentionIndex = -1
         } else {
           this.$refs.comment_wrap.classList.remove('open')
           this.$refs.comment_wrap.classList.add('close')
           this.$refs.comment_wrap.style.transform = 'translateY(100%)'
           setTimeout(() => {
             this.$refs.comment_wrap.style.transform = 'translateY(0)'
-            this.$refs.comment_wrap.setAttribute('class', 'comment-wrap touchIgnore open comment-' + attentionId)
+            this.$refs.comment_wrap.setAttribute('class', 'comment-wrap touchIgnore open')
+            this.$refs.comment_wrap.id = 'comment-' + attentionId
+            this.commentAttentionId = attentionId
+            this.commentAttentionAboutAccountId = aboutAccountId
+            for (let a = 0; a < this.noteList.length; a++) {
+              if (this.noteList[a].id === attentionId) {
+                this.commentAttentionIndex = a
+                break
+              }
+            }
           }, 100)
         }
       }
@@ -128,6 +178,7 @@ export default {
     }).then((response) => {
       if (response.body.code === '0000' && response.body.success === true) {
         if (response.body.data.dataList.length > 0 && (this.$moment.attention_page_data_list.length === 0 || this.$moment.attention_page_data_list.length !== response.body.data.dataList.length)) {
+          this.$toptip(`更新了${Math.abs(response.body.data.dataList.length - this.$moment.attention_page_data_list.length)}条新动态`)
           this.noteList = []
           for (let d = 0; d < response.body.data.dataList.length; d++) {
             let attentionData = response.body.data.dataList[d]
@@ -150,16 +201,38 @@ export default {
                 }
               }
             }
+            let ifLike = false
+            let likeMans = []
+            if (attentionData.praiseList && attentionData.praiseList.length > 0) {
+              for (let p = 0; p < attentionData.praiseList.length; p++) {
+                if (attentionData.praiseList[p].accountId === this.$moment.wxUserInfo.accountId) {
+                  ifLike = true
+                }
+                likeMans.push({
+                  accountId: attentionData.praiseList[p].accountId,
+                  time: attentionData.praiseList[p].createTime,
+                  userHeadimg: attentionData.praiseList[p].userHeadimg,
+                  username: attentionData.praiseList[p].username
+                })
+              }
+            }
+            let comments = []
+            if (attentionData.commentList && attentionData.commentList.length > 0) {
+              for (let c = 0; c < attentionData.commentList.length; c++) {
+                comments.push(attentionData.commentList[c].fromUsername + '：' + attentionData.commentList[c].content)
+              }
+            }
             this.noteList.push({
               id: attentionData.id,
+              accountId: attentionData.accountId,
               uttererHead: attentionData.userHeadimg,
               uttererNickName: attentionData.username,
               uttererTime: attentionData.creationDate,
               uttererContent: attentionData.content,
               imgsOrVideos: imgsOrVideos,
-              ifLike: false,
-              likeMans: [ '令狐大侠', '刘德华', '张学友', '贾斯汀', '成龙', '鹿晗', '黄渤', '黄磊', '孙红雷', '谢逊', '张三丰' ],
-              comments: [ '令狐冲：这里是测试的评论测试是测试的评论测试是测试的评论测试的评论', 'remmen1025：这里是测试的评论测试的评论', '张学友：这里是测试的评论测试的评论' ]
+              ifLike: ifLike,
+              likeMans: likeMans,
+              comments: comments
             })
           }
           this.$moment.attention_page_data_list = this.noteList
@@ -173,6 +246,7 @@ export default {
   deactivated () {
     var contentWrapElem = document.getElementById('content-wrap')
     this.$moment.attention_page_scroll_top = contentWrapElem.scrollTop
+    this.$toptip_close()
   }
 }
 </script>

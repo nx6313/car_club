@@ -284,7 +284,6 @@ export default {
         fileList: fileList,
         type: type
       }).then((response) => {
-        this.$loading_close()
         if (response.body && response.body.code === '0000' && response.body.success === true) {
           this.$toast('发布成功')
           this.$refs.edit.innerHTML = ''

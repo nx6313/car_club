@@ -9,7 +9,7 @@ var WxSecret = '6c11623d913f9f030bb4a09e6765d360'
 export default {
   install: function (Vue, options) {
     var AppConfig = {
-      /* eslint-disable */
+      // eslint-disable-next-line
       player: TcPlayer, // 腾讯视频播放器对象
       // 微信包
       wx: wx,
@@ -19,16 +19,17 @@ export default {
       server: 'http://' + HttpIp + ':' + HttpPort + '/',
       // 访问接口
       urls: {
-        get_user_info_by_id: '/user/info.json',
-        get_user_info: '/user/wx/openid/',
-        get_wx_page_signature: '/user/wx/signature.json',
-        save_account_info: '/account/create.json',
-        save_wx_image: '/user/wx/savewximg.json',
-        save_user_info: '/user/save.json',
-        upload_video: '/uploadimg/upload_video.json',
-        save_issue: '/news/create.json',
-        get_new_info: '/news/getNewinfo.json',
-        praise: '/news/praise.json'
+        get_user_info_by_id: '/user/info.json', // 根据用户id获取用户信息，完整数据
+        get_user_info: '/user/wx/openid/', // 根据code获取微信用户基本信息
+        get_wx_page_signature: '/user/wx/signature.json', // 获取微信页面接口签名信息
+        save_account_info: '/account/create.json', // 保存微信获取到的用户基础信息
+        save_wx_image: '/user/wx/savewximg.json', // 保存微信上传的图片
+        save_user_info: '/user/save.json', // 保存或更新用户个人信息
+        upload_video: '/uploadimg/upload_video.json', // 上传视频
+        save_issue: '/news/create.json', // 发布动态
+        get_new_info: '/news/getNewinfo.json', // 获取动态列表数据
+        praise: '/news/praise.json', // 赞动态
+        save_comment: '/news/saveComment.json' // 动态发布评论
       },
       // 微信是否开启调试模式，也会一并开启自定义的调试面板
       wxIsDebug: true,
@@ -115,8 +116,4 @@ export default {
 
     Object.defineProperty(Vue.prototype, '$moment', { value: AppConfig })
   }
-}
-
-function handler (req, res) {
-
 }

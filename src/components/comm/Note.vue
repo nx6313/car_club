@@ -23,11 +23,11 @@
       </div>
       <div class="like-tip-wrap">
         <span>{{note.likeMans.length}}个点赞</span>
-        <span>{{note.likeMans | arrToStr(4)}}</span>
+        <span>{{note.likeMans | arrToStr(4, 'username')}}</span>
       </div>
     </div>
     <div class="comments-wrap" v-if="note.comments.length > 0">
-      <span v-for="(comment, index) in note.comments" :key="index" v-if="index < 2 || !canToggleComment">{{comment}}</span>
+      <span v-for="(comment, index) in note.comments" :key="index" v-if="index < 2 || !canToggleComment" v-html="comment"></span>
       <span class="toggleAllComment" v-if="note.comments.length > 2 && canToggleComment" @click="toggleAllComment">查看全部评论</span>
       <span class="toggleAllComment" v-if="note.comments.length > 2 && !canToggleComment" @click="toggleAllComment">显示部分评论</span>
     </div>
@@ -68,12 +68,12 @@ export default {
       }
       return value
     },
-    arrToStr (value, showCount) {
+    arrToStr (value, showCount, key) {
       var showStr = ''
       var index = 0
       for (var a = 0; a < value.length; a++) {
         if (a < showCount) {
-          showStr += value[a]
+          showStr += key !== undefined ? value[a][key] : value[a]
           index++
         }
         if (a < showCount - 1 && a < value.length - 1) {
@@ -94,25 +94,50 @@ export default {
       this.canToggleComment = !this.canToggleComment
     },
     support () {
-      this.note.ifLike = !this.note.ifLike
-      if (this.note.ifLike) {
+      if (!this.note.ifLike) {
+        this.$loading('点赞中...')
         this.$comfun.http_post(this, this.$moment.urls.praise + '?id=' + this.note.id, {
           accountId: this.$moment.wxUserInfo.accountId
         }).then((response) => {
-
+          if (response.body.code === '0000' && response.body.success === true) {
+            this.$toast('点赞成功')
+            this.note.ifLike = !this.note.ifLike
+            this.note.likeMans.unshift({
+              accountId: this.$moment.wxUserInfo.accountId,
+              time: this.$comfun.formatDate(new Date(), 'yyyy-MM-dd hh:mm:ss.S'),
+              userHeadimg: this.$moment.wxUserInfo.headimgurl,
+              username: this.$moment.wxUserInfo.nickname
+            })
+          } else {
+            this.$toast('点赞失败')
+          }
         })
-        this.$toast('点赞成功')
       } else {
+        this.$loading('取消点赞中...')
         this.$comfun.http_post(this, this.$moment.urls.praise + '?id=' + this.note.id, {
           accountId: this.$moment.wxUserInfo.accountId
         }).then((response) => {
-
+          if (response.body.code === '0000' && response.body.success === true) {
+            this.$toast('点赞取消')
+            this.note.ifLike = !this.note.ifLike
+            let inLikeMansIndex = -1
+            for (let l = 0; l < this.note.likeMans.length; l++) {
+              if (this.note.likeMans[l].accountId === this.$moment.wxUserInfo.accountId) {
+                inLikeMansIndex = l
+                break
+              }
+            }
+            if (inLikeMansIndex > 0) {
+              this.note.likeMans = this.note.likeMans.splice(inLikeMansIndex, 1)
+            }
+          } else {
+            this.$toast('取消点赞失败')
+          }
         })
-        this.$toast('点赞取消')
       }
     },
     toComment () {
-      this.$emit('to-comment', this.note.id)
+      this.$emit('to-comment', this.note.id, this.note.accountId)
     }
   }
 }

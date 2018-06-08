@@ -1,6 +1,10 @@
 <template>
   <div>
-    <comm-video :full=true :videoInfo="videoInfo" @close-comment-pop="closeCommentPop" @cut-video-page="cutVideoPage" @vieo-to-ref="vieoRef" @look-comment="lookComment"></comm-video>
+    <comm-video :full=true @close-comment-pop="closeCommentPop" @cut-video-page="cutVideoPage" @vieo-to-ref="vieoRef" @look-comment="lookComment" @data-loading="dataLoading"></comm-video>
+    <div class="data-loading-tip-pop" ref="data_loading">
+      <div><span></span></div>
+      <div><span></span></div>
+    </div>
     <div class="comment-pop-wrap" ref="comment-pop-wrap">
       <span class="pop-close-btn ripple" @click="hideCommentPop"></span>
       <span class="comment-title" v-if="videoComments.length > 0">{{videoComments.length}}条评论</span>
@@ -46,27 +50,17 @@ export default {
     return {
       currentVideoUserId: null,
       commentContentInput: '',
-      videoInfo: {},
       videoComments: []
     }
   },
-  created: function () {
-    this.videoInfo = {
-      userId: '1',
-      src: 'http://l.dachangjr.com/video/2.mp4',
-      type: 'video/mp4',
-      userHead: '',
-      hasAttention: false,
-      ifSupport: true,
-      supportCount: 0,
-      commentCount: 0
-    }
-    // this.$http.get('http://www.baidu.com').then(response => {
-    //   this.someData = response.body
-    // }, response => {
-    // })
-  },
   methods: {
+    dataLoading (isLoading) {
+      if (isLoading) {
+        this.$refs.data_loading.style.display = 'block'
+      } else {
+        this.$refs.data_loading.style.display = 'none'
+      }
+    },
     cutVideoPage (videoInfo) {
       this.$comfun.consoleBeautiful(this, '切换到的页面视频信息', null, null, videoInfo, 'info')
       // this.currentVideoUserId = videoUserId
@@ -146,6 +140,58 @@ export default {
 <style scoped>
 #content-wrap {
   overflow: hidden;
+}
+
+div.data-loading-tip-pop {
+  position: fixed;
+  left: 0;
+  bottom: 3.2rem;
+  width: 100%;
+  height: 1px;
+  font-size: 0px;
+  display: none;
+}
+
+div.data-loading-tip-pop>div:nth-of-type(1) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-block;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+}
+
+div.data-loading-tip-pop>div:nth-of-type(2) {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-block;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+}
+
+div.data-loading-tip-pop>div:nth-of-type(1)>span {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-block;
+  width: 180%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, .4), rgba(243, 239, 251, .6), rgba(243, 239, 251, .8), rgba(243, 239, 251, .8));
+  animation: data-loading-left 0.6s ease 0s infinite;
+}
+
+div.data-loading-tip-pop>div:nth-of-type(2)>span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-block;
+  width: 180%;
+  height: 100%;
+  background: linear-gradient(to left, rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, 0), rgba(243, 239, 251, .4), rgba(243, 239, 251, .6), rgba(243, 239, 251, .8), rgba(243, 239, 251, .8));
+  animation: data-loading-right 0.6s ease 0s infinite;
 }
 
 div.comment-pop-wrap {

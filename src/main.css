@@ -111,3 +111,21 @@ p.tip-round-block {
         transform: translateX(68%);
     }
 }
+
+@keyframes data-loading-left {
+    0% {
+        transform: translateX(60%);
+    }
+    100% {
+        transform: translateX(0%);
+    }
+}
+
+@keyframes data-loading-right {
+    0% {
+        transform: translateX(-60%);
+    }
+    100% {
+        transform: translateX(0%);
+    }
+}

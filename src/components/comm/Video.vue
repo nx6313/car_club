@@ -5,11 +5,11 @@
       <span class="complate" ref="ref-complate"></span>
     </span>
     <div id="video-item-wrap" ref="video-item-wrap">
-      <div v-once v-for="(init, index) in videoInitList" :key="index" :class="['video-item', init === 'init-page' ? 'video-item-current' : '']" @click="supportHold">
-        <template v-if="init === 'init-page'">
+      <div class="video-item video-item-current" @click="supportHold">
+        <template>
           <div class="video-item-page-wrap">
             <div class="video-wrap" ref="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
-              <div class="video-shade"></div>
+              <div :style="videoInfo.cover ? { 'background-image': 'url(' + videoInfo.cover + ')' } : ''" :class="['video-shade', videoInfo.coverWidth > videoInfo.coverHeight ? 'vertical' : '']"></div>
             </div>
             <div :class="['videoDo', full ? 'videoDoFull' : 'videoDoNotFull']">
               <span :style="videoInfo.userHead ? { 'background-image': 'url(' + videoInfo.userHead + ')' } : ''">
@@ -25,7 +25,7 @@
             </div>
           </div>
         </template>
-        <template v-if="init !== 'init-page'">
+        <template>
           <div class="video-item-replace"></div>
         </template>
       </div>
@@ -40,12 +40,11 @@ import likeIcon from '@/assets/like-icon.png'
 export default {
   name: 'comm-video',
   props: {
-    full: { type: Boolean, default: false },
-    videoInitList: { type: Array, default () { return ['init-page', ''] } },
-    videoInfo: { type: Object, default () { return {} } }
+    full: { type: Boolean, default: false }
   },
   data () {
     return {
+      videoInfo: {},
       dblclickCount: 0,
       dblclickTimer: null,
       touchToTop: false,
@@ -61,7 +60,7 @@ export default {
       refDistance: 64, // 该参数修改的话，需要一起修改 rotate 的 @keyframes 样式
       moveRate: 0.4,
       everyVITsY: 0,
-      currentVIIndex: 1,
+      currentVIIndex: 1, // 当前页数
       currentRefTsY: 0,
       currentVITsY: 0,
       reg: /[-?\d]+/g,
@@ -73,12 +72,18 @@ export default {
       isFirst: true,
       hasNext: false,
       isRefing: false,
-      currentVideoInfo: this.videoInfo,
-      videoInfoList: [ this.videoInfo ]
+      currentVideoInfo: null,
+      videoInfoList: []
     }
   },
   mounted () {
-    this.$emit('cut-video-page', this.currentVideoInfo)
+    this.getVideoByPage(true, this.currentVIIndex).then((videoInfo) => {
+      this.videoInfo = videoInfo
+      this.videoInfoList.push(this.videoInfo)
+      this.currentVideoInfo = this.videoInfo
+      this.$emit('cut-video-page', this.currentVideoInfo)
+      this.getNextVideoInfo()
+    })
     this.videoDataRefElem = this.$refs['ref-data-wrap']
     this.refingElem = this.$refs['ref-ing']
     this.refComplateElem = this.$refs['ref-complate']
@@ -86,29 +91,85 @@ export default {
     this.refComplateElem.style.opacity = 0
     this.videoItemWrapElem = this.$refs['video-item-wrap']
     this.videoItemPageHeight = this.videoItemWrapElem.offsetHeight
-    this.videoItemWrapElem.style.height = `calc(${this.videoItemPageHeight * this.videoInitList.length}px)`
+    this.videoItemWrapElem.style.height = `calc(${this.videoItemPageHeight * 1}px)`
     for (var i = 0; i < this.videoItemWrapElem.children.length; i++) {
       if (this.videoItemWrapElem.children[i].classList.contains('video-item')) {
         this.videoItemWrapElem.children[i].style.height = `calc(${this.videoItemPageHeight}px)`
       }
     }
-    this.everyVITsY = this.videoItemWrapElem.offsetHeight * (1 / this.videoInitList.length)
+    this.everyVITsY = this.videoItemWrapElem.offsetHeight * (1 / 1)
     this.videoDataRefElem.style.transform = `translateY(${-this.videoDataRefElem.offsetHeight - 2}px)`
     this.currentRefTsY = Number(this.videoDataRefElem.style.transform.match(this.reg)[0])
-    this.videoItemWrapElem.style.transform = `translateY(${-this.everyVITsY * this.videoInitList.indexOf('init-page')}px)`
+    this.videoItemWrapElem.style.transform = `translateY(0px)`
     this.currentVITsY = Number(this.videoItemWrapElem.style.transform.match(this.reg)[0])
-    this.getVideoInfo()
   },
   methods: {
-    getVideoInfo (direction) {
-      // this.hasPre = true
-      if (direction === 'pre') {
-      } else if (direction === 'next') {
-      } else {
-        // 初始化后一页的视频信息
-        this.hasNext = true
-        this.addComponentToPage()
-      }
+    getNextVideoInfo () {
+      this.getVideoByPage(true, this.currentVIIndex + 1).then((videoInfo) => {
+        if (videoInfo) {
+          let hasVideo = false
+          for (let v = 0; v < this.videoInfoList.length; v++) {
+            if (this.videoInfoList[v].videoId === videoInfo.videoId) {
+              hasVideo = true
+              break
+            }
+          }
+          if (!hasVideo) {
+            this.videoInfoList.push(videoInfo)
+            this.hasNext = true
+            this.addVideoWrap()
+            this.addComponentToPage(videoInfo)
+          } else {
+            this.hasNext = false
+          }
+        } else {
+          this.hasNext = false
+        }
+      })
+    },
+    getVideoByPage (needLoading, page) {
+      var videpByPagePromise = new Promise((resolve, reject) => {
+        if (needLoading === true) {
+          this.$emit('data-loading', true)
+        }
+        this.$comfun.http_post(this, this.$moment.urls.get_new_info + `?page=${page}&limit=1`, {
+          type: '3'
+        }).then((response) => {
+          if (needLoading === true) {
+            this.$emit('data-loading', false)
+          }
+          if (response.body.code === '0000' && response.body.success === true) {
+            if (response.body.data.dataList && response.body.data.dataList.length > 0) {
+              var videoInfo = {
+                videoId: response.body.data.dataList[0].id,
+                userId: response.body.data.dataList[0].accountId,
+                src: response.body.data.dataList[0].fileList[0].fileAddress,
+                cover: response.body.data.dataList[0].fileList[0].face,
+                coverWidth: Number(response.body.data.dataList[0].fileList[0].width),
+                coverHeight: Number(response.body.data.dataList[0].fileList[0].height),
+                type: response.body.data.dataList[0].fileList[0].suffix,
+                userHead: response.body.data.dataList[0].userHeadimg,
+                userName: response.body.data.dataList[0].username,
+                hasAttention: false,
+                ifSupport: true,
+                supportCount: 0,
+                commentCount: 0
+              }
+              resolve(videoInfo)
+            } else {
+              resolve(null)
+            }
+          } else {
+            resolve(null)
+          }
+        }, (response) => {
+          if (needLoading === true) {
+            this.$emit('data-loading', false)
+          }
+          reject(response)
+        })
+      })
+      return videpByPagePromise
     },
     addVideoWrap () {
       var that = this
@@ -131,12 +192,12 @@ export default {
       videoItemWrap.appendChild(nextVideoWrap.$el)
       videoItemWrap.style.height = `calc(${videoItemWrap.childNodes.length * that.videoItemPageHeight}px)`
     },
-    addComponentToPage () {
+    addComponentToPage (videoInfo) {
       var that = this
       var VideoPageComponent = Vue.extend({
         template: `<div class="video-item-page-wrap">
           <div class="video-wrap" ref="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
-            <div class="video-shade"></div>
+            <div :style="newPageVideoInfo.cover ? { 'background-image': 'url(' + newPageVideoInfo.cover + ')' } : ''" :class="['video-shade', newPageVideoInfo.coverWidth > newPageVideoInfo.coverHeight ? 'vertical' : '']"></div>
           </div>
           <div :class="['videoDo', sfull ? 'videoDoFull' : 'videoDoNotFull']">
             <span :style="newPageVideoInfo.userHead ? { 'background-image': 'url(' + newPageVideoInfo.userHead + ')' } : ''">
@@ -154,16 +215,7 @@ export default {
         data () {
           return {
             sfull: that.full,
-            newPageVideoInfo: {
-              userId: '1',
-              src: 'http://l.dachangjr.com/video/2.mp4',
-              type: 'video/mp4',
-              userHead: '',
-              hasAttention: false,
-              ifSupport: true,
-              supportCount: 0,
-              commentCount: 0
-            }
+            newPageVideoInfo: videoInfo
           }
         },
         beforeMount () {
@@ -187,12 +239,14 @@ export default {
       if (direction === 'pre') {
         currentElem.classList.remove('video-item-current')
         currentElem.previousSibling.classList.add('video-item-current')
+        this.currentVIIndex--
+        this.hasNext = true
       } else if (direction === 'next') {
         currentElem.classList.remove('video-item-current')
         currentElem.nextSibling.classList.add('video-item-current')
+        this.currentVIIndex++
         if (this.videoItemWrapElem.lastChild.classList.contains('video-item-current')) {
-          this.addVideoWrap()
-          this.addComponentToPage()
+          this.getNextVideoInfo()
         }
       }
       var currentIndex = Array.prototype.indexOf.call(this.videoItemWrapElem.children, this.videoItemWrapElem.getElementsByClassName('video-item-current')[0])
@@ -479,6 +533,7 @@ export default {
   height: 60px;
   width: 100%;
   background: linear-gradient(rgba(30, 20, 54, .6), rgba(0, 0, 0, 0));
+  z-index: 99;
 }
 
 .video-item::after {
@@ -489,6 +544,7 @@ export default {
   height: 60px;
   width: 100%;
   background: linear-gradient(to top, rgba(30, 20, 54, .6), rgba(0, 0, 0, 0));
+  z-index: 99;
 }
 
 .video-item-page-wrap {
@@ -516,6 +572,13 @@ export default {
   width: 100%;
   height: 100%;
   z-index: 9;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% auto;
+}
+
+.video-wrap>div.vertical {
+  background-size: auto 100%;
 }
 
 video-player {
