@@ -10,6 +10,7 @@
           <div class="video-item-page-wrap">
             <div class="video-wrap" ref="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
               <div :style="videoInfo.cover ? { 'background-image': 'url(' + videoInfo.cover + ')' } : ''" :class="['video-shade', videoInfo.coverWidth > videoInfo.coverHeight ? 'vertical' : '']"></div>
+              <div class="video-play-show" :id="'video-play-' + videoInfo.videoId"></div>
             </div>
             <div :class="['videoDo', full ? 'videoDoFull' : 'videoDoNotFull']">
               <span :style="videoInfo.userHead ? { 'background-image': 'url(' + videoInfo.userHead + ')' } : ''">
@@ -73,7 +74,8 @@ export default {
       hasNext: false,
       isRefing: false,
       currentVideoInfo: null,
-      videoInfoList: []
+      videoInfoList: [],
+      currentPlayer: null
     }
   },
   mounted () {
@@ -198,6 +200,7 @@ export default {
         template: `<div class="video-item-page-wrap">
           <div class="video-wrap" ref="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
             <div :style="newPageVideoInfo.cover ? { 'background-image': 'url(' + newPageVideoInfo.cover + ')' } : ''" :class="['video-shade', newPageVideoInfo.coverWidth > newPageVideoInfo.coverHeight ? 'vertical' : '']"></div>
+            <div class="video-play-show" :id="'video-play-' + newPageVideoInfo.videoId"></div>
           </div>
           <div :class="['videoDo', sfull ? 'videoDoFull' : 'videoDoNotFull']">
             <span :style="newPageVideoInfo.userHead ? { 'background-image': 'url(' + newPageVideoInfo.userHead + ')' } : ''">
@@ -272,8 +275,20 @@ export default {
         this.$pageImg([likeIcon], event.clientX, event.clientY, document.getElementsByClassName('video-item-current')[0])
       }
       this.dblclickTimer = setTimeout(() => {
+        if (this.dblclickCount === 1) {
+          if (this.currentPlayer !== null) {
+            this.currentPlayer.destroy()
+          }
+          this.currentPlayer = this.$comfun.createVideo(this, 'video-play-undefined', {
+            m3u8: 'http://l.dachangjr.com/video/4.mp4', // 请替换成实际可用的播放地址
+            autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
+            coverpic: { style: 'cover', src: 'http://img5.imgtn.bdimg.com/it/u=415293130,2419074865&fm=27&gp=0.jpg' },
+            controls: 'none'
+          }, true)
+          this.currentPlayer.play()
+        }
         this.dblclickCount = 0
-      }, 600)
+      }, 400)
     },
     touchStart () {
       this.$emit('close-comment-pop')
@@ -575,6 +590,16 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% auto;
+}
+
+.video-wrap>div.video-play-show {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0px;
+  height: 0px;
+  display: none;
+  overflow: hidden;
 }
 
 .video-wrap>div.vertical {
