@@ -104,7 +104,7 @@ export default {
             this.note.ifLike = !this.note.ifLike
             this.note.likeMans.unshift({
               accountId: this.$moment.wxUserInfo.accountId,
-              time: this.$comfun.formatDate(new Date(), 'yyyy-MM-dd hh:mm:ss.S'),
+              time: this.$comfun.formatDate(new Date(), 'yyyy-MM-dd hh:mm:ss'),
               userHeadimg: this.$moment.wxUserInfo.headimgurl,
               username: this.$moment.wxUserInfo.nickname
             })
@@ -128,7 +128,7 @@ export default {
               }
             }
             if (inLikeMansIndex > 0) {
-              this.note.likeMans = this.note.likeMans.splice(inLikeMansIndex, 1)
+              this.note.likeMans.splice(inLikeMansIndex, 1)
             }
           } else {
             this.$toast('取消点赞失败')

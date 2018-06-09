@@ -29,7 +29,8 @@ export default {
         save_issue: '/news/create.json', // 发布动态
         get_new_info: '/news/getNewinfo.json', // 获取动态列表数据
         praise: '/news/praise.json', // 赞动态
-        save_comment: '/news/saveComment.json' // 动态发布评论
+        save_comment: '/news/saveComment.json', // 动态发布评论
+        attention: '/user/attention.json' // 关注好友
       },
       // 微信是否开启调试模式，也会一并开启自定义的调试面板
       wxIsDebug: true,

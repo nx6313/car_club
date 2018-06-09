@@ -1,38 +1,42 @@
 <template>
   <div>
-    <comm-video :full=true @close-comment-pop="closeCommentPop" @cut-video-page="cutVideoPage" @vieo-to-ref="vieoRef" @look-comment="lookComment" @data-loading="dataLoading"></comm-video>
+    <comm-video :full=true @close-comment-pop="closeCommentPop" @cut-video-page="cutVideoPage" @look-comment="lookComment" @data-loading="dataLoading"></comm-video>
     <div class="data-loading-tip-pop" ref="data_loading">
       <div><span></span></div>
       <div><span></span></div>
     </div>
-    <div class="comment-pop-wrap" ref="comment-pop-wrap">
+    <div class="comment-pop-wrap" id="comment-pop-wrap" ref="comment-pop-wrap" @touchmove="touchMoveCommentPop">
       <span class="pop-close-btn ripple" @click="hideCommentPop"></span>
       <span class="comment-title" v-if="videoComments.length > 0">{{videoComments.length}}条评论</span>
+      <span class="comment-title" v-if="videoComments.length === 0">没有评论</span>
       <div class="comment-item-wrap" v-if="videoComments.length > 0">
         <div class="comment-item" v-for="(comment, index) in videoComments" :key="index">
           <span class="head" :style="comment.head ? { 'background-image': 'url(' + comment.head + ')' } : ''"></span>
           <span :class="['like-btn', 'ripple', comment.isLike ? 'comment-like-btn' : '']"></span>
           <div class="content-wrap">
             <div>{{comment.name}}</div>
-            <div>{{comment.content}}</div>
-            <div>{{comment.time}}</div>
-            <div class="replys-wrap">
+            <div v-html="comment.content"></div>
+            <div>{{dateToCur(comment.time, 2 * 24 * 60 * 60 * 1000)}}</div>
+            <div class="replys-wrap" v-if="comment.replys.length > 0">
               <div class="reply-item-wrap" v-for="(reply, index) in comment.replys" :key="index">
                 <div>
                   <span class="reply-user-name">{{reply.name}}</span>
                   <span class="reply-is-author">作者</span>
                   <span>回复&nbsp;&nbsp;{{comment.name}}</span>
                 </div>
-                <div>{{reply.content}}</div>
+                <div v-html="reply.content"></div>
                 <div>{{reply.time}}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="comment-input-wrap">
-        <textarea placeholder="请输入评论内容" ref="comment-input-area" v-model="commentContentInput"/>
-        <span class="ripple"></span>
+      <div class="comment-no-data-wrap" v-if="videoComments.length === 0"></div>
+      <div id="face-wrap" ref="face-wrap" class="touchIgnore"></div>
+      <div class="comment-input-wrap touchIgnore">
+        <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入评论内容</div>
+        <span class="touchIgnore" @click.passive="selectFace"></span>
+        <span class="comment-send-btn ripple touchIgnore" @click="commentSend">评论</span>
       </div>
     </div>
   </div>
@@ -48,12 +52,119 @@ export default {
   },
   data () {
     return {
-      currentVideoUserId: null,
+      currentVideo: null,
       commentContentInput: '',
+      commentContentInputHtml: '',
       videoComments: []
     }
   },
   methods: {
+    focusInput () {
+      this.$face_close()
+      if (event.target.classList.contains('placeholder')) {
+        event.target.classList.remove('placeholder')
+        event.target.innerHTML = ''
+      }
+      this.$refs.edit.focus()
+    },
+    blurInput () {
+      this.$face_close()
+      if (!event.target.classList.contains('placeholder') && !event.target.classList.contains('inputing')) {
+        event.target.classList.add('placeholder')
+        event.target.innerHTML = '请输入评论内容'
+      }
+    },
+    contentInput () {
+      this.$face_close()
+      this.commentContentInput = event.target.innerText
+      this.commentContentInputHtml = event.target.innerHTML
+      if (event.target.innerHTML.length > 0) {
+        event.target.classList.add('inputing')
+        setTimeout(() => {
+          var currentpos = this.$refs.edit.scrollHeight * 100
+          this.$refs.edit.scrollTop = currentpos
+        }, 100)
+      } else {
+        event.target.classList.remove('inputing')
+      }
+    },
+    dateToCur (value, maxDiff) {
+      let maxDiffVal = maxDiff === undefined ? 0 : maxDiff
+      let date = new Date(value).getTime()
+      let cur = Date.now()
+      let diff = cur - date
+      if (maxDiffVal > 0) {
+        if (diff > maxDiffVal) {
+          return this.$comfun.formatDate(new Date(value), 'yy-MM-dd hh:mm:ss')
+        } else {
+          return this.$comfun.formatDiffMilliseconds(diff) + ' 前'
+        }
+      } else {
+        return this.$comfun.formatDate(new Date(value), 'yy-MM-dd hh:mm:ss')
+      }
+    },
+    touchMoveCommentPop () {
+      if (!event.target.classList.contains('touchIgnore')) {
+        this.$face_close()
+      }
+    },
+    commentSend () {
+      this.$face_close()
+      if (this.commentContentInput.trim() === '' && this.commentContentInputHtml.trim() === '') {
+        this.$toast('评论的内容不能为空哦')
+        return false
+      }
+      this.$loading('正在发表评论...')
+      let thisCommentData = this.$refs.edit.innerHTML.trim()
+      this.$comfun.http_post(this, this.$moment.urls.save_comment, {
+        fromAccountId: this.$moment.wxUserInfo.accountId,
+        toAccountId: this.currentVideo.userId,
+        newsId: this.currentVideo.videoId,
+        content: thisCommentData
+      }).then((response) => {
+        if (response.body.code === '0000' && response.body.success === true) {
+          this.$toast('发表评论成功')
+          this.videoComments.unshift({
+            head: this.$moment.wxUserInfo.headimgurl,
+            name: this.$moment.wxUserInfo.nickname,
+            content: thisCommentData,
+            time: this.$comfun.formatDate(new Date(), 'yyyy-MM-dd hh:mm:ss'),
+            isLike: false,
+            replys: []
+          })
+        } else {
+          this.$toast('发表评论失败')
+        }
+      })
+      this.$refs.edit.innerHTML = ''
+      this.commentContentInput = ''
+      this.commentContentInputHtml = ''
+      if (!this.$refs.edit.classList.contains('placeholder') && this.$refs.edit.classList.contains('inputing')) {
+        this.$refs.edit.classList.remove('inputing')
+        this.$refs.edit.classList.add('placeholder')
+        this.$refs.edit.innerHTML = '请输入评论内容'
+      }
+    },
+    selectFace () {
+      this.$face(this, {
+        rootElem: this.$refs['face-wrap'],
+        otherClass: 'touchIgnore',
+        callBack: (faceImg) => {
+          if (this.$refs.edit.classList.contains('placeholder')) {
+            this.$refs.edit.classList.remove('placeholder')
+            this.$refs.edit.classList.add('inputing')
+            this.$refs.edit.innerHTML = ''
+          }
+          this.$refs.edit.appendChild(faceImg)
+          this.commentContentInput = this.$refs.edit.innerText
+          this.commentContentInputHtml = this.$refs.edit.innerHTML
+          setTimeout(() => {
+            var currentpos = this.$refs.edit.scrollHeight * 100
+            this.$refs.edit.scrollTop = currentpos
+          }, 100)
+        }
+      })
+    },
     dataLoading (isLoading) {
       if (isLoading) {
         this.$refs.data_loading.style.display = 'block'
@@ -63,70 +174,23 @@ export default {
     },
     cutVideoPage (videoInfo) {
       this.$comfun.consoleBeautiful(this, '切换到的页面视频信息', null, null, videoInfo, 'info')
-      // this.currentVideoUserId = videoUserId
-    },
-    vieoRef (finishFn) {
-      setTimeout(() => {
-        finishFn()
-      }, 3000)
+      this.currentVideo = videoInfo
     },
     closeCommentPop () {
       if (this.$refs['comment-pop-wrap'].classList.contains('open')) {
-        this.$refs['comment-pop-wrap'].style.opacity = 0
-        this.$refs['comment-pop-wrap'].style.transform = 'translateY(110%)'
+        this.hideCommentPop()
       }
     },
     hideCommentPop () {
-      this.$refs['comment-pop-wrap'].classList.remove('open')
-      this.$refs['comment-pop-wrap'].classList.add('close')
       this.$refs['comment-pop-wrap'].style.opacity = 0
       this.$refs['comment-pop-wrap'].style.transform = 'translateY(110%)'
+      setTimeout(() => {
+        this.$refs['comment-pop-wrap'].classList.remove('open')
+        this.$refs['comment-pop-wrap'].classList.add('close')
+      }, 600)
     },
     lookComment (videoInfo) {
-      this.videoComments = [
-        {
-          head: 'http://img2.a0bi.com/upload/ttq/20160804/1470271218794.jpg',
-          name: '令狐大侠',
-          content: '我们在设计任何作品时，首先考虑的是应用的尺寸。如iPhone8的分辨率',
-          time: '40分钟前',
-          isLike: false,
-          replys: [
-            {
-              userId: '2',
-              name: '张学友',
-              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
-              time: '40分钟前'
-            },
-            {
-              userId: '2',
-              name: '张学友',
-              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
-              time: '40分钟前'
-            }
-          ]
-        },
-        {
-          head: 'http://img2.a0bi.com/upload/ttq/20160804/1470271218794.jpg',
-          name: '令狐大侠',
-          content: '我们在设计任何作品时，首先考虑的是应用的尺寸。如iPhone8的分辨率',
-          time: '40分钟前',
-          isLike: true,
-          replys: [
-            {
-              userId: '2',
-              name: '张学友',
-              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
-              time: '40分钟前'
-            },
-            {
-              userId: '2',
-              name: '张学友',
-              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
-              time: '40分钟前'
-            }
-          ]
-        }
-      ]
+      this.videoComments = videoInfo.comments
       this.$refs['comment-pop-wrap'].classList.remove('close')
       this.$refs['comment-pop-wrap'].classList.add('open')
       this.$refs['comment-pop-wrap'].style.opacity = 1
@@ -230,6 +294,17 @@ div.comment-pop-wrap>span.comment-title {
   font-size: 0.8rem;
 }
 
+div.comment-pop-wrap>div.comment-no-data-wrap {
+  position: relative;
+  top: calc(50% - 4em - 14%);
+  width: 100%;
+  height: 4rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto 100%;
+  background-image: url('./../../assets/attention-empty.png');
+}
+
 div.comment-pop-wrap>div.comment-item-wrap {
   position: relative;
   height: calc(100% - 2.6rem - 3rem - 0.8rem);
@@ -256,7 +331,7 @@ div.comment-pop-wrap>div.comment-item-wrap>div.comment-item>span.head {
   left: 0.6rem;
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 100% auto;
+  background-size: 100% 100%;
 }
 
 div.comment-pop-wrap>div.comment-item-wrap>div.comment-item>span.like-btn {
@@ -375,42 +450,76 @@ div.comment-pop-wrap>div.comment-input-wrap {
   background: #110c1d;
 }
 
-div.comment-pop-wrap>div.comment-input-wrap>textarea {
-  display: block;
-  width: calc(100% - 3rem - 16px);
-  height: calc(100% - 16px);
-  border: none;
-  outline: none;
-  padding: 8px 3rem 8px 16px;
-  color: #ffffff;
-  font-size: 1rem;
-  resize: none;
-  background: #110c1d;
-}
-
-div.comment-pop-wrap>div.comment-input-wrap>textarea::-webkit-input-placeholder { /* WebKit browsers */
-  color: #685d82;
-}
-div.comment-pop-wrap>div.comment-input-wrap>textarea:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-  color: #685d82;
-}
-div.comment-pop-wrap>div.comment-input-wrap>textarea::-moz-placeholder { /* Mozilla Firefox 19+ */
-  color: #685d82;
-}
-div.comment-pop-wrap>div.comment-input-wrap>textarea:-ms-input-placeholder { /* Internet Explorer 10+ */
-  color: #685d82;
-}
-
 div.comment-pop-wrap>div.comment-input-wrap>span {
   position: absolute;
   top: 0;
-  right: 0;
   bottom: 0;
-  width: 3rem;
-  display: block;
+  margin: auto 0;
+  display: inline-block;
+  width: 2.8rem;
+  height: 2.8rem;
+  vertical-align: middle;
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 40% 40%;
-  background-image: url('./../../assets/aite.png');
+  background-size: 76% 76%;
+}
+
+div.comment-pop-wrap>div.comment-input-wrap>span:nth-of-type(1) {
+  width: 2rem;
+  height: 2rem;
+  right: calc(2.8rem + 0.5rem + 4px);
+  background-image: url('./../../assets/chat-face.png');
+}
+
+div.comment-pop-wrap>div.comment-input-wrap>span.comment-send-btn {
+  right: 0.5rem;
+  background: rgb(90, 64, 158);
+  width: 2.5rem;
+  height: 1.8rem;
+  line-height: 1.92rem;
+  border-radius: 2px;
+  text-align: center;
+  color: #af9be2;
+  font-size: 0.8rem;
+  text-shadow: 0 0 2px rgba(27, 18, 46, 0.4);
+  box-shadow: 0 0 4px rgba(78, 60, 116, 0.4);
+  transition: opacity 0.3s ease 0s;
+}
+
+#edit {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0.5rem;
+  margin: auto 0;
+  display: inline-block;
+  width: calc(100% - 3.8rem - 20px - 2.2rem - 2px);
+  height: calc(2rem - 14px);
+  border: none;
+  outline: none;
+  border-radius: calc(2rem - 16px);
+  background-color: #3a2c5d;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 6px 2.2rem 8px 20px;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+#edit::-webkit-scrollbar {
+  display: none;
+}
+
+.placeholder {
+  color: #685d82 !important;
+}
+
+#face-wrap {
+  position: fixed;
+  width: 100%;
+  bottom: 3rem;
+  left: 0;
+  background: #443763;
+  font-size: 0;
 }
 </style>

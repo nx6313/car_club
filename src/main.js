@@ -10,14 +10,6 @@ import './plugins/loading.css'
 Vue.use(VueSocketio, 'http://socketserver.com:1923')
 Vue.config.productionTip = false
 Vue.config.devtools = true
-Vue.config.errorHandler = function (err, vm, info) {
-  console.log(err, vm, info)
-  // this.$comfun.consoleBeautiful(this, '发现异常', null, null, {
-  //   'err': err,
-  //   'vm': vm,
-  //   'info': info
-  // }, 'error')
-}
 
 /* eslint-disable no-new */
 new Vue({

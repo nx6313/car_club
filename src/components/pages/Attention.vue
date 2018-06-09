@@ -6,7 +6,7 @@
     <div class="comment-wrap touchIgnore close" ref="comment_wrap">
       <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入评论内容</div>
       <span class="touchIgnore" @click.passive="selectFace"></span>
-      <span class="chat-send-btn ripple touchIgnore" ref="chat-send-btn" @click="commentSend">评论</span>
+      <span class="comment-send-btn ripple touchIgnore" @click="commentSend">评论</span>
     </div>
   </div>
 </template>
@@ -307,7 +307,7 @@ export default {
   background-image: url('./../../assets/chat-face.png');
 }
 
-.comment-wrap>span.chat-send-btn {
+.comment-wrap>span.comment-send-btn {
   right: 0.5rem;
   background: rgb(90, 64, 158);
   width: 2.5rem;

@@ -8,26 +8,23 @@
       <div class="video-item video-item-current" @click="supportHold">
         <template>
           <div class="video-item-page-wrap">
-            <div class="video-wrap" ref="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
+            <div class="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
               <div :style="videoInfo.cover ? { 'background-image': 'url(' + videoInfo.cover + ')' } : ''" :class="['video-shade', videoInfo.coverWidth > videoInfo.coverHeight ? 'vertical' : '']"></div>
               <div class="video-play-show" :id="'video-play-' + videoInfo.videoId"></div>
             </div>
             <div :class="['videoDo', full ? 'videoDoFull' : 'videoDoNotFull']">
-              <span :style="videoInfo.userHead ? { 'background-image': 'url(' + videoInfo.userHead + ')' } : ''">
-                <span v-if="!videoInfo.hasAttention" class="attention"></span>
+              <span :style="videoInfo.userHead ? { 'background-image': 'url(' + videoInfo.userHead + ')' } : ''" @click.stop="doAtt(videoInfo)">
+                <span :ref="'att-user-' + videoInfo.videoId" v-if="!videoInfo.hasAttention" class="attention"></span>
               </span>
-              <span ref="video-support" :class="videoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(videoInfo)">
+              <span :ref="'video-support-' + videoInfo.videoId" :class="videoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(videoInfo)">
                 <span>{{videoInfo.supportCount}}</span>
               </span>
               <span @click.stop="lookComment">
                 <span>{{videoInfo.commentCount}}</span>
               </span>
-              <span @click="shareVideo"></span>
+              <span @click.stop="shareVideo"></span>
             </div>
           </div>
-        </template>
-        <template>
-          <div class="video-item-replace"></div>
         </template>
       </div>
     </div>
@@ -61,7 +58,6 @@ export default {
       refDistance: 64, // 该参数修改的话，需要一起修改 rotate 的 @keyframes 样式
       moveRate: 0.4,
       everyVITsY: 0,
-      currentVIIndex: 1, // 当前页数
       currentRefTsY: 0,
       currentVITsY: 0,
       reg: /[-?\d]+/g,
@@ -79,13 +75,6 @@ export default {
     }
   },
   mounted () {
-    this.getVideoByPage(true, this.currentVIIndex).then((videoInfo) => {
-      this.videoInfo = videoInfo
-      this.videoInfoList.push(this.videoInfo)
-      this.currentVideoInfo = this.videoInfo
-      this.$emit('cut-video-page', this.currentVideoInfo)
-      this.getNextVideoInfo()
-    })
     this.videoDataRefElem = this.$refs['ref-data-wrap']
     this.refingElem = this.$refs['ref-ing']
     this.refComplateElem = this.$refs['ref-complate']
@@ -104,45 +93,149 @@ export default {
     this.currentRefTsY = Number(this.videoDataRefElem.style.transform.match(this.reg)[0])
     this.videoItemWrapElem.style.transform = `translateY(0px)`
     this.currentVITsY = Number(this.videoItemWrapElem.style.transform.match(this.reg)[0])
+    var currentIndex = Array.prototype.indexOf.call(this.videoItemWrapElem.children, this.videoItemWrapElem.getElementsByClassName('video-item-current')[0]) + 1
+    this.getVideoByPage(true, currentIndex).then((videoInfo) => {
+      this.videoInfo = videoInfo
+      this.videoInfoList.push(this.videoInfo)
+      this.currentVideoInfo = this.videoInfo
+      this.$emit('cut-video-page', this.currentVideoInfo)
+      this.getNextVideoInfo().then(() => {
+        this.$emit('data-loading', false)
+      }, () => {
+        this.$emit('data-loading', false)
+      })
+    })
   },
   methods: {
-    getNextVideoInfo () {
-      this.getVideoByPage(true, this.currentVIIndex + 1).then((videoInfo) => {
-        if (videoInfo) {
-          let hasVideo = false
-          for (let v = 0; v < this.videoInfoList.length; v++) {
-            if (this.videoInfoList[v].videoId === videoInfo.videoId) {
-              hasVideo = true
-              break
+    getNextVideoInfo (isRef) {
+      this.hasNext = false
+      var nextVideoInfoPromise = new Promise((resolve, reject) => {
+        let videoItemWrap = this.$refs['video-item-wrap']
+        var currentIndex = Array.prototype.indexOf.call(this.videoItemWrapElem.children, this.videoItemWrapElem.getElementsByClassName('video-item-current')[0])
+        var searchIndex = currentIndex + 1
+        if (isRef !== true) {
+          searchIndex += 1
+        }
+        if (isRef || currentIndex === videoItemWrap.childNodes.length - 1) {
+          this.getVideoByPage(false, searchIndex).then((videoInfo) => {
+            if (videoInfo) {
+              let hasVideo = false
+              for (let v = 0; v < this.videoInfoList.length; v++) {
+                if (this.videoInfoList[v].videoId === videoInfo.videoId) {
+                  hasVideo = true
+                  break
+                }
+              }
+              if (!hasVideo) {
+                let insertIndex = -1
+                if (isRef === true) {
+                  this.videoInfoList.unshift(videoInfo)
+                  this.currentVideoInfo = videoInfo
+                } else {
+                  if (currentIndex === videoItemWrap.childNodes.length - 1) {
+                    this.videoInfoList.push(videoInfo)
+                  }
+                  //  else {
+                  //   insertIndex = currentIndex + 1
+                  //   this.videoInfoList.splice(currentIndex + 1, 0, videoInfo)
+                  // }
+                }
+                this.hasNext = true
+                this.addVideoWrap(isRef, insertIndex)
+                this.addComponentToPage(videoInfo, isRef)
+              } else {
+                if (isRef !== true) {
+                  this.hasNext = true
+                } else {
+                  if (videoItemWrap.childNodes.length > 1) {
+                    this.hasNext = true
+                  }
+                }
+              }
+            } else {
+              if (isRef !== true) {
+                this.hasNext = false
+              } else {
+                if (videoItemWrap.childNodes.length > 1) {
+                  this.hasNext = true
+                }
+              }
             }
-          }
-          if (!hasVideo) {
-            this.videoInfoList.push(videoInfo)
-            this.hasNext = true
-            this.addVideoWrap()
-            this.addComponentToPage(videoInfo)
-          } else {
-            this.hasNext = false
-          }
+            resolve(videoInfo)
+          }, (response) => {
+            if (isRef !== true) {
+              this.hasNext = false
+            } else {
+              if (videoItemWrap.childNodes.length > 1) {
+                this.hasNext = true
+              }
+            }
+            reject(response)
+          })
         } else {
-          this.hasNext = false
+          this.hasNext = true
+          resolve(null)
         }
       })
+      return nextVideoInfoPromise
     },
     getVideoByPage (needLoading, page) {
+      if (needLoading === true) {
+        this.$emit('data-loading', true)
+      }
       var videpByPagePromise = new Promise((resolve, reject) => {
-        if (needLoading === true) {
-          this.$emit('data-loading', true)
-        }
         this.$comfun.http_post(this, this.$moment.urls.get_new_info + `?page=${page}&limit=1`, {
+          accountId: this.$moment.wxUserInfo.accountId,
           type: '3'
         }).then((response) => {
-          if (needLoading === true) {
-            this.$emit('data-loading', false)
-          }
           if (response.body.code === '0000' && response.body.success === true) {
             if (response.body.data.dataList && response.body.data.dataList.length > 0) {
-              var videoInfo = {
+              let hasAttention = false
+              if (response.body.data.dataList[0].accountId === this.$moment.wxUserInfo.accountId || response.body.data.dataList[0].isIdoi === 1) {
+                hasAttention = true
+              }
+              let ifSupport = false
+              let likeMans = []
+              if (response.body.data.dataList[0].praiseList && response.body.data.dataList[0].praiseList.length > 0) {
+                for (let p = 0; p < response.body.data.dataList[0].praiseList.length; p++) {
+                  if (response.body.data.dataList[0].praiseList[p].accountId === this.$moment.wxUserInfo.accountId) {
+                    ifSupport = true
+                  }
+                  likeMans.push({
+                    accountId: response.body.data.dataList[0].praiseList[p].accountId,
+                    time: response.body.data.dataList[0].praiseList[p].createTime,
+                    userHeadimg: response.body.data.dataList[0].praiseList[p].userHeadimg,
+                    username: response.body.data.dataList[0].praiseList[p].username
+                  })
+                }
+              }
+              let comments = []
+              if (response.body.data.dataList[0].commentList && response.body.data.dataList[0].commentList.length > 0) {
+                for (let c = 0; c < response.body.data.dataList[0].commentList.length; c++) {
+                  comments.push({
+                    head: response.body.data.dataList[0].commentList[c].fromUserHeadimg,
+                    name: response.body.data.dataList[0].commentList[c].fromUsername,
+                    content: response.body.data.dataList[0].commentList[c].content,
+                    time: response.body.data.dataList[0].commentList[c].createTime,
+                    isLike: false,
+                    replys: [
+                      {
+                        userId: '2',
+                        name: '张学友',
+                        content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
+                        time: '40分钟前'
+                      },
+                      {
+                        userId: '2',
+                        name: '张学友',
+                        content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
+                        time: '40分钟前'
+                      }
+                    ]
+                  })
+                }
+              }
+              let videoInfo = {
                 videoId: response.body.data.dataList[0].id,
                 userId: response.body.data.dataList[0].accountId,
                 src: response.body.data.dataList[0].fileList[0].fileAddress,
@@ -152,10 +245,12 @@ export default {
                 type: response.body.data.dataList[0].fileList[0].suffix,
                 userHead: response.body.data.dataList[0].userHeadimg,
                 userName: response.body.data.dataList[0].username,
-                hasAttention: false,
-                ifSupport: true,
-                supportCount: 0,
-                commentCount: 0
+                hasAttention: hasAttention,
+                ifSupport: ifSupport,
+                supportMans: likeMans,
+                supportCount: likeMans.length,
+                commentCount: comments.length,
+                comments: comments
               }
               resolve(videoInfo)
             } else {
@@ -165,15 +260,12 @@ export default {
             resolve(null)
           }
         }, (response) => {
-          if (needLoading === true) {
-            this.$emit('data-loading', false)
-          }
           reject(response)
         })
       })
       return videpByPagePromise
     },
-    addVideoWrap () {
+    addVideoWrap (isRef, insertIndex) {
       var that = this
       var VideoWrapComponent = Vue.extend({
         template: `<div v-once class="video-item" :style="{ height: 'calc(' + initPageItemHeight + 'px)' }" @click="supportHold">
@@ -191,28 +283,36 @@ export default {
       var videoItemWrap = that.$refs['video-item-wrap']
       videoItemWrap.style['transition-duration'] = '0s'
       var nextVideoWrap = new VideoWrapComponent().$mount()
-      videoItemWrap.appendChild(nextVideoWrap.$el)
+      if (isRef === true) {
+        videoItemWrap.insertBefore(nextVideoWrap.$el, videoItemWrap.children[0])
+      } else {
+        if (insertIndex > 0) {
+          videoItemWrap.insertBefore(nextVideoWrap.$el, videoItemWrap.children[insertIndex])
+        } else {
+          videoItemWrap.appendChild(nextVideoWrap.$el)
+        }
+      }
       videoItemWrap.style.height = `calc(${videoItemWrap.childNodes.length * that.videoItemPageHeight}px)`
     },
-    addComponentToPage (videoInfo) {
+    addComponentToPage (videoInfo, isRef) {
       var that = this
       var VideoPageComponent = Vue.extend({
         template: `<div class="video-item-page-wrap">
-          <div class="video-wrap" ref="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
+          <div class="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
             <div :style="newPageVideoInfo.cover ? { 'background-image': 'url(' + newPageVideoInfo.cover + ')' } : ''" :class="['video-shade', newPageVideoInfo.coverWidth > newPageVideoInfo.coverHeight ? 'vertical' : '']"></div>
             <div class="video-play-show" :id="'video-play-' + newPageVideoInfo.videoId"></div>
           </div>
           <div :class="['videoDo', sfull ? 'videoDoFull' : 'videoDoNotFull']">
-            <span :style="newPageVideoInfo.userHead ? { 'background-image': 'url(' + newPageVideoInfo.userHead + ')' } : ''">
-              <span v-if="!newPageVideoInfo.hasAttention" class="attention"></span>
+            <span :style="newPageVideoInfo.userHead ? { 'background-image': 'url(' + newPageVideoInfo.userHead + ')' } : ''" @click.stop="doAtt(newPageVideoInfo)">
+              <span :ref="'att-user-' + newPageVideoInfo.videoId" v-if="!newPageVideoInfo.hasAttention" class="attention"></span>
             </span>
-            <span :class="newPageVideoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(newPageVideoInfo)">
+            <span :ref="'video-support-' + newPageVideoInfo.videoId" :class="newPageVideoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(newPageVideoInfo)">
               <span>{{newPageVideoInfo.supportCount}}</span>
             </span>
             <span @click.stop="lookComment">
               <span>{{newPageVideoInfo.commentCount}}</span>
             </span>
-            <span></span>
+            <span @click.stop="shareVideo"></span>
           </div>
         </div>`,
         data () {
@@ -221,74 +321,54 @@ export default {
             newPageVideoInfo: videoInfo
           }
         },
-        beforeMount () {
-          this.newPageVideoInfo.supportCount = 255
-          that.videoInfoList.push(this.newPageVideoInfo)
-        },
         methods: {
           touchStart: that.touchStart,
           touchMove: that.touchMove,
           touchEnd: that.touchEnd,
           support: that.support,
           supportHold: that.supportHold,
-          lookComment: that.lookComment
+          lookComment: that.lookComment,
+          doAtt: that.doAtt,
+          shareVideo: that.shareVideo
         }
       })
-      var nextReplaceElem = this.videoItemWrapElem.getElementsByClassName('video-item-current')[0].nextSibling.getElementsByClassName('video-item-replace')[0]
-      new VideoPageComponent().$mount(nextReplaceElem)
+      if (isRef === true) {
+        var previousReplaceElem = this.videoItemWrapElem.getElementsByClassName('video-item-current')[0].previousSibling.getElementsByClassName('video-item-replace')[0]
+        if (previousReplaceElem) {
+          new VideoPageComponent().$mount(previousReplaceElem)
+          var currentElem = this.videoItemWrapElem.getElementsByClassName('video-item-current')[0]
+          currentElem.classList.remove('video-item-current')
+          currentElem.previousSibling.classList.add('video-item-current')
+          this.hasNext = true
+        }
+      } else {
+        var nextReplaceElem = this.videoItemWrapElem.getElementsByClassName('video-item-current')[0].nextSibling.getElementsByClassName('video-item-replace')[0]
+        if (nextReplaceElem) {
+          new VideoPageComponent().$mount(nextReplaceElem)
+        }
+      }
     },
     toggleCurrentPage (direction) {
+      if (this.currentPlayer !== null) {
+        this.currentPlayer.destroy()
+        this.currentPlayer = null
+      }
       var currentElem = this.videoItemWrapElem.getElementsByClassName('video-item-current')[0]
       if (direction === 'pre') {
         currentElem.classList.remove('video-item-current')
         currentElem.previousSibling.classList.add('video-item-current')
-        this.currentVIIndex--
-        this.hasNext = true
       } else if (direction === 'next') {
         currentElem.classList.remove('video-item-current')
         currentElem.nextSibling.classList.add('video-item-current')
-        this.currentVIIndex++
-        if (this.videoItemWrapElem.lastChild.classList.contains('video-item-current')) {
-          this.getNextVideoInfo()
-        }
+        this.getNextVideoInfo().then(() => {
+          this.$emit('data-loading', false)
+        }, () => {
+          this.$emit('data-loading', false)
+        })
       }
       var currentIndex = Array.prototype.indexOf.call(this.videoItemWrapElem.children, this.videoItemWrapElem.getElementsByClassName('video-item-current')[0])
       this.currentVideoInfo = this.videoInfoList[currentIndex]
       this.$emit('cut-video-page', this.currentVideoInfo)
-    },
-    support (video) {
-      video.ifSupport = !video.ifSupport
-      if (video.ifSupport) {
-        this.$refs['video-support'][0].classList.add('support-focus')
-      } else {
-        this.$refs['video-support'][0].classList.remove('support-focus')
-      }
-    },
-    supportHold () {
-      this.$emit('close-comment-pop')
-      this.dblclickCount++
-      clearTimeout(this.dblclickTimer)
-      if (this.dblclickCount > 2) {
-        if (!this.currentVideoInfo.ifSupport) {
-          this.support(this.currentVideoInfo)
-        }
-        this.$pageImg([likeIcon], event.clientX, event.clientY, document.getElementsByClassName('video-item-current')[0])
-      }
-      this.dblclickTimer = setTimeout(() => {
-        if (this.dblclickCount === 1) {
-          if (this.currentPlayer !== null) {
-            this.currentPlayer.destroy()
-          }
-          this.currentPlayer = this.$comfun.createVideo(this, 'video-play-undefined', {
-            m3u8: 'http://l.dachangjr.com/video/4.mp4', // 请替换成实际可用的播放地址
-            autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
-            coverpic: { style: 'cover', src: 'http://img5.imgtn.bdimg.com/it/u=415293130,2419074865&fm=27&gp=0.jpg' },
-            controls: 'none'
-          }, true)
-          this.currentPlayer.play()
-        }
-        this.dblclickCount = 0
-      }, 400)
     },
     touchStart () {
       this.$emit('close-comment-pop')
@@ -384,6 +464,8 @@ export default {
             this.currentVITsY -= this.everyVITsY
             this.videoItemWrapElem.style.transform = `translateY(${this.currentVITsY}px)`
             this.isFirst = false
+            this.hasNext = false
+            this.$emit('data-loading', true)
             setTimeout(() => {
               this.toggleCurrentPage('next')
             }, 0.5 * 1000)
@@ -399,9 +481,21 @@ export default {
             if (this.touchMoveDistanceY * this.refRate > this.refActivate) {
               this.isRefing = true
               this.videoDataRefElem.style.transform = `translateY(${this.currentRefTsY + this.refDistance}px)`
+              this.$emit('data-loading', true)
               setTimeout(() => {
-                this.$emit('vieo-to-ref', this.finishRef)
                 this.videoDataRefElem.classList.add('rotate')
+
+                if (this.currentPlayer !== null) {
+                  this.currentPlayer.destroy()
+                  this.currentPlayer = null
+                }
+                this.getNextVideoInfo(true).then(() => {
+                  this.finishRef()
+                  this.$emit('data-loading', false)
+                }, () => {
+                  this.finishRef()
+                  this.$emit('data-loading', false)
+                })
               }, 0.3 * 1000)
             } else {
               this.videoDataRefElem.style.transform = `translateY(${this.currentRefTsY}px)`
@@ -418,6 +512,7 @@ export default {
           if (this.currentVITsY === 0) {
             this.isFirst = true
           }
+          this.hasNext = true
           setTimeout(() => {
             this.toggleCurrentPage('pre')
           }, 0.5 * 1000)
@@ -452,6 +547,80 @@ export default {
           }, 400)
         }, 100)
       }, 10)
+    },
+    doAtt (video) {
+      if (!video.hasAttention) {
+        this.$loading('关注...')
+        this.$comfun.http_get(this, this.$moment.urls.attention + '?id=' + this.$moment.wxUserInfo.accountId + '&accountId=' + this.currentVideoInfo.userId).then((response) => {
+          if (response.body.code === '0000' && response.body.success === true) {
+            this.$toast('关注用户成功')
+            video.hasAttention = !video.hasAttention
+            this.$refs['att-user-' + this.currentVideoInfo.videoId].style.display = 'none'
+          } else {
+            this.$toast('关注用户失败')
+          }
+        })
+      } else {
+        if (this.$moment.wxUserInfo.accountId !== this.currentVideoInfo.userId) {
+          this.$toast('您已关注该用户')
+        }
+      }
+    },
+    support (video) {
+      if (!video.ifSupport) {
+        this.$loading('点赞中...')
+        this.$comfun.http_post(this, this.$moment.urls.praise + '?id=' + this.currentVideoInfo.videoId, {
+          accountId: this.$moment.wxUserInfo.accountId
+        }).then((response) => {
+          if (response.body.code === '0000' && response.body.success === true) {
+            this.$toast('点赞成功')
+            video.ifSupport = !video.ifSupport
+            this.$refs['video-support-' + video.videoId].classList.add('support-focus')
+          } else {
+            this.$toast('点赞失败')
+          }
+        })
+      } else {
+        this.$loading('取消点赞中...')
+        this.$comfun.http_post(this, this.$moment.urls.praise + '?id=' + this.currentVideoInfo.videoId, {
+          accountId: this.$moment.wxUserInfo.accountId
+        }).then((response) => {
+          if (response.body.code === '0000' && response.body.success === true) {
+            this.$refs['video-support-' + video.videoId].classList.remove('support-focus')
+            this.$toast('点赞取消')
+          } else {
+            this.$toast('取消点赞失败')
+          }
+        })
+      }
+    },
+    supportHold () {
+      this.$emit('close-comment-pop')
+      this.dblclickCount++
+      clearTimeout(this.dblclickTimer)
+      if (this.dblclickCount > 2) {
+        if (!this.currentVideoInfo.ifSupport) {
+          this.support(this.currentVideoInfo)
+        }
+        this.$pageImg([likeIcon], event.clientX, event.clientY, document.getElementsByClassName('video-item-current')[0])
+      }
+      this.dblclickTimer = setTimeout(() => {
+        if (this.dblclickCount === 1 && !document.getElementById('comment-pop-wrap').classList.contains('open')) {
+          if (this.currentPlayer !== null) {
+            this.currentPlayer.destroy()
+            this.currentPlayer = null
+          }
+          this.currentPlayer = this.$comfun.createVideo(this, 'video-play-' + this.currentVideoInfo.videoId, {
+            m3u8: this.currentVideoInfo.src, // 请替换成实际可用的播放地址
+            autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
+            coverpic: { style: 'cover', src: this.currentVideoInfo.cover },
+            controls: 'none',
+            h5_flv: true
+          }, true)
+          this.currentPlayer.play()
+        }
+        this.dblclickCount = 0
+      }, 400)
     },
     lookComment () {
       this.$emit('look-comment', this.currentVideoInfo)
@@ -558,7 +727,7 @@ export default {
   left: 0;
   height: 60px;
   width: 100%;
-  background: linear-gradient(to top, rgba(30, 20, 54, .6), rgba(0, 0, 0, 0));
+  background: linear-gradient(to top, rgba(30, 20, 54, .8), rgba(0, 0, 0, 0));
   z-index: 99;
 }
 
