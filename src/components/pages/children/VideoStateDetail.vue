@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div @touchmove="touchMove">
     <div class="state-info-wrap">
       <span class="head" :style="detailData.headImg ? { 'background-image': 'url(' + detailData.headImg + ')' } : ''"></span>
       <div class="content-wrap">
@@ -28,7 +28,7 @@
       <div class="comment-data-wrap">
         <div class="comment-title-bar flex-r flex-b">
           <span>{{detailData.comments.length}} 全部评论</span>
-          <span class="ripple">按照热度</span>
+          <span class="ripple" @click="filterType">按照热度</span>
         </div>
         <span v-if="detailData.comments.length === 0"></span>
         <div class="comment-info-wrap" v-if="detailData.comments.length > 0" v-for="(comment, index) in detailData.comments" :key="index">
@@ -47,17 +47,18 @@
               </div>
             </div>
             <div class="comment-do-wrap">
-              <span></span>
+              <span @click="toComment"></span>
               <span>1</span>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="comment-input-wrap">
-      <textarea placeholder="评论....." ref="comment-input-area" v-model="commentContentInput"/>
-      <span></span>
-      <span class="comment-send-btn ripple" ref="comment-send-btn" @click="commentSend">发送</span>
+    <div id="face-wrap" ref="face-wrap" class="touchIgnore"></div>
+    <div class="comment-input-wrap touchIgnore close" ref="comment_wrap">
+      <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入评论内容</div>
+      <span class="touchIgnore" @click.passive="selectFace"></span>
+      <span class="comment-send-btn ripple touchIgnore" @click="commentSend">评论</span>
     </div>
   </div>
 </template>
@@ -68,7 +69,8 @@ export default {
   data () {
     return {
       detailData: {},
-      commentContentInput: ''
+      commentContentInput: '',
+      commentContentInputHtml: ''
     }
   },
   created () {
@@ -139,16 +141,125 @@ export default {
               time: '40分钟前'
             }
           ]
+        },
+        {
+          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd',
+          nikeName: '刘德华',
+          time: '40分钟前',
+          like: 2,
+          content: '我们在设计任何作品时，首先考虑的是应用的尺寸。如iPhone8的分辨率我们在设计任何作品时，首先考虑的是应用的尺寸。如iPhone8的分辨率',
+          replys: [
+            {
+              userId: '2',
+              name: '张学友',
+              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
+              time: '40分钟前'
+            },
+            {
+              userId: '2',
+              name: '张学友',
+              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
+              time: '40分钟前'
+            }
+          ]
         }
       ]
     }
   },
   methods: {
+    focusInput () {
+      this.$face_close()
+      if (event.target.classList.contains('placeholder')) {
+        event.target.classList.remove('placeholder')
+        event.target.innerHTML = ''
+      }
+      this.$refs.edit.focus()
+    },
+    blurInput () {
+      this.$face_close()
+      if (!event.target.classList.contains('placeholder') && !event.target.classList.contains('inputing')) {
+        event.target.classList.add('placeholder')
+        event.target.innerHTML = '请输入评论内容'
+      }
+    },
+    contentInput () {
+      this.$face_close()
+      this.commentContentInput = event.target.innerText
+      this.commentContentInputHtml = event.target.innerHTML
+      if (event.target.innerHTML.length > 0) {
+        event.target.classList.add('inputing')
+        setTimeout(() => {
+          var currentpos = this.$refs.edit.scrollHeight * 100
+          this.$refs.edit.scrollTop = currentpos
+        }, 100)
+      } else {
+        event.target.classList.remove('inputing')
+      }
+    },
+    touchMove () {
+      if (!event.target.classList.contains('touchIgnore')) {
+        this.$face_close().then(() => {
+          this.$refs.comment_wrap.style.transform = 'translateY(100%)'
+          this.$refs.comment_wrap.setAttribute('class', 'comment-input-wrap touchIgnore close')
+        })
+      }
+    },
+    filterType () {
+      this.$bottomtip('456')
+    },
+    toComment (attentionId) {
+      this.$face_close()
+      this.$refs.edit.classList.remove('inputing')
+      this.$refs.edit.classList.add('placeholder')
+      this.$refs.edit.innerHTML = '请输入评论内容'
+      if (this.$refs.comment_wrap.classList.contains('close')) {
+        this.$refs.comment_wrap.classList.remove('close')
+        this.$refs.comment_wrap.classList.add('open')
+        this.$refs.comment_wrap.id = 'comment-' + attentionId
+        this.$refs.comment_wrap.style.transform = 'translateY(0)'
+      } else {
+        if (this.$refs.comment_wrap.id === 'comment-' + attentionId) {
+          this.$refs.comment_wrap.classList.remove('open')
+          this.$refs.comment_wrap.classList.add('close')
+          this.$refs.comment_wrap.style.transform = 'translateY(100%)'
+          this.$refs.comment_wrap.setAttribute('class', 'comment-input-wrap touchIgnore close')
+        } else {
+          this.$refs.comment_wrap.classList.remove('open')
+          this.$refs.comment_wrap.classList.add('close')
+          this.$refs.comment_wrap.style.transform = 'translateY(100%)'
+          setTimeout(() => {
+            this.$refs.comment_wrap.style.transform = 'translateY(0)'
+            this.$refs.comment_wrap.setAttribute('class', 'comment-input-wrap touchIgnore open')
+            this.$refs.comment_wrap.id = 'comment-' + attentionId
+          }, 100)
+        }
+      }
+    },
     commentSend () {
       if (!this.commentContentInput.trim()) {
         this.$toast('评论内容不能为空')
         return false
       }
+    },
+    selectFace () {
+      this.$face(this, {
+        rootElem: this.$refs['face-wrap'],
+        otherClass: 'touchIgnore',
+        callBack: (faceImg) => {
+          if (this.$refs.edit.classList.contains('placeholder')) {
+            this.$refs.edit.classList.remove('placeholder')
+            this.$refs.edit.classList.add('inputing')
+            this.$refs.edit.innerHTML = ''
+          }
+          this.$refs.edit.appendChild(faceImg)
+          this.commentContentInput = this.$refs.edit.innerText
+          this.commentContentInputHtml = this.$refs.edit.innerHTML
+          setTimeout(() => {
+            var currentpos = this.$refs.edit.scrollHeight * 100
+            this.$refs.edit.scrollTop = currentpos
+          }, 100)
+        }
+      })
     }
   }
 }
@@ -424,7 +535,7 @@ export default {
 
 .comment-wrap>div.comment-data-wrap>div.comment-info-wrap {
   position: relative;
-  padding: 1rem 0;
+  padding: 1rem 0 1.4rem;
 }
 
 .comment-wrap>div.comment-data-wrap>div.comment-info-wrap>span.head {
@@ -529,11 +640,14 @@ export default {
 .comment-input-wrap {
   position: fixed;
   width: 100%;
-  height: 3.6rem;
+  height: 3.2rem;
   left: 0;
   bottom: 0;
-  background: #2c1f4a;
-  display: none;
+  background: #28203a;
+  transition: all 0.3s ease 0s;
+  transform: translateY(100%);
+  box-shadow: inset 0px 1px 2px 0px #1d1d2d;
+  z-index: 999;
 }
 
 .comment-input-wrap>span {
@@ -569,9 +683,10 @@ export default {
   font-size: 0.8rem;
   text-shadow: 0 0 2px rgba(27, 18, 46, 0.4);
   box-shadow: 0 0 4px rgba(78, 60, 116, 0.4);
+  transition: opacity 0.3s ease 0s;
 }
 
-.comment-input-wrap>textarea {
+#edit {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -579,27 +694,32 @@ export default {
   margin: auto 0;
   display: inline-block;
   width: calc(100% - 3.8rem - 20px - 2.2rem - 2px);
-  height: calc(2rem - 16px);
+  height: calc(2rem - 14px);
   border: none;
   outline: none;
   border-radius: calc(2rem - 16px);
   background-color: #433564;
-  padding: 8px 2.2rem 8px 20px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 6px 2.2rem 8px 20px;
   color: #ffffff;
-  font-size: 1rem;
-  resize: none;
+  font-size: 0.9rem;
 }
 
-.comment-input-wrap>textarea::-webkit-input-placeholder { /* WebKit browsers */
-  color: #685d82;
+#edit::-webkit-scrollbar {
+  display: none;
 }
-.comment-input-wrap>textarea:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-  color: #685d82;
+
+.placeholder {
+  color: #685d82 !important;
 }
-.comment-input-wrap>textarea::-moz-placeholder { /* Mozilla Firefox 19+ */
-  color: #685d82;
-}
-.comment-input-wrap>textarea:-ms-input-placeholder { /* Internet Explorer 10+ */
-  color: #685d82;
+
+#face-wrap {
+  position: fixed;
+  width: 100%;
+  bottom: 3.2rem;
+  left: 0;
+  background: #443763;
+  font-size: 0;
 }
 </style>

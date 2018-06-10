@@ -66,7 +66,7 @@ export default {
       toptipElem.style.fontSize = '0.8rem'
       toptipElem.style.textAlign = 'center'
       toptipElem.innerHTML = content
-      toptipElem.style.zIndex = 999999999
+      toptipElem.style.zIndex = 99999999
       toptipElem.style.background = background
       toptipElem.style.color = color
       document.body.appendChild(toptipElem)
@@ -89,6 +89,51 @@ export default {
         clearTimeout(toptipOpacityTimer)
         clearTimeout(toptipRemoveTimer)
       }
+    }
+
+    // bottomtip弹出层
+    Vue.prototype.$bottomtip = function (content, option) {
+      if (document.getElementById('bottomtip-message-box')) {
+        document.body.removeChild(document.getElementById('bottomtip-message-box'))
+      }
+      var params = option || {}
+      var background = params.background || 'rgb(255, 255, 255)'
+      var color = params.color || 'rgb(44, 44, 44)'
+      var items = params.items || []
+      var bottomtipElem = document.createElement('div')
+      bottomtipElem.id = 'bottomtip-message-box'
+      bottomtipElem.style.position = 'absolute'
+      bottomtipElem.style.left = '0.4rem'
+      bottomtipElem.style.bottom = '0.4rem'
+      bottomtipElem.style.width = 'calc(100% - 0.8rem)'
+      bottomtipElem.style.borderRadius = '4px'
+      bottomtipElem.style.overflow = 'hidden'
+      bottomtipElem.style.padding = '0.3rem 0'
+      bottomtipElem.style.whiteSpace = 'nowrap'
+      bottomtipElem.style.display = 'inline-block'
+      bottomtipElem.style.transition = 'all 0.3s ease 0s'
+      bottomtipElem.style.transform = 'translateY(100%)'
+      bottomtipElem.style.fontSize = '0.8rem'
+      bottomtipElem.style.textAlign = 'center'
+      bottomtipElem.innerHTML = content
+      bottomtipElem.style.zIndex = 99999999
+      bottomtipElem.style.background = background
+      bottomtipElem.style.color = color
+      document.body.appendChild(bottomtipElem)
+      if (items.length > 0) {
+        for (let i = 0; i < items.length; i++) {
+          let itemElem = document.createElement('div')
+          itemElem.innerHTML = '--- ' + i
+          bottomtipElem.appendChild(itemElem)
+        }
+      }
+      var cancleElem = document.createElement('div')
+      cancleElem.innerHTML = '取消'
+      cancleElem.style.padding = '0.4rem 0'
+      bottomtipElem.appendChild(cancleElem)
+      setTimeout(() => {
+        bottomtipElem.style.transform = 'translateY(0)'
+      }, 10)
     }
 
     // loading弹出层
