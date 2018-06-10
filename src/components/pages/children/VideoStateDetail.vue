@@ -16,26 +16,28 @@
       </div>
     </div>
     <div class="comment-wrap">
-      <div v-if="detailData.supports.length > 0">
+      <div class="support-users-wrap" v-if="detailData.supports.length > 0">
         <div class="support-count-wrap">
           <span>{{detailData.supports.length}}个赞</span>
           <span></span>
         </div>
-        <span v-for="(support, index) in detailData.supports" :key="index" :style="support.head ? { 'background-image': 'url(' + support.head + ')' } : ''"></span>
+        <div class="support-user-item-wrap">
+          <span v-for="(support, index) in detailData.supports" :key="index" :style="support.head ? { 'background-image': 'url(' + support.head + ')' } : ''"></span>
+        </div>
       </div>
-      <div>
-        <div class="comment-title-bar">
-          <span>{{detailData.comments.length}}全部评论</span>
-          <span></span>
+      <div class="comment-data-wrap">
+        <div class="comment-title-bar flex-r flex-b">
+          <span>{{detailData.comments.length}} 全部评论</span>
+          <span class="ripple">按照热度</span>
         </div>
         <span v-if="detailData.comments.length === 0"></span>
-        <div v-if="detailData.comments.length > 0" v-for="(comment, index) in detailData.comments" :key="index">
+        <div class="comment-info-wrap" v-if="detailData.comments.length > 0" v-for="(comment, index) in detailData.comments" :key="index">
           <span class="head" :style="comment.head ? { 'background-image': 'url(' + comment.head + ')' } : ''"></span>
           <div class="comment-content-wrap">
             <span>{{comment.nikeName}}</span>
             <span>{{comment.time}}</span>
             <span>{{comment.content}}</span>
-            <div v-if="comment.replys.length > 0">
+            <div class="comment-reply-wrap" v-if="comment.replys.length > 0">
               <div v-for="(reply, index) in comment.replys" :key="index">
                 <div>
                   <span>{{reply.name}}</span>
@@ -43,6 +45,10 @@
                 </div>
                 <span>{{reply.content}}</span>
               </div>
+            </div>
+            <div class="comment-do-wrap">
+              <span></span>
+              <span>1</span>
             </div>
           </div>
         </div>
@@ -289,6 +295,237 @@ export default {
   margin-top: 0.6rem;
 }
 
+.comment-wrap>div.support-users-wrap {
+  position: relative;
+  padding: 0.8rem 0.8rem 0.4rem 0.2rem;
+}
+
+.comment-wrap>div.support-users-wrap>div.support-count-wrap {
+  position: relative;
+  width: calc(5rem - 0.8rem);
+  height: 2.6rem;
+  text-align: center;
+}
+
+.comment-wrap>div.support-users-wrap>div.support-count-wrap>span {
+  position: relative;
+}
+
+.comment-wrap>div.support-users-wrap>div.support-count-wrap>span:nth-of-type(1) {
+  display: block;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.comment-wrap>div.support-users-wrap>div.support-count-wrap>span:nth-of-type(2) {
+  display: inline-block;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.2rem;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+  background-image: url('../../../assets/icon-support.png');
+}
+
+.comment-wrap>div.support-users-wrap>div.support-user-item-wrap {
+  position: absolute;
+  top: 0.8rem;
+  left: 5rem;
+  width: calc(100% - 5rem - 0.8rem);
+  display: -webkit-flex; /* Safari */
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+.comment-wrap>div.support-users-wrap>div.support-user-item-wrap>span {
+  position: relative;
+  display: inline-block;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 2.6rem;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.comment-wrap>div.support-users-wrap>div.support-user-item-wrap>span::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: -0.2rem;
+  width: 1rem;
+  height: 1rem;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+  background-image: url('../../../assets/icon-support-2.png');
+}
+
+.comment-wrap>div.support-users-wrap>div.support-user-item-wrap>span:nth-of-type(n + 2) {
+  margin-left: 0.8rem;
+}
+
+.comment-wrap>div.comment-data-wrap {
+  position: relative;
+  margin-top: 0.4rem;
+  padding: 0 0.6rem;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-title-bar {
+  position: relative;
+  padding: 0.8rem 0;
+  font-size: 0.8rem;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-title-bar>span:nth-of-type(2) {
+  position: relative;
+  color: #8b7caf;
+  display: inline-block;
+  padding-left: 0.9rem;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-title-bar>span:nth-of-type(2)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.22rem;
+  width: 0.8rem;
+  height: 0.6rem;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+  background-image: url('../../../assets/icon-order.png');
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-title-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -0.6rem;
+  right: -0.6rem;
+  border-top: 1px solid #554a66;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-title-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -0.6rem;
+  right: -0.6rem;
+  border-bottom: 1px solid #554a66;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap {
+  position: relative;
+  padding: 1rem 0;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>span.head {
+  display: block;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 2.2rem;
+  border: 1px solid #bdb9d1;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% auto;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap {
+  position: relative;
+  width: calc(100% - 2.9rem);
+  margin-left: 2.9rem;
+  margin-top: -2.2rem;
+  color: #8b7caf;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>span {
+  display: block;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>span:nth-of-type(1) {
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>span:nth-of-type(3) {
+  margin-top: 0.6rem;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>div.comment-reply-wrap {
+  margin-top: 0.6rem;
+  background: #433564;
+  padding: 0.5rem 0.8rem;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>div.comment-reply-wrap>div:nth-of-type(n + 2) {
+  border-top: 1px solid #4d4071;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>div.comment-reply-wrap>div>div {
+  margin-bottom: 0.4rem;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>div.comment-reply-wrap>div>div>span:nth-of-type(1) {
+  color: #47e160;
+  display: inline-block;
+  margin-right: 0.4rem;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>div.comment-do-wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>div.comment-do-wrap>span {
+  position: relative;
+  display: inline-block;
+  height: 1.8rem;
+  line-height: 1.8rem;
+  vertical-align: top;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>div.comment-do-wrap>span:nth-of-type(1) {
+  width: 2.6rem;
+  background-repeat: no-repeat;
+  background-size: 40% auto;
+  background-position: center;
+  background-image: url('../../../assets/icon-reply.png');
+  margin-right: 0.8rem;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>div.comment-do-wrap>span:nth-of-type(2) {
+  /* width: 2.6rem; */
+  text-align: left;
+  margin-right: 0.1rem;
+  padding-left: 1.4rem;
+  line-height: 1.9rem;
+}
+
+.comment-wrap>div.comment-data-wrap>div.comment-info-wrap>div.comment-content-wrap>div.comment-do-wrap>span:nth-of-type(2)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.6rem;
+  height: 1.8rem;
+  background-repeat: no-repeat;
+  background-size: 40% auto;
+  background-position: left;
+  background-image: url('../../../assets/icon-like.png');
+}
+
 .comment-input-wrap {
   position: fixed;
   width: 100%;
@@ -296,6 +533,7 @@ export default {
   left: 0;
   bottom: 0;
   background: #2c1f4a;
+  display: none;
 }
 
 .comment-input-wrap>span {
