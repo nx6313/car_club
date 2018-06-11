@@ -19,7 +19,7 @@
               <span :ref="'video-support-' + videoInfo.videoId" :class="videoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(videoInfo)">
                 <span>{{videoInfo.supportCount}}</span>
               </span>
-              <span @click.stop="lookComment">
+              <span :ref="'video-comment-' + videoInfo.videoId" @click.stop="lookComment">
                 <span>{{videoInfo.commentCount}}</span>
               </span>
               <span @click.stop="shareVideo"></span>
@@ -98,7 +98,7 @@ export default {
       this.videoInfo = videoInfo
       this.videoInfoList.push(this.videoInfo)
       this.currentVideoInfo = this.videoInfo
-      this.$emit('cut-video-page', this.currentVideoInfo)
+      this.$emit('cut-video-page', this.currentVideoInfo, this.changeData)
       this.getNextVideoInfo().then(() => {
         this.$emit('data-loading', false)
       }, () => {
@@ -212,26 +212,31 @@ export default {
               let comments = []
               if (response.body.data.dataList[0].commentList && response.body.data.dataList[0].commentList.length > 0) {
                 for (let c = 0; c < response.body.data.dataList[0].commentList.length; c++) {
+                  let replys = []
+                  if (response.body.data.dataList[0].commentList[c].replyInfos && response.body.data.dataList[0].commentList[c].replyInfos.length > 0) {
+                    for (let r = 0; r < response.body.data.dataList[0].commentList[c].replyInfos.length; r++) {
+                      replys.push({
+                        userId: response.body.data.dataList[0].commentList[c].replyInfos[r].fromAccountId,
+                        name: response.body.data.dataList[0].commentList[c].replyInfos[r].fromUsername,
+                        content: response.body.data.dataList[0].commentList[c].replyInfos[r].content,
+                        time: response.body.data.dataList[0].commentList[c].replyInfos[r].createTime,
+                        userHead: response.body.data.dataList[0].commentList[c].replyInfos[r].fromUserHeadimg,
+                        replyUserId: response.body.data.dataList[0].commentList[c].replyInfos[r].toAccountId,
+                        replyUserName: response.body.data.dataList[0].commentList[c].replyInfos[r].toUsername,
+                        replyUserHead: response.body.data.dataList[0].commentList[c].replyInfos[r].toUserHeadimg
+                      })
+                    }
+                  }
                   comments.push({
+                    id: response.body.data.dataList[0].commentList[c].id,
+                    uuid: response.body.data.dataList[0].commentList[c].uuid,
                     head: response.body.data.dataList[0].commentList[c].fromUserHeadimg,
+                    userId: response.body.data.dataList[0].commentList[c].fromAccountId,
                     name: response.body.data.dataList[0].commentList[c].fromUsername,
                     content: response.body.data.dataList[0].commentList[c].content,
                     time: response.body.data.dataList[0].commentList[c].createTime,
-                    isLike: false,
-                    replys: [
-                      {
-                        userId: '2',
-                        name: '张学友',
-                        content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
-                        time: '40分钟前'
-                      },
-                      {
-                        userId: '2',
-                        name: '张学友',
-                        content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
-                        time: '40分钟前'
-                      }
-                    ]
+                    isLike: response.body.data.dataList[0].commentList[c].isPraise === 1,
+                    replys: replys
                   })
                 }
               }
@@ -249,7 +254,7 @@ export default {
                 ifSupport: ifSupport,
                 supportMans: likeMans,
                 supportCount: likeMans.length,
-                commentCount: comments.length,
+                commentCount: response.body.data.dataList[0].commentNum,
                 comments: comments
               }
               resolve(videoInfo)
@@ -309,7 +314,7 @@ export default {
             <span :ref="'video-support-' + newPageVideoInfo.videoId" :class="newPageVideoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(newPageVideoInfo)">
               <span>{{newPageVideoInfo.supportCount}}</span>
             </span>
-            <span @click.stop="lookComment">
+            <span :ref="'video-comment-' + newPageVideoInfo.videoId" @click.stop="lookComment">
               <span>{{newPageVideoInfo.commentCount}}</span>
             </span>
             <span @click.stop="shareVideo"></span>
@@ -368,7 +373,7 @@ export default {
       }
       var currentIndex = Array.prototype.indexOf.call(this.videoItemWrapElem.children, this.videoItemWrapElem.getElementsByClassName('video-item-current')[0])
       this.currentVideoInfo = this.videoInfoList[currentIndex]
-      this.$emit('cut-video-page', this.currentVideoInfo)
+      this.$emit('cut-video-page', this.currentVideoInfo, this.changeData)
     },
     touchStart () {
       this.$emit('close-comment-pop')
@@ -484,7 +489,6 @@ export default {
               this.$emit('data-loading', true)
               setTimeout(() => {
                 this.videoDataRefElem.classList.add('rotate')
-
                 if (this.currentPlayer !== null) {
                   this.currentPlayer.destroy()
                   this.currentPlayer = null
@@ -575,6 +579,7 @@ export default {
           if (response.body.code === '0000' && response.body.success === true) {
             this.$toast('点赞成功')
             video.ifSupport = !video.ifSupport
+            video.supportCount += 1
             this.$refs['video-support-' + video.videoId].classList.add('support-focus')
           } else {
             this.$toast('点赞失败')
@@ -586,8 +591,10 @@ export default {
           accountId: this.$moment.wxUserInfo.accountId
         }).then((response) => {
           if (response.body.code === '0000' && response.body.success === true) {
-            this.$refs['video-support-' + video.videoId].classList.remove('support-focus')
             this.$toast('点赞取消')
+            video.ifSupport = !video.ifSupport
+            video.supportCount -= 1
+            this.$refs['video-support-' + video.videoId].classList.remove('support-focus')
           } else {
             this.$toast('取消点赞失败')
           }
@@ -623,10 +630,14 @@ export default {
       }, 400)
     },
     lookComment () {
-      this.$emit('look-comment', this.currentVideoInfo)
+      this.$emit('look-comment')
     },
     shareVideo () {
       this.$loading('分享功能...')
+    },
+    changeData (videoComments) {
+      var commentCountElem = this.$refs['video-comment-' + this.currentVideoInfo.videoId].getElementsByTagName('span')[0]
+      commentCountElem.innerText = videoComments.length
     }
   }
 }

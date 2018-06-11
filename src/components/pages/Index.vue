@@ -7,12 +7,13 @@
     </div>
     <div class="comment-pop-wrap" id="comment-pop-wrap" ref="comment-pop-wrap" @touchmove="touchMoveCommentPop">
       <span class="pop-close-btn ripple" @click="hideCommentPop"></span>
-      <span class="comment-title" v-if="videoComments.length > 0">{{videoComments.length}}条评论</span>
-      <span class="comment-title" v-if="videoComments.length === 0">没有评论</span>
-      <div class="comment-item-wrap" v-if="videoComments.length > 0">
+      <span class="comment-title" v-if="videoComments.length > 0" @click.stop="resetcommenttip">{{videoComments.length}}条评论</span>
+      <span class="comment-title" v-if="videoComments.length === 0" @click.stop="resetcommenttip">没有评论</span>
+      <div class="comment-item-wrap" ref="comment-item-wrap" v-if="videoComments.length > 0">
         <div class="comment-item" v-for="(comment, index) in videoComments" :key="index">
           <span class="head" :style="comment.head ? { 'background-image': 'url(' + comment.head + ')' } : ''"></span>
-          <span :class="['like-btn', 'ripple', comment.isLike ? 'comment-like-btn' : '']"></span>
+          <span class="reply-btn ripple" @click.stop="replycomment(comment, index)"></span>
+          <span :class="['like-btn', 'ripple', comment.isLike ? 'comment-like-btn' : '']" @click.stop="praisecomment(comment)"></span>
           <div class="content-wrap">
             <div>{{comment.name}}</div>
             <div v-html="comment.content"></div>
@@ -21,11 +22,11 @@
               <div class="reply-item-wrap" v-for="(reply, index) in comment.replys" :key="index">
                 <div>
                   <span class="reply-user-name">{{reply.name}}</span>
-                  <span class="reply-is-author">作者</span>
+                  <span class="reply-is-author" v-if="comment.userId === currentVideo.userId">作者</span>
                   <span>回复&nbsp;&nbsp;{{comment.name}}</span>
                 </div>
                 <div v-html="reply.content"></div>
-                <div>{{reply.time}}</div>
+                <div>{{dateToCur(reply.time, 2 * 24 * 60 * 60 * 1000)}}</div>
               </div>
             </div>
           </div>
@@ -34,7 +35,7 @@
       <div class="comment-no-data-wrap" v-if="videoComments.length === 0"></div>
       <div id="face-wrap" ref="face-wrap" class="touchIgnore"></div>
       <div class="comment-input-wrap touchIgnore">
-        <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入评论内容</div>
+        <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>{{commentPlaceholder}}</div>
         <span class="touchIgnore" @click.passive="selectFace"></span>
         <span class="comment-send-btn ripple touchIgnore" @click="commentSend">评论</span>
       </div>
@@ -53,9 +54,16 @@ export default {
   data () {
     return {
       currentVideo: null,
+      changeDataFn: null,
       commentContentInput: '',
       commentContentInputHtml: '',
-      videoComments: []
+      videoComments: [],
+      commentPlaceholder: '请输入评论内容',
+      commentDoingTip: '正在发表评论...',
+      replyUserId: null,
+      replyType: '0',
+      replyAboutId: null,
+      replyCommentIndex: -1 // 正在回复的评论数据序号
     }
   },
   methods: {
@@ -71,7 +79,7 @@ export default {
       this.$face_close()
       if (!event.target.classList.contains('placeholder') && !event.target.classList.contains('inputing')) {
         event.target.classList.add('placeholder')
-        event.target.innerHTML = '请输入评论内容'
+        event.target.innerHTML = this.commentPlaceholder
       }
     },
     contentInput () {
@@ -111,29 +119,57 @@ export default {
     commentSend () {
       this.$face_close()
       if (this.commentContentInput.trim() === '' && this.commentContentInputHtml.trim() === '') {
-        this.$toast('评论的内容不能为空哦')
+        if (this.replyType === '0') {
+          this.$toast('评论的内容不能为空哦')
+        } else {
+          this.$toast('回复的内容不能为空哦')
+        }
         return false
       }
-      this.$loading('正在发表评论...')
+      this.$loading(this.commentDoingTip)
       let thisCommentData = this.$refs.edit.innerHTML.trim()
       this.$comfun.http_post(this, this.$moment.urls.save_comment, {
         fromAccountId: this.$moment.wxUserInfo.accountId,
-        toAccountId: this.currentVideo.userId,
+        toAccountId: this.replyUserId,
         newsId: this.currentVideo.videoId,
-        content: thisCommentData
+        content: thisCommentData,
+        type: this.replyType,
+        fatherid: this.replyAboutId
       }).then((response) => {
         if (response.body.code === '0000' && response.body.success === true) {
-          this.$toast('发表评论成功')
-          this.videoComments.unshift({
-            head: this.$moment.wxUserInfo.headimgurl,
-            name: this.$moment.wxUserInfo.nickname,
-            content: thisCommentData,
-            time: this.$comfun.formatDate(new Date(), 'yyyy-MM-dd hh:mm:ss'),
-            isLike: false,
-            replys: []
-          })
+          if (this.replyType === '0') {
+            this.$toast('发表评论成功')
+            this.videoComments.unshift({
+              id: response.body.data.id,
+              uuid: response.body.data.uuid,
+              head: this.$moment.wxUserInfo.headimgurl,
+              name: this.$moment.wxUserInfo.nickname,
+              userId: this.$moment.wxUserInfo.accountId,
+              content: thisCommentData,
+              time: this.$comfun.formatDate(new Date(), 'yyyy-MM-dd hh:mm:ss'),
+              isLike: false,
+              replys: []
+            })
+            this.changeDataFn(this.videoComments)
+          } else {
+            this.$toast('发表回复成功')
+            if (this.replyCommentIndex >= 0) {
+              this.videoComments[this.replyCommentIndex].replys.unshift({
+                userId: this.$moment.wxUserInfo.accountId,
+                name: this.$moment.wxUserInfo.nickname,
+                content: thisCommentData,
+                time: this.$comfun.formatDate(new Date(), 'yyyy-MM-dd hh:mm:ss'),
+                userHead: this.$moment.wxUserInfo.headimgurl,
+                replyUserId: this.replyUserId
+              })
+            }
+          }
         } else {
-          this.$toast('发表评论失败')
+          if (this.replyType === '0') {
+            this.$toast('发表评论失败')
+          } else {
+            this.$toast('发表回复失败')
+          }
         }
       })
       this.$refs.edit.innerHTML = ''
@@ -142,7 +178,7 @@ export default {
       if (!this.$refs.edit.classList.contains('placeholder') && this.$refs.edit.classList.contains('inputing')) {
         this.$refs.edit.classList.remove('inputing')
         this.$refs.edit.classList.add('placeholder')
-        this.$refs.edit.innerHTML = '请输入评论内容'
+        this.$refs.edit.innerHTML = this.commentPlaceholder
       }
     },
     selectFace () {
@@ -172,9 +208,14 @@ export default {
         this.$refs.data_loading.style.display = 'none'
       }
     },
-    cutVideoPage (videoInfo) {
+    cutVideoPage (videoInfo, changeDataFn) {
       this.$comfun.consoleBeautiful(this, '切换到的页面视频信息', null, null, videoInfo, 'info')
       this.currentVideo = videoInfo
+      this.videoComments = videoInfo.comments
+      this.replyUserId = videoInfo.userId
+      this.replyType = '0'
+      this.replyAboutId = null
+      this.changeDataFn = changeDataFn
     },
     closeCommentPop () {
       if (this.$refs['comment-pop-wrap'].classList.contains('open')) {
@@ -182,6 +223,13 @@ export default {
       }
     },
     hideCommentPop () {
+      this.replyCommentIndex = -1
+      this.commentPlaceholder = '请输入评论内容'
+      this.commentDoingTip = '正在发表评论...'
+      this.$refs.edit.innerHTML = this.commentPlaceholder
+      this.replyUserId = this.currentVideo.userId
+      this.replyAboutId = null
+      this.replyType = '0'
       this.$refs['comment-pop-wrap'].style.opacity = 0
       this.$refs['comment-pop-wrap'].style.transform = 'translateY(110%)'
       setTimeout(() => {
@@ -189,12 +237,50 @@ export default {
         this.$refs['comment-pop-wrap'].classList.add('close')
       }, 600)
     },
-    lookComment (videoInfo) {
-      this.videoComments = videoInfo.comments
+    lookComment () {
       this.$refs['comment-pop-wrap'].classList.remove('close')
       this.$refs['comment-pop-wrap'].classList.add('open')
       this.$refs['comment-pop-wrap'].style.opacity = 1
       this.$refs['comment-pop-wrap'].style.transform = 'translateY(0)'
+    },
+    praisecomment (comment) {
+      if (!event.target.classList.contains('comment-like-btn')) {
+        this.$loading('点赞评论...')
+        this.$comfun.http_get(this, this.$moment.urls.praisecomment + '?commentId=' + comment.id + '&accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+          if (response.body.code === '0000' && response.body.success === true) {
+            this.$toast('点赞评论成功')
+            comment.isLike = !comment.isLike
+          }
+        })
+      } else {
+        this.$loading('取消点赞...')
+        this.$comfun.http_get(this, this.$moment.urls.praisecomment + '?commentId=' + comment.id + '&accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+          if (response.body.code === '0000' && response.body.success === true) {
+            this.$toast('取消点赞成功')
+            comment.isLike = !comment.isLike
+          }
+        })
+      }
+    },
+    replycomment (comment, index) {
+      this.replyCommentIndex = index
+      this.commentPlaceholder = '回复 ' + comment.name
+      this.$refs.edit.innerHTML = this.commentPlaceholder
+      this.commentDoingTip = '正在发表回复...'
+      this.replyUserId = comment.userId
+      this.replyAboutId = comment.uuid
+      this.replyType = '1'
+      this.$toast('回复第 ' + this.replyCommentIndex + ' 条评论')
+    },
+    resetcommenttip () {
+      this.$toast('重置回复对象')
+      this.replyCommentIndex = -1
+      this.commentPlaceholder = '请输入评论内容'
+      this.$refs.edit.innerHTML = this.commentPlaceholder
+      this.commentDoingTip = '正在发表评论...'
+      this.replyUserId = this.currentVideo.userId
+      this.replyAboutId = null
+      this.replyType = '0'
     }
   }
 }
@@ -334,6 +420,21 @@ div.comment-pop-wrap>div.comment-item-wrap>div.comment-item>span.head {
   background-size: 100% 100%;
 }
 
+div.comment-pop-wrap>div.comment-item-wrap>div.comment-item>span.reply-btn {
+  position: absolute;
+  display: inline-block;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 1.6rem;
+  top: 0.2rem;
+  right: 2.4rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 60% 60%;
+  background-image: url('./../../assets/icon-reply.png');
+  z-index: 9;
+}
+
 div.comment-pop-wrap>div.comment-item-wrap>div.comment-item>span.like-btn {
   position: absolute;
   display: inline-block;
@@ -346,6 +447,7 @@ div.comment-pop-wrap>div.comment-item-wrap>div.comment-item>span.like-btn {
   background-position: center;
   background-size: 60% 60%;
   background-image: url('./../../assets/heart.png');
+  z-index: 9;
 }
 
 div.comment-pop-wrap>div.comment-item-wrap>div.comment-item>span.comment-like-btn {

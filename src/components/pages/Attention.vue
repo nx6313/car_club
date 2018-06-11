@@ -82,7 +82,8 @@ export default {
         fromAccountId: this.$moment.wxUserInfo.accountId,
         toAccountId: this.commentAttentionAboutAccountId,
         newsId: this.commentAttentionId,
-        content: thisCommentData
+        content: thisCommentData,
+        type: '0'
       }).then((response) => {
         if (response.body.code === '0000' && response.body.success === true) {
           this.$toast('发表评论成功')
@@ -174,7 +175,7 @@ export default {
   activated () {
     this.noteList = this.$moment.attention_page_data_list
     this.$comfun.http_post(this, this.$moment.urls.get_new_info, {
-      // accountId: this.$moment.wxUserInfo.accountId
+      accountId: this.$moment.wxUserInfo.accountId
     }).then((response) => {
       if (response.body.code === '0000' && response.body.success === true) {
         if (response.body.data.dataList.length > 0 && (this.$moment.attention_page_data_list.length === 0 || this.$moment.attention_page_data_list.length !== response.body.data.dataList.length)) {

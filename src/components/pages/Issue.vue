@@ -7,6 +7,9 @@
         <span>/</span>
         <span>{{maxWordNum}}</span>
       </div>
+      <div class="at-users-wrap" v-if="atFrientList.length > 0">
+        <span v-for="(atFriend, index) in atFrientList" :key="index" @click="deleteAtUser(index)">@ {{atFriend.name}}</span>
+      </div>
       <transition-group :name="imgVideoTsName" tag="div" class="issue-video-wrap" ref="issue-video-item-wrap">
         <div v-if="imgVideos.length > 0" v-for="(imgVideo, index) in imgVideos" :key="index" :class="[imgVideo.type === 'add-btn' ? ['issue-video-item-add', 'ripple'] : '', 'issue-video-item']" :style="(imgVideo.type === 'img' && imgVideo.cover) ? { 'background-image': 'url(' + imgVideo.cover + ')' } : ''" @click="clickImgVideo(imgVideo)">
           <span class="btn-delete ripple" v-if="imgVideo.type !== 'add-btn'" @click.stop="deleteImgVideo(index)"></span>
@@ -46,7 +49,8 @@ export default {
       maxWordNum: 600,
       imgVideoTsName: 'issue-video',
       clearShowCamcorder: true,
-      clearShowPhotos: true
+      clearShowPhotos: true,
+      atFrientList: []
     }
   },
   methods: {
@@ -255,6 +259,40 @@ export default {
     },
     aiteFriend () {
       this.$face_close()
+      this.$loading('加载好友列表中...')
+      this.$comfun.http_get(this, this.$moment.urls.friend + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+        if (response.body.code === '0000' && response.body.success === true) {
+          let friends = []
+          if (response.body.data.length > 0) {
+            friends = []
+            for (let f = 0; f < response.body.data.length; f++) {
+              friends.push({
+                val: response.body.data[f].accountId,
+                display: response.body.data[f].nickName
+              })
+            }
+          }
+          this.$picker(this, {
+            title: '选择您要 @ 的人',
+            cols: [ friends ],
+            selectedFinishFn: (selected, arg) => {
+              if (selected[0].val !== '') {
+                for (let a = 0; a < this.atFrientList.length; a++) {
+                  if (this.atFrientList[a].userId === selected[0].val) {
+                    return false
+                  }
+                }
+                this.atFrientList.push({
+                  userId: selected[0].val,
+                  name: selected[0].display
+                })
+              }
+            }
+          })
+        } else {
+          this.$toast('好友列表数据获取失败')
+        }
+      })
     },
     sendIssue () {
       this.$face_close()
@@ -277,12 +315,19 @@ export default {
           })
         }
       }
+      let atAccountIds = []
+      if (this.atFrientList.length > 0) {
+        for (let a = 0; a < this.atFrientList.length; a++) {
+          atAccountIds.push(this.atFrientList[a].userId)
+        }
+      }
       this.$loading('发布中，请稍后...')
       this.$comfun.http_post(this, this.$moment.urls.save_issue, {
         accountId: this.$moment.wxUserInfo.accountId,
         content: this.issueContentInputHtml.trim(),
         fileList: fileList,
-        type: type
+        type: type,
+        atAccountId: atAccountIds
       }).then((response) => {
         if (response.body && response.body.code === '0000' && response.body.success === true) {
           this.$toast('发布成功')
@@ -297,6 +342,7 @@ export default {
           this.issueContentInputHtml = ''
           this.clearShowCamcorder = true
           this.clearShowPhotos = true
+          this.atFrientList = []
           if (!this.$refs.edit.classList.contains('placeholder') && this.$refs.edit.classList.contains('inputing')) {
             this.$refs.edit.classList.remove('inputing')
             this.$refs.edit.classList.add('placeholder')
@@ -304,6 +350,9 @@ export default {
           }
         }
       })
+    },
+    deleteAtUser (index) {
+      this.atFrientList.splice(index, 1)
     }
   },
   watch: {
@@ -379,6 +428,24 @@ export default {
   text-align: right;
   padding: 0.2rem 0.8rem;
   color: #ffffff;
+}
+
+.action-wrap>div.at-users-wrap {
+  position: relative;
+  padding: 0.4rem 0.8rem;
+  word-wrap: break-word;
+}
+
+.action-wrap>div.at-users-wrap>span {
+  display: inline-block;
+  position: relative;
+  padding: 0.2rem 0.6rem;
+  background: #423b71;
+  color: #cfceef;
+  font-size: 0.6rem;
+  border-radius: 1rem;
+  margin-right: 0.4rem;
+  margin-bottom: 0.3rem;
 }
 
 .action-wrap>div.issue-video-wrap {

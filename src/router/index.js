@@ -37,6 +37,7 @@ Vue.directive('picker', {
     el.onclick = function () {
       binding.value.context.$picker(binding.value.context, {
         debug: binding.value.debug,
+        needSelectAll: binding.value.needSelectAll,
         title: binding.value.title,
         cols: binding.value.cols,
         value: binding.value.value,

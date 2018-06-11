@@ -2,15 +2,15 @@
   <div>
     <div class="list-item" v-for="(item, index) in dataList" :key="index">
       <span class="user-head" :style="item.head ? { 'background-image': 'url(' + item.head + ')' } : ''"></span>
-      <div class="comment-wrap">
+      <div :class="['comment-wrap', item.production.img || item.production.cover ? 'has-production' : '']">
         <div>
           <span>{{item.name}}</span>
           <span>评论了你的作品</span>
         </div>
-        <div>{{item.content}}</div>
+        <div v-html="item.content"></div>
         <div>{{item.time}}</div>
       </div>
-      <span class="about-production" :style="item.production.cover ? { 'background-image': 'url(' + item.production.cover + ')' } : ''"></span>
+      <span class="about-production" v-if="item.production.img || item.production.cover" :style="(item.production.img || item.production.cover) ? { 'background-image': 'url(' + (item.production.img || item.production.cover) + ')' } : ''"></span>
     </div>
     <span class="no-more-data">暂时没有更多了</span>
   </div>
@@ -24,28 +24,29 @@ export default {
       dataList: []
     }
   },
-  created () {
-    this.dataList = [
-      {
-        head: 'http://img.zhaogexing.com/touxiang/160414/1-1604140H238-51.jpg',
-        name: '@恋东999',
-        content: '俱乐部又来了一批豪车啊俱乐部又来了一批豪车啊俱乐部又来了一批豪车啊俱乐部又来了一批豪车啊俱乐部又来了一批豪车啊',
-        time: '5-17',
-        production: {
-          cover: 'http://img.app178.com/tu/201411/g3abx25gqyi.jpg',
-          url: ''
+  activated () {
+    this.$loading('数据加载中...')
+    this.$comfun.http_get(this, this.$moment.urls.getCommentinfo + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+      if (response.body.code === '0000' && response.body.success === true) {
+        this.dataList = []
+        for (let a = 0; a < response.body.data.dataList.length; a++) {
+          this.dataList.push({
+            head: response.body.data.dataList[a].fromUserHeadimg,
+            name: response.body.data.dataList[a].fromUsername,
+            newContent: response.body.data.dataList[a].newContent,
+            content: response.body.data.dataList[a].content,
+            time: this.$comfun.formatDate(new Date(response.body.data.dataList[a].createTime), 'M-d'),
+            production: {
+              img: response.body.data.dataList[a].newtype === '2' ? response.body.data.dataList[a].newFace : '',
+              cover: response.body.data.dataList[a].newtype === '3' ? response.body.data.dataList[a].newFace : '',
+              url: response.body.data.dataList[a].videopath
+            }
+          })
         }
-      }, {
-        head: 'http://img3.duitang.com/uploads/item/201605/20/20160520161456_y5AHJ.jpeg',
-        name: '@恋东999',
-        content: '来PK呀！！',
-        time: '5-17',
-        production: {
-          cover: 'http://pic1.win4000.com/wallpaper/9/58213ac79a12c.jpg',
-          url: ''
-        }
+      } else {
+        this.$toast('数据获取失败')
       }
-    ]
+    })
   }
 }
 </script>
@@ -88,6 +89,10 @@ export default {
   line-height: 1.6rem;
 }
 
+.list-item>div.has-production {
+  width: calc(100% - 4rem - 0.6rem - 0.2rem);
+}
+
 .list-item>div.comment-wrap>div {
   position: relative;
   color: #ffffff;
@@ -127,6 +132,7 @@ export default {
   background-position: center;
   background-size: 40% 40%;
   background-image: url('./../../../assets/play.png');
+  background-color: rgba(0, 0, 0, .4);
 }
 
 .no-more-data {

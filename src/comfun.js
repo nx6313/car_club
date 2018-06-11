@@ -234,19 +234,20 @@ export default {
         let hourResidue = dayResidue % hourMill
         let minute = Math.floor(hourResidue / minuteMill)
         let minuteResidue = hourResidue % minuteMill
-        let second = Math.floor(minuteResidue / secondMill)
+        let second = Math.ceil(minuteResidue / secondMill)
         let returnVal = ''
         if (day > 0) {
           returnVal += day + ' 天 '
-        }
-        if (hour > 0) {
-          returnVal += hour + ' 小时 '
-        }
-        if (minute > 0) {
-          returnVal += minute + ' 分钟 '
-        }
-        if (day === 0 && hour === 0 && minute === 0) {
-          returnVal = second + ' 秒 '
+        } else {
+          if (hour > 0) {
+            returnVal += hour + ' 小时 '
+          }
+          if (minute > 0) {
+            returnVal += minute + ' 分钟 '
+          }
+          if (hour === 0 && minute === 0) {
+            returnVal = second + ' 秒 '
+          }
         }
         return returnVal
       },

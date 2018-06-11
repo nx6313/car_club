@@ -24,20 +24,23 @@ export default {
       dataList: []
     }
   },
-  created () {
-    this.dataList = [
-      {
-        head: 'http://img.zhaogexing.com/touxiang/160414/1-1604140H238-51.jpg',
-        name: '@恋东999',
-        time: '5-17',
-        attention: false
-      }, {
-        head: 'http://img3.duitang.com/uploads/item/201605/20/20160520161456_y5AHJ.jpeg',
-        name: '@恋东999',
-        time: '5-17',
-        attention: true
+  activated () {
+    this.$loading('数据加载中...')
+    this.$comfun.http_get(this, this.$moment.urls.fans + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+      if (response.body.code === '0000' && response.body.success === true) {
+        this.dataList = []
+        for (let f = 0; f < response.body.data.length; f++) {
+          this.dataList.push({
+            head: response.body.data[f].headimg,
+            name: response.body.data[f].nickName,
+            time: this.$comfun.formatDate(new Date(response.body.data[f].creationDate), 'M-d'),
+            attention: false
+          })
+        }
+      } else {
+        this.$toast('数据获取失败')
       }
-    ]
+    })
   }
 }
 </script>

@@ -127,8 +127,23 @@ export default {
       fansCount: 0
     }
     this.videoInfo = {
-      videoCount: 20,
-      stateCount: 10
+      videoCount: 0,
+      stateCount: 0
+    }
+    if (this.$moment.wxUserInfo.accountId !== '') {
+      this.$comfun.http_get(this, this.$moment.urls.heatInfo + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+        if (response.body.code === '0000' && response.body.success === true) {
+          this.userInfo.praiseCount = response.body.data.praiseNum
+          this.userInfo.attentionCount = response.body.data.focusNum
+          this.userInfo.fansCount = response.body.data.fansNum
+        }
+      })
+      this.$comfun.http_get(this, this.$moment.urls.getnum + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+        if (response.body.code === '0000' && response.body.success === true) {
+          this.videoInfo.videoCount = response.body.data.videoNum
+          this.videoInfo.stateCount = response.body.data.newsNum
+        }
+      })
     }
   }
 }

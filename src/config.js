@@ -30,7 +30,18 @@ export default {
         get_new_info: '/news/getNewinfo.json', // 获取动态列表数据
         praise: '/news/praise.json', // 赞动态
         save_comment: '/news/saveComment.json', // 动态发布评论
-        attention: '/user/attention.json' // 关注好友
+        attention: '/user/attention.json', // 关注好友
+        praisecomment: '/news/praisecomment.json', // 给评论点赞
+        heatInfo: '/user/heatInfo.json', // 获取用户的点赞数，关注数，好友数，粉丝数
+        idol: '/user/idol.json', // 获取用户关注的用户列表
+        fans: '/user/fans.json', // 获取用户的粉丝列表
+        friend: '/user/friend.json', // 获取用户的好友列表
+        getNewinfobyIdoi: '/news/getNewinfobyIdoi.json', // 分页获取我关注圈子信息
+        getComment: '/news/getComment.json', // 获取动态评论
+        getCommentinfo: '/news/getCommentinfo.json', // 获取用户圈子相关评论信息
+        getPraiseinfo: '/news/getPraiseinfo.json', // 获取用户圈子相关赞信息
+        getAtInfo: '/news/getAtInfo.json', // 获取我的At列表
+        getnum: '/news/getnum.json' // 获取某人的动态个数
       },
       // 微信是否开启调试模式，也会一并开启自定义的调试面板
       wxIsDebug: true,

@@ -50,21 +50,7 @@ export default {
   name: 'page-message',
   data () {
     return {
-      attentionFriends: [{
-        id: '1',
-        headImg: 'http://img03.store.sogou.com/app/a/10010016/b1296a6eecf78db4143f93678c40ed0b',
-        userName: '爱你的傻子',
-        lastMsgTime: '11:00',
-        lastMsg: '拉拉啊啦啦啦啦啦啦',
-        carType: '宝马'
-      }, {
-        id: '2',
-        headImg: 'http://img04.store.sogou.com/app/a/10010016/a8b6552ba860757da7a70ce18fa9505c',
-        userName: '疼你的骗子',
-        lastMsgTime: '111',
-        lastMsg: '',
-        carType: '红旗'
-      }]
+      attentionFriends: []
     }
   },
   mounted () {
@@ -157,6 +143,28 @@ export default {
       var option = params || ''
       this.$router.push(childPageRouter + option)
     }
+  },
+  activated () {
+    this.$loading('加载好友列表中...')
+    this.$comfun.http_get(this, this.$moment.urls.friend + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+      if (response.body.code === '0000' && response.body.success === true) {
+        if (response.body.data.length > 0) {
+          this.attentionFriends = []
+          for (let f = 0; f < response.body.data.length; f++) {
+            this.attentionFriends.push({
+              id: response.body.data[f].accountId,
+              headImg: response.body.data[f].headimg,
+              userName: response.body.data[f].nickName,
+              lastMsgTime: '',
+              lastMsg: '',
+              carType: response.body.data[f].carList
+            })
+          }
+        }
+      } else {
+        this.$toast('好友列表数据获取失败')
+      }
+    })
   }
 }
 </script>

@@ -14,7 +14,7 @@ export default {
       var color = params.color || 'rgba(255, 255, 255, 1)'
       var toastElem = document.createElement('span')
       toastElem.id = 'toast-message-box'
-      toastElem.style.position = 'absolute'
+      toastElem.style.position = 'fixed'
       toastElem.style.left = '50%'
       toastElem.style.bottom = '4rem'
       toastElem.style.padding = '0.3rem 0.6rem'
@@ -54,7 +54,7 @@ export default {
       var color = params.color || 'rgb(227, 240, 243)'
       var toptipElem = document.createElement('span')
       toptipElem.id = 'toptip-message-box'
-      toptipElem.style.position = 'absolute'
+      toptipElem.style.position = 'fixed'
       toptipElem.style.left = 0
       toptipElem.style.top = 0
       toptipElem.style.width = '100%'
@@ -100,9 +100,34 @@ export default {
       var background = params.background || 'rgb(255, 255, 255)'
       var color = params.color || 'rgb(44, 44, 44)'
       var items = params.items || []
+      var bottomtipShadeElem = document.createElement('div')
+      bottomtipShadeElem.id = 'bottomtip-message-box-shade'
+      bottomtipShadeElem.style.position = 'fixed'
+      bottomtipShadeElem.style.top = 0
+      bottomtipShadeElem.style.left = 0
+      bottomtipShadeElem.style.right = 0
+      bottomtipShadeElem.style.bottom = 0
+      bottomtipShadeElem.style.zIndex = 99999998
+      bottomtipShadeElem.style.background = 'rgba(0, 0, 0, .2)'
+      bottomtipShadeElem.style.transition = 'all 0.3s ease 0s'
+      bottomtipShadeElem.style.opacity = 0
+      document.body.appendChild(bottomtipShadeElem)
+      setTimeout(() => {
+        bottomtipShadeElem.style.opacity = 1
+      }, 10)
+      bottomtipShadeElem.onclick = function () {
+        if (document.getElementById('bottomtip-message-box')) {
+          document.getElementById('bottomtip-message-box-shade').style.opacity = 1
+          document.getElementById('bottomtip-message-box').style.transform = 'translateY(100%)'
+          setTimeout(() => {
+            document.body.removeChild(document.getElementById('bottomtip-message-box-shade'))
+            document.body.removeChild(document.getElementById('bottomtip-message-box'))
+          }, 300)
+        }
+      }
       var bottomtipElem = document.createElement('div')
       bottomtipElem.id = 'bottomtip-message-box'
-      bottomtipElem.style.position = 'absolute'
+      bottomtipElem.style.position = 'fixed'
       bottomtipElem.style.left = '0.4rem'
       bottomtipElem.style.bottom = '0.4rem'
       bottomtipElem.style.width = 'calc(100% - 0.8rem)'
@@ -131,6 +156,16 @@ export default {
       cancleElem.innerHTML = '取消'
       cancleElem.style.padding = '0.4rem 0'
       bottomtipElem.appendChild(cancleElem)
+      bottomtipElem.onclick = function () {
+        if (document.getElementById('bottomtip-message-box')) {
+          document.getElementById('bottomtip-message-box-shade').style.opacity = 1
+          document.getElementById('bottomtip-message-box').style.transform = 'translateY(100%)'
+          setTimeout(() => {
+            document.body.removeChild(document.getElementById('bottomtip-message-box-shade'))
+            document.body.removeChild(document.getElementById('bottomtip-message-box'))
+          }, 300)
+        }
+      }
       setTimeout(() => {
         bottomtipElem.style.transform = 'translateY(0)'
       }, 10)
@@ -203,7 +238,7 @@ export default {
       }
       var loadingElem = document.createElement('div')
       loadingElem.id = 'loading-message-box'
-      loadingElem.style.position = 'absolute'
+      loadingElem.style.position = 'fixed'
       loadingElem.style.left = '50%'
       loadingElem.style.minWidth = '66vw'
       loadingElem.style.maxWidth = '66vw'
@@ -333,7 +368,7 @@ export default {
       }
       var selectElem = document.createElement('div')
       selectElem.id = 'select-message-box'
-      selectElem.style.position = 'absolute'
+      selectElem.style.position = 'fixed'
       selectElem.style.left = '50%'
       selectElem.style.minWidth = '66vw'
       selectElem.style.maxWidth = '66vw'
@@ -396,7 +431,7 @@ export default {
       imgPopElem.classList.add('img-pop')
       imgPopElem.src = imgSrcs[rd(0, imgSrcs.length - 1)]
       imgPopElem.style.width = (rd(20, 60)) + 'px'
-      imgPopElem.style.position = 'absolute'
+      imgPopElem.style.position = 'fixed'
       imgPopElem.style.top = (clientY + rd(-10, 10) - 20) + 'px'
       imgPopElem.style.left = (clientX + rd(-10, 10) - 20) + 'px'
       imgPopElem.style.zIndex = 99999999
@@ -1004,6 +1039,7 @@ export default {
       var selected = [] // 保存选中的值
       var params = option || {}
       var debug = params.debug === undefined ? false : params.debug // debug模式会显示console日志输出
+      var needSelectAll = params.needSelectAll === undefined ? false : params.needSelectAll // 是否需要全选
       var shadeBg = params.shadeBg || 'rgba(0, 0, 0, 0.2)'
       var background = params.background || 'rgba(255, 255, 255, 1)'
       var color = params.color || 'rgba(0, 0, 0, 1)'
@@ -1160,6 +1196,15 @@ export default {
       pickerTitleElem.innerHTML = title
       pickerTitleElem.style.color = titleColor
       pickerTitleWrapElem.appendChild(pickerTitleElem)
+
+      if (needSelectAll === true) {
+        var pickerTitleSelectAllElem = document.createElement('span')
+        pickerTitleSelectAllElem.classList.add('ripple')
+        pickerTitleSelectAllElem.style.height = '100%'
+        pickerTitleSelectAllElem.style.width = '3rem'
+        pickerTitleSelectAllElem.innerHTML = '全选'
+        pickerTitleWrapElem.appendChild(pickerTitleSelectAllElem)
+      }
 
       var pickerTitleRightElem = document.createElement('span')
       pickerTitleRightElem.classList.add('ripple')
@@ -1839,7 +1884,18 @@ export default {
         noColsDataTipElem.style.lineHeight = pickerWheelWrapElem.offsetHeight + 'px'
         pickerWheelWrapElem.appendChild(noColsDataTipElem)
         var pickerNoColTipSpan = document.createElement('span')
-        pickerNoColTipSpan.innerHTML = '请设置clos属性或'
+        pickerNoColTipSpan.innerHTML = '请设置'
+        var pickerColsTipA = document.createElement('a')
+        pickerColsTipA.title = '点击查看cols属性列表'
+        pickerColsTipA.innerHTML = 'cols属性'
+        pickerColsTipA.href = 'javascript:void(0);'
+        pickerColsTipA.onclick = function () {
+          showPickerInfoPop('属性 cols 说明文档', pickerColsDoc)
+        }
+        pickerNoColTipSpan.appendChild(pickerColsTipA)
+        var lineTipSpan = document.createElement('span')
+        lineTipSpan.innerHTML = '或'
+        pickerNoColTipSpan.appendChild(lineTipSpan)
         var pickerNoColTipA = document.createElement('a')
         pickerNoColTipA.title = '点击查看type属性列表'
         pickerNoColTipA.innerHTML = 'type属性'
