@@ -1,5 +1,6 @@
 var wx = require('weixin-js-sdk')
 
+var projectAddress = 'http://l.dachangjr.com'
 var HttpIp = '172.18.168.44'
 var HttpPort = '9007'
 
@@ -14,7 +15,7 @@ export default {
       // 微信包
       wx: wx,
       // 域名地址
-      realm: 'http://l.dachangjr.com',
+      realm: projectAddress,
       // 服务器地址
       server: 'http://' + HttpIp + ':' + HttpPort + '/',
       // 访问接口
@@ -52,8 +53,8 @@ export default {
       // 微信Secret
       wxSecret: WxSecret,
       // 微信授权后指定的跳转页面
-      indexPage: encodeURIComponent('http://l.dachangjr.com/dist/#/'),
-      indexPage_: 'http://l.dachangjr.com/dist/',
+      indexPage: encodeURIComponent(projectAddress + '/dist/#/'),
+      indexPage_: projectAddress + '/dist/',
       // 微信功能页面授权接口列表
       jsApiList: [
         'chooseImage', 'uploadImage'
