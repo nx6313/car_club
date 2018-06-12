@@ -71,6 +71,7 @@ export default {
   color: #ffffff;
   font-weight: bold;
   font-size: 0.8rem;
+  z-index: 10;
 }
 
 #fooer::before {

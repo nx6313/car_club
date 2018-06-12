@@ -186,7 +186,7 @@ export default {
       var videpByPagePromise = new Promise((resolve, reject) => {
         this.$comfun.http_post(this, this.$moment.urls.get_new_info + `?page=${page}&limit=1`, {
           accountId: this.$moment.wxUserInfo.accountId,
-          type: '3'
+          type: [ '3' ]
         }).then((response) => {
           if (response.body.code === '0000' && response.body.success === true) {
             if (response.body.data.dataList && response.body.data.dataList.length > 0) {

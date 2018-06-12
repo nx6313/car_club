@@ -27,6 +27,7 @@ export default {
         save_user_info: '/user/save.json', // 保存或更新用户个人信息
         upload_video: '/uploadimg/upload_video.json', // 上传视频
         save_issue: '/news/create.json', // 发布动态
+        del_issue: '/news/del.json', // 删除动态
         get_new_info: '/news/getNewinfo.json', // 获取动态列表数据
         praise: '/news/praise.json', // 赞动态
         save_comment: '/news/saveComment.json', // 动态发布评论
@@ -41,7 +42,8 @@ export default {
         getCommentinfo: '/news/getCommentinfo.json', // 获取用户圈子相关评论信息
         getPraiseinfo: '/news/getPraiseinfo.json', // 获取用户圈子相关赞信息
         getAtInfo: '/news/getAtInfo.json', // 获取我的At列表
-        getnum: '/news/getnum.json' // 获取某人的动态个数
+        getnum: '/news/getnum.json', // 获取某人的动态个数
+        onenewsinfo: '/news/onenewsinfo.json' // 根据动态id获取动态信息
       },
       // 微信是否开启调试模式，也会一并开启自定义的调试面板
       wxIsDebug: true,

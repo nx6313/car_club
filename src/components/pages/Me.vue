@@ -1,5 +1,5 @@
 <template>
-  <div id="about-me" ref="about-me">
+  <div id="about-me" ref="about-me" @touchend="touchEnd">
     <div class="user-info-wrap" ref="user-info-wrap">
       <div class="user-info-shade" :style="userInfo.headImg ? { 'background-image': 'url(' + userInfo.headImg + ')' } : ''"></div>
       <div class="head-wrap">
@@ -39,16 +39,21 @@
       <span class="tab-item" v-on:click="toPage('/child-state')">动态 {{videoInfo.stateCount}}</span>
     </div>
     <transition name="fade" mode="out-in">
-      <router-view id="me-child-router" ref="me-child-router"/>
+      <keep-alive>
+        <router-view id="me-child-router" ref="me-child-router"/>
+      </keep-alive>
     </transition>
   </div>
 </template>
 
 <script>
+import eventBus from '@/plugins/eventbus.js'
+
 export default {
   name: 'page-me',
   data () {
     return {
+      currentChildPage: null,
       userInfo: {
         type: {
           headImg: String,
@@ -75,6 +80,17 @@ export default {
     }
   },
   methods: {
+    touchEnd () {
+      var aboutMe = this.$refs['about-me']
+      if (aboutMe.scrollTop > aboutMe.scrollHeight - aboutMe.clientHeight - 30) {
+        var currentRouterPath = this.$router.currentRoute.path
+        if (currentRouterPath === '/me' || currentRouterPath === '/me/' || currentRouterPath === '/me/child-video') {
+          eventBus.$emit('videoDataNext')
+        } else if (currentRouterPath === '/me/child-state') {
+          eventBus.$emit('stateDataNext')
+        }
+      }
+    },
     toPage: function (pageTo) {
       this.$router.replace('/me' + pageTo)
       var tabs = event.target.parentElement.getElementsByTagName('span')
@@ -88,11 +104,9 @@ export default {
       this.$router.push(childPageRouter + option)
     }
   },
-  created () {
-  },
-  mounted () {
+  activated () {
     var currentRouterPath = this.$router.currentRoute.path
-    var tabElems = document.getElementById('content-wrap').getElementsByClassName('tab-item')
+    var tabElems = this.$refs['video-tabs'].getElementsByClassName('tab-item')
     for (var t = 0; t < tabElems.length; t++) {
       tabElems[t].classList.remove('selected')
     }
@@ -101,8 +115,7 @@ export default {
     } else if (currentRouterPath === '/me/child-state') {
       tabElems[1].classList.add('selected')
     }
-  },
-  activated () {
+
     var address = ''
     if (this.$moment.wxUserInfo.address) {
       address = this.$moment.wxUserInfo.address
@@ -351,8 +364,7 @@ export default {
 }
 
 #me-child-router {
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .fade-enter-active, .fade-leave-active {

@@ -4,14 +4,15 @@
       <span class="head" :style="detailData.headImg ? { 'background-image': 'url(' + detailData.headImg + ')' } : ''"></span>
       <div class="content-wrap">
         <span>{{detailData.nikeName}}</span>
-        <span v-if="detailData.content">{{detailData.content}}</span>
+        <span v-if="detailData.content" v-html="detailData.content"></span>
         <div class="assets-item-wrap" v-if="detailData.assets.length > 0">
           <span v-for="(asset, index) in detailData.assets" :key="index" :style="(asset.img || asset.video) ? { 'background-image': 'url(' + (asset.img || asset.video) + ')' } : ''" :class="asset.video ? (['isVideo', asset.width > asset.height ? 'vertical' : '']) : ''"></span>
         </div>
         <div class="time-read-delete-wrap">
           <span>{{detailData.time}}</span>
-          <span>{{detailData.readNum}}阅读</span>
-          <span class="btn-delete">删除</span>
+          <!-- <span>{{detailData.readNum}}阅读</span> -->
+          <span></span>
+          <span class="btn-delete" @click="deleteIss">删除</span>
         </div>
       </div>
     </div>
@@ -25,30 +26,30 @@
           <span v-for="(support, index) in detailData.supports" :key="index" :style="support.head ? { 'background-image': 'url(' + support.head + ')' } : ''"></span>
         </div>
       </div>
-      <div class="comment-data-wrap">
+      <div v-if="detailData.comments.length > 0" class="comment-data-wrap">
         <div class="comment-title-bar flex-r flex-b">
           <span>{{detailData.comments.length}} 全部评论</span>
           <span class="ripple" @click="filterType">按照热度</span>
         </div>
         <span v-if="detailData.comments.length === 0"></span>
-        <div class="comment-info-wrap" v-if="detailData.comments.length > 0" v-for="(comment, index) in detailData.comments" :key="index">
+        <div class="comment-info-wrap" v-for="(comment, index) in detailData.comments" :key="index">
           <span class="head" :style="comment.head ? { 'background-image': 'url(' + comment.head + ')' } : ''"></span>
           <div class="comment-content-wrap">
             <span>{{comment.nikeName}}</span>
-            <span>{{comment.time}}</span>
-            <span>{{comment.content}}</span>
+            <span>{{dateToCur(comment.time, 2 * 24 * 60 * 60 * 1000)}}</span>
+            <span v-html="comment.content"></span>
             <div class="comment-reply-wrap" v-if="comment.replys.length > 0">
               <div v-for="(reply, index) in comment.replys" :key="index">
                 <div>
                   <span>{{reply.name}}</span>
                   <span>回复&nbsp;&nbsp;{{comment.nikeName}}</span>
                 </div>
-                <span>{{reply.content}}</span>
+                <span v-html="reply.content"></span>
               </div>
             </div>
             <div class="comment-do-wrap">
-              <span @click="toComment"></span>
-              <span>1</span>
+              <span @click="toComment(comment.id)"></span>
+              <span>{{comment.like}}</span>
             </div>
           </div>
         </div>
@@ -64,107 +65,89 @@
 </template>
 
 <script>
+import eventBus from '@/plugins/eventbus.js'
+
 export default {
   name: 'me-state-detail',
   data () {
     return {
       detailData: {},
       commentContentInput: '',
-      commentContentInputHtml: ''
+      commentContentInputHtml: '',
+      currentReplyUserId: null
     }
   },
-  created () {
-    this.detailData = {
-      headImg: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd',
-      nikeName: '俱乐部之友爱',
-      content: '国台办发言人马晓光先生在上次发布会的时候已经明确表示过，解放军军演和空军绕',
-      assets: [
-        {
-          img: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        },
-        {
-          img: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        },
-        {
-          img: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        },
-        {
-          video: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        }
-      ],
-      time: '2018年5月19日 15:49:51',
-      readNum: 3,
-      supports: [
-        {
-          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        },
-        {
-          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        },
-        {
-          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        },
-        {
-          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        },
-        {
-          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        },
-        {
-          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        },
-        {
-          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        },
-        {
-          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd'
-        }
-      ],
-      comments: [
-        {
-          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd',
-          nikeName: '刘德华',
-          time: '40分钟前',
-          like: 2,
-          content: '我们在设计任何作品时，首先考虑的是应用的尺寸。如iPhone8的分辨率我们在设计任何作品时，首先考虑的是应用的尺寸。如iPhone8的分辨率',
-          replys: [
-            {
-              userId: '2',
-              name: '张学友',
-              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
-              time: '40分钟前'
-            },
-            {
-              userId: '2',
-              name: '张学友',
-              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
-              time: '40分钟前'
+  activated () {
+    var dataid = this.$route.params.dataid
+    this.$loading('数据加载中...')
+    this.$comfun.http_get(this, this.$moment.urls.onenewsinfo + '?id=' + dataid + '&accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+      if (response.body.code === '0000' && response.body.success === true) {
+        let assets = []
+        if (response.body.data.fileList && response.body.data.fileList.length > 0) {
+          for (let f = 0; f < response.body.data.fileList.length; f++) {
+            if (response.body.data.type === '3') {
+              assets.push({
+                video: response.body.data.fileList[f].face,
+                url: response.body.data.fileList[f].fileAddress
+              })
+            } else {
+              assets.push({
+                img: response.body.data.fileList[f].fileAddress
+              })
             }
-          ]
-        },
-        {
-          head: 'http://img01.store.sogou.com/app/a/10010016/04527cba709f67db80087381efeaccfd',
-          nikeName: '刘德华',
-          time: '40分钟前',
-          like: 2,
-          content: '我们在设计任何作品时，首先考虑的是应用的尺寸。如iPhone8的分辨率我们在设计任何作品时，首先考虑的是应用的尺寸。如iPhone8的分辨率',
-          replys: [
-            {
-              userId: '2',
-              name: '张学友',
-              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
-              time: '40分钟前'
-            },
-            {
-              userId: '2',
-              name: '张学友',
-              content: '你说的好棒棒！我们在设计任何作品时，首先考虑的是应用的尺寸',
-              time: '40分钟前'
-            }
-          ]
+          }
         }
-      ]
-    }
+        let supports = []
+        if (response.body.data.praiseList && response.body.data.praiseList.length > 0) {
+          for (let p = 0; p < response.body.data.praiseList.length; p++) {
+            supports.push({
+              head: response.body.data.praiseList[p].userHeadimg,
+              username: response.body.data.praiseList[p].username,
+              useraccountid: response.body.data.praiseList[p].accountId
+            })
+          }
+        }
+        let comments = []
+        if (response.body.data.commentList && response.body.data.commentList.length > 0) {
+          for (let c = 0; c < response.body.data.commentList.length; c++) {
+            let replys = []
+            if (response.body.data.commentList[c].replyInfos && response.body.data.commentList[c].replyInfos.length > 0) {
+              for (let r = 0; r < response.body.data.commentList[c].replyInfos.length; r++) {
+                replys.push({
+                  userId: response.body.data.commentList[c].replyInfos[r].fromAccountId,
+                  name: response.body.data.commentList[c].replyInfos[r].fromUsername,
+                  content: response.body.data.commentList[c].replyInfos[r].content,
+                  time: response.body.data.commentList[c].replyInfos[r].createTime
+                })
+              }
+            }
+            comments.push({
+              id: response.body.data.commentList[c].id,
+              uuid: response.body.data.commentList[c].uuid,
+              head: response.body.data.commentList[c].fromUserHeadimg,
+              nikeName: response.body.data.commentList[c].fromUsername,
+              time: response.body.data.commentList[c].createTime,
+              like: response.body.data.commentList[c].praiseNum,
+              content: response.body.data.commentList[c].content,
+              replys: replys
+            })
+          }
+        }
+        this.detailData = {
+          headImg: response.body.data.userHeadimg,
+          nikeName: response.body.data.username,
+          content: response.body.data.content,
+          type: response.body.data.type,
+          assets: assets,
+          time: this.$comfun.formatDate(new Date(response.body.data.creationDate), 'yyyy年M月d日 hh:mm:ss'),
+          readNum: 3,
+          supports: supports,
+          comments: comments
+        }
+      } else {
+        this.$toast('动态详情数据获取失败')
+      }
+    })
   },
   methods: {
     focusInput () {
@@ -205,7 +188,7 @@ export default {
       }
     },
     filterType () {
-      this.$bottomtip('456')
+      // this.$bottomtip('456')
     },
     toComment (attentionId) {
       this.$face_close()
@@ -260,6 +243,39 @@ export default {
           }, 100)
         }
       })
+    },
+    dateToCur (value, maxDiff) {
+      let maxDiffVal = maxDiff === undefined ? 0 : maxDiff
+      let date = new Date(value).getTime()
+      let cur = Date.now()
+      let diff = cur - date
+      if (maxDiffVal > 0) {
+        if (diff > maxDiffVal) {
+          return this.$comfun.formatDate(new Date(value), 'yy-MM-dd hh:mm:ss')
+        } else {
+          return this.$comfun.formatDiffMilliseconds(diff) + ' 前'
+        }
+      } else {
+        return this.$comfun.formatDate(new Date(value), 'yy-MM-dd hh:mm:ss')
+      }
+    },
+    deleteIss () {
+      var type = this.$route.params.type
+      var dataid = this.$route.params.dataid
+      this.$loading('动态删除中...')
+      this.$comfun.http_get(this, this.$moment.urls.del_issue + '?id=' + dataid).then((response) => {
+        if (response.body.code === '0000' && response.body.success === true) {
+          this.$toast('动态删除成功')
+          if (type === 'video') {
+            eventBus.$emit('videoDataNext')
+          } else if (type === 'state') {
+            eventBus.$emit('stateDataNext')
+          }
+          this.$router.go(-1)
+        } else {
+          this.$toast('动态删除失败')
+        }
+      })
     }
   }
 }
@@ -267,9 +283,9 @@ export default {
 
 <style scoped>
 #content-wrap {
-    height: 100vh;
-    z-index: 9;
-    background: rgb(30, 20, 54);
+  height: 100vh;
+  z-index: 99;
+  background: rgb(30, 20, 54);
 }
 
 .state-info-wrap {

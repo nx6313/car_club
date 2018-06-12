@@ -324,6 +324,7 @@ export default {
       this.$loading('发布中，请稍后...')
       this.$comfun.http_post(this, this.$moment.urls.save_issue, {
         accountId: this.$moment.wxUserInfo.accountId,
+        openid: this.$moment.wxUserInfo.openid,
         content: this.issueContentInputHtml.trim(),
         fileList: fileList,
         type: type,
@@ -381,7 +382,7 @@ export default {
 <style scoped>
 #content-wrap {
   height: 100vh;
-  z-index: 9;
+  z-index: 99;
   background: rgb(30, 20, 54);
 }
 

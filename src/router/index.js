@@ -166,7 +166,7 @@ var router = new Router({
       }
     },
     {
-      path: '/me-state-detail',
+      path: '/me-state-detail/:type/:dataid',
       name: 'me-state-detail',
       component: VideoStateDetail,
       meta: {

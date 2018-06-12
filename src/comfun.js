@@ -292,26 +292,23 @@ export default {
         var wxUserInfoData = window.localStorage.getItem('wx-user-info')
         if (context.$comfun.isNotNull(wxUserInfoData)) {
           var wxUserInfoDataJson = JSON.parse(wxUserInfoData)
-          context.$moment.wxUserInfo.accountId = wxUserInfoDataJson.accountId
-          context.$moment.wxUserInfo.openid = wxUserInfoDataJson.openid
-          context.$moment.wxUserInfo.nickname = wxUserInfoDataJson.nickname
-          context.$moment.wxUserInfo.sex = wxUserInfoDataJson.sex
-          context.$moment.wxUserInfo.province = wxUserInfoDataJson.province
-          context.$moment.wxUserInfo.city = wxUserInfoDataJson.city
-          context.$moment.wxUserInfo.country = wxUserInfoDataJson.country
-          context.$moment.wxUserInfo.headimgurl = wxUserInfoDataJson.headimgurl
-          context.$moment.wxUserInfo.privilege = wxUserInfoDataJson.privilege
-          context.$moment.wxUserInfo.unionid = wxUserInfoDataJson.unionid || ''
-          // 完善资料后的参数
-          context.$moment.wxUserInfo.birthday = wxUserInfoDataJson.birthday
-          context.$moment.wxUserInfo.carType = wxUserInfoDataJson.carType
-          context.$moment.wxUserInfo.constellation = wxUserInfoDataJson.constellation
-          context.$moment.wxUserInfo.phoneNum = wxUserInfoDataJson.phoneNum
-          context.$moment.wxUserInfo.intro = wxUserInfoDataJson.intro
-          context.$comfun.wx_page_signature(context, jsApiList)
-          // 显示日志面板
-          if (context.$moment.wxIsDebug) {
-            context.$consolePopWindow(context)
+          if (context.$comfun.isNotNull(wxUserInfoDataJson.openid) && context.$comfun.isNotNull(wxUserInfoDataJson.accountId)) {
+            context.$moment.wxUserInfo.accountId = wxUserInfoDataJson.accountId
+            context.$moment.wxUserInfo.openid = wxUserInfoDataJson.openid
+            context.$moment.wxUserInfo.nickname = wxUserInfoDataJson.nickname
+            context.$moment.wxUserInfo.sex = wxUserInfoDataJson.sex
+            context.$moment.wxUserInfo.province = wxUserInfoDataJson.province
+            context.$moment.wxUserInfo.city = wxUserInfoDataJson.city
+            context.$moment.wxUserInfo.country = wxUserInfoDataJson.country
+            context.$moment.wxUserInfo.headimgurl = wxUserInfoDataJson.headimgurl
+            context.$moment.wxUserInfo.privilege = wxUserInfoDataJson.privilege
+            context.$moment.wxUserInfo.unionid = wxUserInfoDataJson.unionid || ''
+            // 完善资料后的参数
+            context.$moment.wxUserInfo.birthday = wxUserInfoDataJson.birthday
+            context.$moment.wxUserInfo.carType = wxUserInfoDataJson.carType
+            context.$moment.wxUserInfo.constellation = wxUserInfoDataJson.constellation
+            context.$moment.wxUserInfo.phoneNum = wxUserInfoDataJson.phoneNum
+            context.$moment.wxUserInfo.intro = wxUserInfoDataJson.intro
           }
         }
       },
@@ -321,6 +318,7 @@ export default {
         if (!context.$comfun.isNotNull(context.$moment.wxUserInfo.openid) || !context.$comfun.isNotNull(context.$moment.wxUserInfo.accountId)) {
           var urlParams = context.$comfun.getRequest()
           if (!context.$comfun.isNotNull(urlParams.code)) {
+            context.$loading('账号授权中...')
             var oauth2Url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${context.$moment.wxAppId}&redirect_uri=${context.$moment.indexPage}&response_type=code&scope=${scope}&state=STATE#wechat_redirect`
             window.location.replace(oauth2Url)
           } else {
@@ -338,6 +336,11 @@ export default {
               context.$moment.wxUserInfo.address = context.$comfun.isNotNull(response.body.data.city) ? response.body.data.city : ''
               context.$moment.wxUserInfo.intro = context.$comfun.isNotNull(response.body.data.signature) ? response.body.data.signature : ''
               window.localStorage.setItem('wx-user-info', JSON.stringify(context.$moment.wxUserInfo))
+              context.$comfun.wx_page_signature(context, jsApiList)
+              // 显示日志面板
+              if (context.$moment.wxIsDebug) {
+                context.$consolePopWindow(context)
+              }
             } else {
               context.$toast('初始化账号信息失败')
             }
@@ -386,6 +389,17 @@ export default {
               openid: context.$moment.wxUserInfo.openid
             }).then((response) => {
               if (response.body.data) {
+                context.$moment.wx.ready(() => {
+                  context.$loading_close()
+                  context.$toast('配置页面签名信息成功')
+                })
+                context.$moment.wx.error((res) => {
+                  context.$loading_close()
+                  context.$toast('配置页面签名信息失败')
+                  context.$comfun.console(context, '配置页面签名信息失败', res)
+                })
+
+                context.$loading('配置页面签名信息中...')
                 context.$moment.wx.config({
                   debug: context.$moment.wxIsDebug,
                   appId: context.$moment.wxAppId,

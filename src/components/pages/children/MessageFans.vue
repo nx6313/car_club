@@ -9,7 +9,7 @@
         </div>
         <div>{{item.time}}</div>
       </div>
-      <span class="attention-state ripple" v-if="!item.attention">+关注</span>
+      <span class="attention-state ripple" v-if="!item.attention" @click="addAttention(item)">+关注</span>
       <span class="attention-state ripple has-attention" v-if="item.attention">已关注</span>
     </div>
     <span class="no-more-data">暂时没有更多了</span>
@@ -24,6 +24,19 @@ export default {
       dataList: []
     }
   },
+  methods: {
+    addAttention (dataItem) {
+      this.$loading('加关注中...')
+      this.$comfun.http_get(this, this.$moment.urls.attention + '?id=' + this.$moment.wxUserInfo.accountId + '&accountId=' + this.currentVideoInfo.userId).then((response) => {
+        if (response.body.code === '0000' && response.body.success === true) {
+          this.$toast('关注用户成功')
+          dataItem.attention = !dataItem.attention
+        } else {
+          this.$toast('关注用户失败')
+        }
+      })
+    }
+  },
   activated () {
     this.$loading('数据加载中...')
     this.$comfun.http_get(this, this.$moment.urls.fans + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
@@ -34,7 +47,7 @@ export default {
             head: response.body.data[f].headimg,
             name: response.body.data[f].nickName,
             time: this.$comfun.formatDate(new Date(response.body.data[f].creationDate), 'M-d'),
-            attention: false
+            attention: response.body.data[f].isfriend
           })
         }
       } else {
@@ -48,7 +61,7 @@ export default {
 <style scoped>
 #content-wrap {
     height: 100vh;
-    z-index: 9;
+    z-index: 99;
     background: rgb(30, 20, 54);
 }
 

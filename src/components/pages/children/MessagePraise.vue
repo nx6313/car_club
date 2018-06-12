@@ -51,7 +51,7 @@ export default {
 <style scoped>
 #content-wrap {
     height: 100vh;
-    z-index: 9;
+    z-index: 99;
     background: rgb(30, 20, 54);
 }
 
