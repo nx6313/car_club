@@ -47,8 +47,6 @@
 </template>
 
 <script>
-import eventBus from '@/plugins/eventbus.js'
-
 export default {
   name: 'page-me',
   data () {
@@ -85,9 +83,9 @@ export default {
       if (aboutMe.scrollTop > aboutMe.scrollHeight - aboutMe.clientHeight - 30) {
         var currentRouterPath = this.$router.currentRoute.path
         if (currentRouterPath === '/me' || currentRouterPath === '/me/' || currentRouterPath === '/me/child-video') {
-          eventBus.$emit('videoDataNext')
+          this.$root.eventHub.$emit('videoDataNext')
         } else if (currentRouterPath === '/me/child-state') {
-          eventBus.$emit('stateDataNext')
+          this.$root.eventHub.$emit('stateDataNext')
         }
       }
     },

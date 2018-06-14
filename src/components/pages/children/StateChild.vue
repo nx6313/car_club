@@ -21,8 +21,6 @@
 </template>
 
 <script>
-import eventBus from '@/plugins/eventbus.js'
-
 export default {
   name: 'child-state',
   data () {
@@ -35,7 +33,9 @@ export default {
     }
   },
   created () {
-    eventBus.$on('stateDataNext', this.getNextData())
+    this.$root.eventHub.$on('stateDataNext', () => {
+      this.getNextData()
+    })
   },
   activated () {
     if (this.attentionList.length === 0) {

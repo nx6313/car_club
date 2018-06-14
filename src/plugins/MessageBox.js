@@ -92,7 +92,7 @@ export default {
     }
 
     // bottomtip弹出层
-    Vue.prototype.$bottomtip = function (content, option) {
+    Vue.prototype.$bottomtip = function (option) {
       if (document.getElementById('bottomtip-message-box')) {
         document.body.removeChild(document.getElementById('bottomtip-message-box'))
       }
@@ -117,12 +117,12 @@ export default {
       }, 10)
       bottomtipShadeElem.onclick = function () {
         if (document.getElementById('bottomtip-message-box')) {
-          document.getElementById('bottomtip-message-box-shade').style.opacity = 1
-          document.getElementById('bottomtip-message-box').style.transform = 'translateY(100%)'
+          document.getElementById('bottomtip-message-box-shade').style.opacity = 0
+          document.getElementById('bottomtip-message-box').style.transform = 'translateY(130%)'
           setTimeout(() => {
             document.body.removeChild(document.getElementById('bottomtip-message-box-shade'))
             document.body.removeChild(document.getElementById('bottomtip-message-box'))
-          }, 300)
+          }, 310)
         }
       }
       var bottomtipElem = document.createElement('div')
@@ -133,14 +133,12 @@ export default {
       bottomtipElem.style.width = 'calc(100% - 0.8rem)'
       bottomtipElem.style.borderRadius = '4px'
       bottomtipElem.style.overflow = 'hidden'
-      bottomtipElem.style.padding = '0.3rem 0'
       bottomtipElem.style.whiteSpace = 'nowrap'
       bottomtipElem.style.display = 'inline-block'
       bottomtipElem.style.transition = 'all 0.3s ease 0s'
       bottomtipElem.style.transform = 'translateY(100%)'
       bottomtipElem.style.fontSize = '0.8rem'
       bottomtipElem.style.textAlign = 'center'
-      bottomtipElem.innerHTML = content
       bottomtipElem.style.zIndex = 99999999
       bottomtipElem.style.background = background
       bottomtipElem.style.color = color
@@ -148,22 +146,41 @@ export default {
       if (items.length > 0) {
         for (let i = 0; i < items.length; i++) {
           let itemElem = document.createElement('div')
-          itemElem.innerHTML = '--- ' + i
+          itemElem.classList.add('ripple')
+          itemElem.innerHTML = items[i].txt
+          itemElem.style.padding = '0.8rem 0'
           bottomtipElem.appendChild(itemElem)
+          ;(function (target, callBack) {
+            if (callBack && isFunction(callBack)) {
+              target.onclick = function () {
+                callBack()
+                if (document.getElementById('bottomtip-message-box')) {
+                  document.getElementById('bottomtip-message-box-shade').style.opacity = 0
+                  document.getElementById('bottomtip-message-box').style.transform = 'translateY(130%)'
+                  setTimeout(() => {
+                    document.body.removeChild(document.getElementById('bottomtip-message-box-shade'))
+                    document.body.removeChild(document.getElementById('bottomtip-message-box'))
+                  }, 310)
+                }
+              }
+            }
+          })(itemElem, items[i].callBack)
         }
       }
       var cancleElem = document.createElement('div')
+      cancleElem.classList.add('ripple')
       cancleElem.innerHTML = '取消'
-      cancleElem.style.padding = '0.4rem 0'
+      cancleElem.style.padding = '0.8rem 0'
+      cancleElem.style.backgroundColor = '#eaeaea'
       bottomtipElem.appendChild(cancleElem)
-      bottomtipElem.onclick = function () {
+      cancleElem.onclick = function () {
         if (document.getElementById('bottomtip-message-box')) {
-          document.getElementById('bottomtip-message-box-shade').style.opacity = 1
-          document.getElementById('bottomtip-message-box').style.transform = 'translateY(100%)'
+          document.getElementById('bottomtip-message-box-shade').style.opacity = 0
+          document.getElementById('bottomtip-message-box').style.transform = 'translateY(130%)'
           setTimeout(() => {
             document.body.removeChild(document.getElementById('bottomtip-message-box-shade'))
             document.body.removeChild(document.getElementById('bottomtip-message-box'))
-          }, 300)
+          }, 310)
         }
       }
       setTimeout(() => {

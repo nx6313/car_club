@@ -5,7 +5,7 @@
       <div class="content-wrap">
         <span>{{detailData.nikeName}}</span>
         <span v-if="detailData.content" v-html="detailData.content"></span>
-        <div class="assets-item-wrap" v-if="detailData.assets.length > 0">
+        <div class="assets-item-wrap" v-if="detailData.assets && detailData.assets.length > 0">
           <span v-for="(asset, index) in detailData.assets" :key="index" :style="(asset.img || asset.video) ? { 'background-image': 'url(' + (asset.img || asset.video) + ')' } : ''" :class="asset.video ? (['isVideo', asset.width > asset.height ? 'vertical' : '']) : ''"></span>
         </div>
         <div class="time-read-delete-wrap">
@@ -17,7 +17,7 @@
       </div>
     </div>
     <div class="comment-wrap">
-      <div class="support-users-wrap" v-if="detailData.supports.length > 0">
+      <div class="support-users-wrap" v-if="detailData.supports && detailData.supports.length > 0">
         <div class="support-count-wrap">
           <span>{{detailData.supports.length}}个赞</span>
           <span></span>
@@ -26,19 +26,18 @@
           <span v-for="(support, index) in detailData.supports" :key="index" :style="support.head ? { 'background-image': 'url(' + support.head + ')' } : ''"></span>
         </div>
       </div>
-      <div v-if="detailData.comments.length > 0" class="comment-data-wrap">
+      <div v-if="detailData.comments && detailData.comments.length > 0" class="comment-data-wrap">
         <div class="comment-title-bar flex-r flex-b">
           <span>{{detailData.comments.length}} 全部评论</span>
           <span class="ripple" @click="filterType">按照热度</span>
         </div>
-        <span v-if="detailData.comments.length === 0"></span>
         <div class="comment-info-wrap" v-for="(comment, index) in detailData.comments" :key="index">
           <span class="head" :style="comment.head ? { 'background-image': 'url(' + comment.head + ')' } : ''"></span>
           <div class="comment-content-wrap">
             <span>{{comment.nikeName}}</span>
             <span>{{dateToCur(comment.time, 2 * 24 * 60 * 60 * 1000)}}</span>
             <span v-html="comment.content"></span>
-            <div class="comment-reply-wrap" v-if="comment.replys.length > 0">
+            <div class="comment-reply-wrap" v-if="comment.replys && comment.replys.length > 0">
               <div v-for="(reply, index) in comment.replys" :key="index">
                 <div>
                   <span>{{reply.name}}</span>
@@ -54,6 +53,7 @@
           </div>
         </div>
       </div>
+      <span v-if="detailData.comments && detailData.comments.length === 0"></span>
     </div>
     <div id="face-wrap" ref="face-wrap" class="touchIgnore"></div>
     <div class="comment-input-wrap touchIgnore close" ref="comment_wrap">
@@ -65,8 +65,6 @@
 </template>
 
 <script>
-import eventBus from '@/plugins/eventbus.js'
-
 export default {
   name: 'me-state-detail',
   data () {
@@ -260,21 +258,30 @@ export default {
       }
     },
     deleteIss () {
-      var type = this.$route.params.type
-      var dataid = this.$route.params.dataid
-      this.$loading('动态删除中...')
-      this.$comfun.http_get(this, this.$moment.urls.del_issue + '?id=' + dataid).then((response) => {
-        if (response.body.code === '0000' && response.body.success === true) {
-          this.$toast('动态删除成功')
-          if (type === 'video') {
-            eventBus.$emit('videoDataNext')
-          } else if (type === 'state') {
-            eventBus.$emit('stateDataNext')
+      this.$bottomtip({
+        items: [
+          {
+            txt: '确定删除',
+            callBack: () => {
+              var type = this.$route.params.type
+              var dataid = this.$route.params.dataid
+              this.$loading('动态删除中...')
+              this.$comfun.http_get(this, this.$moment.urls.del_issue + '?id=' + dataid).then((response) => {
+                if (response.body.code === '0000' && response.body.success === true) {
+                  this.$toast('动态删除成功')
+                  if (type === 'video') {
+                    this.$root.eventHub.$emit('videoDataNext')
+                  } else if (type === 'state') {
+                    this.$root.eventHub.$emit('stateDataNext')
+                  }
+                  this.$router.go(-1)
+                } else {
+                  this.$toast('动态删除失败')
+                }
+              })
+            }
           }
-          this.$router.go(-1)
-        } else {
-          this.$toast('动态删除失败')
-        }
+        ]
       })
     }
   }
@@ -395,7 +402,7 @@ export default {
   margin-right: 0.4rem;
 }
 
-.state-info-wrap>div.content-wrap>div.time-read-delete-wrap>span:nth-of-type(1)::after {
+/* .state-info-wrap>div.content-wrap>div.time-read-delete-wrap>span:nth-of-type(1)::after {
   content: '';
   position: absolute;
   top: 0.4rem;
@@ -404,7 +411,7 @@ export default {
   height: 4px;
   border-radius: 4px;
   background: #8b7caf;
-}
+} */
 
 .state-info-wrap>div.content-wrap>div.time-read-delete-wrap>span:nth-of-type(2) {
   margin-left: 0.4rem;
@@ -458,7 +465,7 @@ export default {
 
 .comment-wrap>div.support-users-wrap>div.support-user-item-wrap {
   position: absolute;
-  top: 0.8rem;
+  top: 1rem;
   left: 5rem;
   width: calc(100% - 5rem - 0.8rem);
   display: -webkit-flex; /* Safari */
@@ -473,9 +480,9 @@ export default {
 .comment-wrap>div.support-users-wrap>div.support-user-item-wrap>span {
   position: relative;
   display: inline-block;
-  width: 2.6rem;
-  height: 2.6rem;
-  border-radius: 2.6rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 2.2rem;
   background-repeat: no-repeat;
   background-size: 100% 100%;
   background-position: center;

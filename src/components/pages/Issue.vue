@@ -50,8 +50,12 @@ export default {
       imgVideoTsName: 'issue-video',
       clearShowCamcorder: true,
       clearShowPhotos: true,
-      atFrientList: []
+      atFrientList: [],
+      issType: '1' // 1：文字；2：图片；3：视频
     }
+  },
+  activated () {
+    this.issType = '1'
   },
   methods: {
     focusInput () {
@@ -91,6 +95,7 @@ export default {
                 var serverId = data.serverId
                 this.$comfun.saveWxImg(this, serverId).then((response) => {
                   if (response.body.code === '0000' && response.body.success === true) {
+                    this.issType = '2'
                     this.imgVideos.splice(0, 0, {
                       type: 'img',
                       cover: uploadImgLocalId,
@@ -154,6 +159,7 @@ export default {
           }).then(response => {
             if (response.body && response.body.code === '0000' && response.body.success === true) {
               videoProgress.complete()
+              this.issType = '3'
               this.imgVideos.splice(0, 0, {
                 type: 'video',
                 src: response.body.data.path,
@@ -204,6 +210,7 @@ export default {
           }).then(response => {
             if (response.body && response.body.code === '0000' && response.body.success === true) {
               videoProgress.complete()
+              this.issType = '3'
               this.imgVideos.splice(0, 0, {
                 type: 'video',
                 src: response.body.data.path,
@@ -300,12 +307,6 @@ export default {
         this.$toast('写点什么吧')
         return false
       }
-      let type = '1' // 1：文字；2：图片；3：视频
-      if (this.imgVideos[0].type === 'img') {
-        type = '2'
-      } else if (this.imgVideos[0].type === 'video') {
-        type = '3'
-      }
       let fileList = []
       for (let d = 0; d < this.imgVideos.length; d++) {
         if (this.imgVideos[d].type !== 'add-btn' && this.imgVideos[d].id) {
@@ -327,7 +328,7 @@ export default {
         openid: this.$moment.wxUserInfo.openid,
         content: this.issueContentInputHtml.trim(),
         fileList: fileList,
-        type: type,
+        type: this.issType,
         atAccountId: atAccountIds
       }).then((response) => {
         if (response.body && response.body.code === '0000' && response.body.success === true) {
@@ -344,6 +345,7 @@ export default {
           this.clearShowCamcorder = true
           this.clearShowPhotos = true
           this.atFrientList = []
+          this.issType = '1'
           if (!this.$refs.edit.classList.contains('placeholder') && this.$refs.edit.classList.contains('inputing')) {
             this.$refs.edit.classList.remove('inputing')
             this.$refs.edit.classList.add('placeholder')

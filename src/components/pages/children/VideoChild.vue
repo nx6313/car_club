@@ -7,8 +7,6 @@
 </template>
 
 <script>
-import eventBus from '@/plugins/eventbus.js'
-
 export default {
   name: 'child-video',
   data () {
@@ -20,7 +18,9 @@ export default {
     }
   },
   created () {
-    eventBus.$on('videoDataNext', this.getNextData())
+    this.$root.eventHub.$on('videoDataNext', () => {
+      this.getNextData()
+    })
   },
   activated () {
     if (this.videoDataList.length === 0) {

@@ -1,7 +1,8 @@
 var wx = require('weixin-js-sdk')
 
 var projectAddress = 'http://l.dachangjr.com'
-var HttpIp = '172.18.168.44'
+// var HttpIp = '172.18.168.44'
+var HttpIp = '47.93.201.234'
 var HttpPort = '9007'
 
 var WxAppId = 'wxb50ca85248d03eaa'

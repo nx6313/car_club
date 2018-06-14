@@ -314,6 +314,10 @@ export default {
       },
       // 微信网页授权oauth2，scope：snsapi_base、snsapi_userinfo
       wx_oauth2: function (context, scope, jsApiList) {
+        // 显示日志面板
+        if (context.$moment.wxIsDebug) {
+          context.$consolePopWindow(context)
+        }
         context.$comfun.getWxUserInfoDataToLocal(context, jsApiList)
         if (!context.$comfun.isNotNull(context.$moment.wxUserInfo.openid) || !context.$comfun.isNotNull(context.$moment.wxUserInfo.accountId)) {
           var urlParams = context.$comfun.getRequest()
@@ -327,7 +331,7 @@ export default {
         } else {
           context.$loading('初始化账号信息中...')
           context.$comfun.http_get(context, context.$moment.urls.get_user_info_by_id + '?id=' + context.$moment.wxUserInfo.accountId).then((response) => {
-            if (response.body && response.body.code === '0000' && response.body.success === true) {
+            if (response.body.code === '0000' && response.body.success === true) {
               context.$moment.wxUserInfo.headimgurl = context.$comfun.isNotNull(response.body.data.headimg) ? response.body.data.headimg : ''
               context.$moment.wxUserInfo.birthday = context.$comfun.isNotNull(response.body.data.birthday) ? response.body.data.birthday : ''
               context.$moment.wxUserInfo.carType = context.$comfun.isNotNull(response.body.data.carList) ? response.body.data.carList : ''
@@ -337,10 +341,6 @@ export default {
               context.$moment.wxUserInfo.intro = context.$comfun.isNotNull(response.body.data.signature) ? response.body.data.signature : ''
               window.localStorage.setItem('wx-user-info', JSON.stringify(context.$moment.wxUserInfo))
               context.$comfun.wx_page_signature(context, jsApiList)
-              // 显示日志面板
-              if (context.$moment.wxIsDebug) {
-                context.$consolePopWindow(context)
-              }
             } else {
               context.$toast('初始化账号信息失败')
             }
@@ -353,7 +353,7 @@ export default {
           context.$loading('初始化信息中...')
           var urlParams = context.$comfun.getRequest()
           context.$comfun.http_get(context, `${context.$moment.urls.get_user_info}${urlParams.code}`).then((response) => {
-            if (response.body.data && response.body.data.openid) {
+            if (response.body.code === '0000' && response.body.success === true) {
               context.$moment.wxUserInfo.accountId = response.body.data.accountId
               context.$moment.wxUserInfo.openid = response.body.data.openid
               context.$moment.wxUserInfo.nickname = response.body.data.nickname
@@ -371,6 +371,8 @@ export default {
               } else {
                 window.location.replace(context.$moment.indexPage_)
               }
+            } else {
+              context.$toast('通过code获取用户信息失败')
             }
           }, (response) => {
             reject(response)
@@ -388,7 +390,7 @@ export default {
               url: pageUrl,
               openid: context.$moment.wxUserInfo.openid
             }).then((response) => {
-              if (response.body.data) {
+              if (response.body.code === '0000' && response.body.success === true) {
                 context.$moment.wx.ready(() => {
                   context.$loading_close()
                   context.$toast('配置页面签名信息成功')
@@ -408,6 +410,8 @@ export default {
                   signature: response.body.data.signature,
                   jsApiList: jsApiList
                 })
+              } else {
+                context.$toast('获取签名信息失败')
               }
             }, (response) => {
               reject(response)
