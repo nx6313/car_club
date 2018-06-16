@@ -10,7 +10,7 @@
           <div class="video-item-page-wrap">
             <div class="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
               <div :style="videoInfo.cover ? { 'background-image': 'url(' + videoInfo.cover + ')' } : ''" :class="['video-shade', videoInfo.coverWidth > videoInfo.coverHeight ? 'vertical' : '']"></div>
-              <div class="video-play-show" :id="'video-play-' + videoInfo.videoId"></div>
+              <div class="video-play-show" :id="'video-play-' + videoInfo.videoId" :ref="'video-play-' + videoInfo.videoId"></div>
             </div>
             <div :class="['videoDo', full ? 'videoDoFull' : 'videoDoNotFull']">
               <span :style="videoInfo.userHead ? { 'background-image': 'url(' + videoInfo.userHead + ')' } : ''" @click.stop="doAtt(videoInfo)">
@@ -99,6 +99,9 @@ export default {
       this.videoInfoList.push(this.videoInfo)
       this.currentVideoInfo = this.videoInfo
       this.$emit('cut-video-page', this.currentVideoInfo, this.changeData)
+      setTimeout(() => {
+        this.createVideoPlayer()
+      }, 20)
       this.getNextVideoInfo().then(() => {
         this.$emit('data-loading', false)
       }, () => {
@@ -131,6 +134,7 @@ export default {
                 if (isRef === true) {
                   this.videoInfoList.unshift(videoInfo)
                   this.currentVideoInfo = videoInfo
+                  this.createVideoPlayer()
                 } else {
                   if (currentIndex === videoItemWrap.childNodes.length - 1) {
                     this.videoInfoList.push(videoInfo)
@@ -305,7 +309,7 @@ export default {
         template: `<div class="video-item-page-wrap">
           <div class="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
             <div :style="newPageVideoInfo.cover ? { 'background-image': 'url(' + newPageVideoInfo.cover + ')' } : ''" :class="['video-shade', newPageVideoInfo.coverWidth > newPageVideoInfo.coverHeight ? 'vertical' : '']"></div>
-            <div class="video-play-show" :id="'video-play-' + newPageVideoInfo.videoId"></div>
+            <div class="video-play-show" :id="'video-play-' + newPageVideoInfo.videoId" :ref="'video-play-' + newPageVideoInfo.videoId"></div>
           </div>
           <div :class="['videoDo', sfull ? 'videoDoFull' : 'videoDoNotFull']">
             <span :style="newPageVideoInfo.userHead ? { 'background-image': 'url(' + newPageVideoInfo.userHead + ')' } : ''" @click.stop="doAtt(newPageVideoInfo)">
@@ -355,6 +359,9 @@ export default {
     },
     toggleCurrentPage (direction) {
       if (this.currentPlayer !== null) {
+        if (this.$comfun.isAndroidIos().isiOS && this.currentPlayer && this.currentPlayer.playing()) {
+          document.getElementById('video-play-' + this.currentVideoInfo.videoId).style.display = 'none'
+        }
         this.currentPlayer.destroy()
         this.currentPlayer = null
       }
@@ -373,6 +380,7 @@ export default {
       }
       var currentIndex = Array.prototype.indexOf.call(this.videoItemWrapElem.children, this.videoItemWrapElem.getElementsByClassName('video-item-current')[0])
       this.currentVideoInfo = this.videoInfoList[currentIndex]
+      this.createVideoPlayer()
       this.$emit('cut-video-page', this.currentVideoInfo, this.changeData)
     },
     touchStart () {
@@ -490,6 +498,9 @@ export default {
               setTimeout(() => {
                 this.videoDataRefElem.classList.add('rotate')
                 if (this.currentPlayer !== null) {
+                  if (this.$comfun.isAndroidIos().isiOS && this.currentPlayer && this.currentPlayer.playing()) {
+                    document.getElementById('video-play-' + this.currentVideoInfo.videoId).style.display = 'none'
+                  }
                   this.currentPlayer.destroy()
                   this.currentPlayer = null
                 }
@@ -604,27 +615,41 @@ export default {
     supportHold () {
       this.$emit('close-comment-pop')
       this.dblclickCount++
-      clearTimeout(this.dblclickTimer)
       if (this.dblclickCount > 2) {
         if (!this.currentVideoInfo.ifSupport) {
           this.support(this.currentVideoInfo)
         }
         this.$pageImg([likeIcon], event.clientX, event.clientY, document.getElementsByClassName('video-item-current')[0])
       }
+      this.playVideo()
+    },
+    createVideoPlayer () {
+      if (this.currentPlayer !== null) {
+        if (this.$comfun.isAndroidIos().isiOS && this.currentPlayer && this.currentPlayer.playing()) {
+          document.getElementById('video-play-' + this.currentVideoInfo.videoId).style.display = 'none'
+        }
+        this.currentPlayer.destroy()
+        this.currentPlayer = null
+      }
+      var videoOption = {
+        m3u8: this.currentVideoInfo.src, // 请替换成实际可用的播放地址
+        coverpic: { style: 'cover', src: this.currentVideoInfo.cover },
+        controls: 'none'
+      }
+      this.currentPlayer = this.$comfun.createVideo(this, 'video-play-' + this.currentVideoInfo.videoId, videoOption, true)
+      if (this.$comfun.isAndroidIos().isiOS) {
+        document.getElementById('video-play-' + this.currentVideoInfo.videoId).style.display = 'block'
+        console.log(this.currentPlayer)
+        this.currentPlayer.play()
+      }
+    },
+    playVideo () {
+      clearTimeout(this.dblclickTimer)
       this.dblclickTimer = setTimeout(() => {
         if (this.dblclickCount === 1 && !document.getElementById('comment-pop-wrap').classList.contains('open')) {
-          if (this.currentPlayer !== null) {
-            this.currentPlayer.destroy()
-            this.currentPlayer = null
+          if (this.currentPlayer !== null && !this.currentPlayer.playing()) {
+            this.currentPlayer.play()
           }
-          this.currentPlayer = this.$comfun.createVideo(this, 'video-play-' + this.currentVideoInfo.videoId, {
-            m3u8: this.currentVideoInfo.src, // 请替换成实际可用的播放地址
-            autoplay: true, // iOS下safari浏览器，以及大部分移动端浏览器是不开放视频自动播放这个能力的
-            coverpic: { style: 'cover', src: this.currentVideoInfo.cover },
-            controls: 'none',
-            h5_flv: true
-          }, true)
-          this.currentPlayer.play()
         }
         this.dblclickCount = 0
       }, 400)
@@ -773,13 +798,14 @@ export default {
 }
 
 .video-wrap>div.video-play-show {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
-  width: 0px;
-  height: 0px;
+  right: 0;
+  bottom: 0;
   display: none;
   overflow: hidden;
+  z-index: 9;
 }
 
 .video-wrap>div.vertical {

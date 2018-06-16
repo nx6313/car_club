@@ -173,8 +173,10 @@ export default {
           width = document.getElementById(rootId).clientWidth
           height = document.getElementById(rootId).clientHeight
         }
-        params.width = width // 视频的显示宽度，请尽量使用视频分辨率宽度
-        params.height = height // 视频的显示高度，请尽量使用视频分辨率高度
+        if (!params.width && !params.height) {
+          params.width = width // 视频的显示宽度，请尽量使用视频分辨率宽度
+          params.height = height // 视频的显示高度，请尽量使用视频分辨率高度
+        }
         params.flash = false
         // params.h5_flv = true
         params.x5_player = true
@@ -188,6 +190,18 @@ export default {
           }
         }
         return player
+      },
+      // 判断设备类型
+      isAndroidIos: function () {
+        var u = navigator.userAgent
+        var app = navigator.appVersion
+        var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Linux') > -1 // android终端或者uc浏览器
+        var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/) // ios终端
+        return {
+          isAndroid: isAndroid,
+          isiOS: isiOS,
+          deviceInfo: app
+        }
       },
       // 判断字符串是否为空
       isNotNull: function (str) {
