@@ -164,7 +164,7 @@ export default {
         })
       },
       // 封装生成视频对象，调用腾讯视频的js接口
-      createVideo: function (context, rootId, option, loop) {
+      createVideo: function (context, rootId, option, loop, progressFn, timeupdateFn) {
         var params = option || {}
         var TcPlayer = context.$moment.player
         var width = 0
@@ -188,11 +188,28 @@ export default {
               player.play()
             }
           }
+          if (msg.type === 'progress' && progressFn && typeof progressFn === 'function' && Object.prototype.toString.call(progressFn).toLowerCase() === '[object function]') {
+            progressFn()
+          }
+          if (msg.type === 'timeupdate' && timeupdateFn && typeof timeupdateFn === 'function' && Object.prototype.toString.call(timeupdateFn).toLowerCase() === '[object function]') {
+            timeupdateFn()
+          }
+          if (context.$comfun.isAndroidIos().isMobile) {
+            context.$comfun.console(context, '播放视频进度监听', {
+              // src: msg.src,
+              timestamp: msg.timestamp,
+              ts: msg.ts,
+              type: msg.type
+            })
+          } else {
+            console.log(msg)
+          }
         }
         return player
       },
       // 判断设备类型
       isAndroidIos: function () {
+        var p = navigator.platform
         var u = navigator.userAgent
         var app = navigator.appVersion
         var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Linux') > -1 // android终端或者uc浏览器
@@ -200,6 +217,8 @@ export default {
         return {
           isAndroid: isAndroid,
           isiOS: isiOS,
+          platform: p,
+          isMobile: !(p.toLowerCase().indexOf('win') >= 0 || p.toLowerCase().indexOf('mac') >= 0),
           deviceInfo: app
         }
       },

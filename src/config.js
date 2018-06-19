@@ -1,8 +1,8 @@
 var wx = require('weixin-js-sdk')
 
 var projectAddress = 'http://l.dachangjr.com'
-var HttpIp = '172.18.168.44'
-// var HttpIp = '47.93.201.234'
+// var HttpIp = '172.18.168.44'
+var HttpIp = '47.93.201.234'
 var HttpPort = '9007'
 
 var WxAppId = 'wxb50ca85248d03eaa'
@@ -45,7 +45,8 @@ export default {
         getPraiseinfo: '/news/getPraiseinfo.json', // 获取用户圈子相关赞信息
         getAtInfo: '/news/getAtInfo.json', // 获取我的At列表
         getnum: '/news/getnum.json', // 获取某人的动态个数
-        onenewsinfo: '/news/onenewsinfo.json' // 根据动态id获取动态信息
+        onenewsinfo: '/news/onenewsinfo.json', // 根据动态id获取动态信息
+        isidol: '/user/isidol.json' // 查看用户是否关注某一用户
       },
       // 微信是否开启调试模式，也会一并开启自定义的调试面板
       wxIsDebug: true,

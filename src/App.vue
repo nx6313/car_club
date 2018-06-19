@@ -18,8 +18,8 @@ export default {
     'comm-footer': Footer
   },
   beforeCreate () {
-    // this.$comfun.wx_oauth2(this, 'snsapi_userinfo', this.$moment.jsApiList)
-    this.$consolePopWindow(this)
+    this.$comfun.wx_oauth2(this, 'snsapi_userinfo', this.$moment.jsApiList)
+    // this.$consolePopWindow(this)
   }
 }
 </script>

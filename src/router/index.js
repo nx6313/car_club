@@ -9,6 +9,7 @@ import Attention from '@/components/pages/Attention'
 import Issue from '@/components/pages/Issue'
 import Message from '@/components/pages/Message'
 import Me from '@/components/pages/Me'
+import UserInfo from '@/components/pages/children/UserInfo'
 import VideoChild from '@/components/pages/children/VideoChild'
 import StateChild from '@/components/pages/children/StateChild'
 import MessageComment from '@/components/pages/children/MessageComment'
@@ -98,13 +99,26 @@ var router = new Router({
       component: Me,
       children: [
         {
-          path: '',
-          component: VideoChild
-        }, {
           path: 'child-video',
           component: VideoChild
         }, {
           path: 'child-state',
+          component: StateChild
+        }
+      ]
+    },
+    {
+      path: '/user-info',
+      name: 'user-info',
+      component: UserInfo,
+      children: [
+        {
+          path: 'child-video',
+          name: 'child-video',
+          component: VideoChild
+        }, {
+          path: 'child-state',
+          name: 'child-state',
           component: StateChild
         }
       ]

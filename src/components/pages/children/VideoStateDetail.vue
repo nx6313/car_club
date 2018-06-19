@@ -27,7 +27,7 @@
         </div>
       </div>
       <div v-if="detailData.comments && detailData.comments.length > 0" class="comment-data-wrap">
-        <div class="comment-title-bar flex-r flex-b">
+        <div :class="['comment-title-bar flex-r flex-b', (detailData.supports && detailData.supports.length > 0) ? 'comment-title-bar-before' : '']">
           <span>{{detailData.comments.length}} 全部评论</span>
           <span class="ripple" @click="filterType">按照热度</span>
         </div>
@@ -538,7 +538,7 @@ export default {
   background-image: url('../../../assets/icon-order.png');
 }
 
-.comment-wrap>div.comment-data-wrap>div.comment-title-bar::before {
+.comment-wrap>div.comment-data-wrap>div.comment-title-bar-before::before {
   content: '';
   position: absolute;
   top: 0;

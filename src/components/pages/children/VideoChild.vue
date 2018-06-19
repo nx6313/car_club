@@ -1,7 +1,7 @@
 <template>
   <div class="video-child" ref="me-video-child">
     <span v-if="videoDataList.length > 0" v-for="(video, index) in videoDataList" :key="index" :style="video.cover ? { 'background-image':'url(' + video.cover + ' ) ' } : ''" @click="toChildPage('/me-state-detail', '/video/' + video.videoId)"></span>
-    <div class="data-loading" ref="data-loading">数据加载中</div>
+    <div class="data-loading" ref="data-loading" :style="lookUserId !== null ? { 'bottom': '0px' } : {}">数据加载中</div>
     <div class="data-empty" v-if="videoDataList.length === 0"></div>
   </div>
 </template>
@@ -11,6 +11,7 @@ export default {
   name: 'child-video',
   data () {
     return {
+      lookUserId: null,
       pageLimit: 10,
       isNextLoading: false,
       currentPageIndex: 1,
@@ -23,6 +24,12 @@ export default {
     })
   },
   activated () {
+    this.videoDataList = []
+    if (this.$route.params.lookUserId) {
+      this.lookUserId = this.$route.params.lookUserId
+    }
+    console.log(this.lookUserId)
+
     if (this.videoDataList.length === 0) {
       this.getVideoByPage(this.currentPageIndex, [ '3' ]).then((issData) => {
         if (issData) {
@@ -63,8 +70,8 @@ export default {
         var dataLoading = this.$refs['data-loading']
         dataLoading.style.transform = 'translateY(0)'
         this.$comfun.http_post(this, this.$moment.urls.get_new_info + `?page=${page}&limit=${this.pageLimit}`, {
-          accountId: this.$moment.wxUserInfo.accountId,
-          searchaccountId: this.$moment.wxUserInfo.accountId,
+          accountId: this.lookUserId || this.$moment.wxUserInfo.accountId,
+          searchaccountId: this.lookUserId || this.$moment.wxUserInfo.accountId,
           type: type
         }).then((response) => {
           this.isNextLoading = false

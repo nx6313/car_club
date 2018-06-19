@@ -1,12 +1,12 @@
 <template>
-  <div id="about-me" ref="about-me" @touchend="touchEnd">
+  <div id="user-info" ref="user-info" @touchend="touchEnd">
     <div class="user-info-wrap" ref="user-info-wrap">
       <div class="user-info-shade" :style="userInfo.headImg ? { 'background-image': 'url(' + userInfo.headImg + ')' } : ''"></div>
       <div class="head-wrap">
         <span class="head" :style="userInfo.headImg ? { 'background-image': 'url(' + userInfo.headImg + ')' } : ''"></span>
         <div class="do-wrap flex-r flex-a">
-          <span @click="toChildPage('/me-edit-user-info')">编辑资料</span>
-          <span><img src="./../../assets/transpond.png"></span>
+          <span @click="doAtt(true)" v-if="!hasAttention">+ 关注</span>
+          <span @click="doAtt(false)" v-if="hasAttention">已关注</span>
         </div>
       </div>
       <div class="name-wrap">
@@ -35,8 +35,8 @@
       </div>
     </div>
     <div class="video-tabs flex-r flex-b" ref="video-tabs">
-      <span class="tab-item selected" v-on:click="toPage('/child-video', $event.target)">视频 {{videoInfo.videoCount}}</span>
-      <span class="tab-item" v-on:click="toPage('/child-state', $event.target)">动态 {{videoInfo.stateCount}}</span>
+      <span class="tab-item selected" v-on:click="toPage('child-video', $event.target)">视频 {{videoInfo.videoCount}}</span>
+      <span class="tab-item" v-on:click="toPage('child-state', $event.target)">动态 {{videoInfo.stateCount}}</span>
     </div>
     <transition name="fade" mode="out-in">
       <keep-alive>
@@ -48,10 +48,12 @@
 
 <script>
 export default {
-  name: 'page-me',
+  name: 'child-user-info',
   data () {
     return {
       currentChildPage: null,
+      lookUserId: null,
+      hasAttention: false,
       userInfo: {
         type: {
           headImg: String,
@@ -79,79 +81,128 @@ export default {
   },
   methods: {
     touchEnd () {
-      var aboutMe = this.$refs['about-me']
-      if (aboutMe.scrollTop > aboutMe.scrollHeight - aboutMe.clientHeight - 30) {
+      var userInfo = this.$refs['user-info']
+      if (userInfo.scrollTop > userInfo.scrollHeight - userInfo.clientHeight - 30) {
         var currentRouterPath = this.$router.currentRoute.path
-        if (currentRouterPath === '/me' || currentRouterPath === '/me/' || currentRouterPath === '/me/child-video') {
+        if (currentRouterPath === '/user-info' || currentRouterPath === '/user-info/' || currentRouterPath === '/user-info/child-video') {
           this.$root.eventHub.$emit('videoDataNext')
-        } else if (currentRouterPath === '/me/child-state') {
+        } else if (currentRouterPath === '/user-info/child-state') {
           this.$root.eventHub.$emit('stateDataNext')
         }
       }
     },
     toPage: function (pageTo, selectElem) {
-      this.$router.replace('/me' + pageTo)
+      this.$router.replace({
+        name: pageTo,
+        params: {
+          lookUserId: this.lookUserId
+        }
+      })
       var tabs = this.$refs['video-tabs'].getElementsByTagName('span')
       for (var t = 0; t < tabs.length; t++) {
         tabs[t].classList.remove('selected')
       }
       selectElem.classList.add('selected')
     },
-    toChildPage (childPageRouter, params) {
-      var option = params || ''
-      this.$router.push(childPageRouter + option)
+    doAtt (doAttFlag) {
+      if (doAttFlag) {
+        this.$loading('关注...')
+        this.$comfun.http_get(this, this.$moment.urls.attention + '?id=' + this.$moment.wxUserInfo.accountId + '&accountId=' + this.lookUserId).then((response) => {
+          if (response.body.code === '0000' && response.body.success === true) {
+            this.$toast('关注用户成功')
+            this.hasAttention = !this.hasAttention
+          } else {
+            this.$toast('关注用户失败')
+          }
+        })
+      } else {
+        this.$loading('取消关注...')
+        this.$comfun.http_get(this, this.$moment.urls.attention + '?id=' + this.$moment.wxUserInfo.accountId + '&accountId=' + this.lookUserId).then((response) => {
+          if (response.body.code === '0000' && response.body.success === true) {
+            this.$toast('取消用户关注成功')
+            this.hasAttention = !this.hasAttention
+          } else {
+            this.$toast('取消用户关注失败')
+          }
+        })
+      }
     }
   },
   activated () {
-    this.toPage('/child-video', this.$refs['video-tabs'].getElementsByClassName('selected')[0])
+    if (this.$route.params.userId) {
+      this.lookUserId = this.$route.params.userId
+    }
+    if (this.$route.params.hasAttention) {
+      this.hasAttention = this.$route.params.hasAttention
+    }
+
+    this.toPage('child-video', this.$refs['video-tabs'].getElementsByClassName('selected')[0])
 
     var currentRouterPath = this.$router.currentRoute.path
     var tabElems = this.$refs['video-tabs'].getElementsByClassName('tab-item')
     for (var t = 0; t < tabElems.length; t++) {
       tabElems[t].classList.remove('selected')
     }
-    if (currentRouterPath === '/me' || currentRouterPath === '/me/' || currentRouterPath === '/me/child-video') {
+    if (currentRouterPath === '/user-info' || currentRouterPath === '/user-info/' || currentRouterPath === '/user-info/child-video') {
       tabElems[0].classList.add('selected')
-    } else if (currentRouterPath === '/me/child-state') {
+    } else if (currentRouterPath === '/user-info/child-state') {
       tabElems[1].classList.add('selected')
     }
 
-    var address = ''
-    if (this.$moment.wxUserInfo.address) {
-      address = this.$moment.wxUserInfo.address
-    } else if (this.$moment.wxUserInfo.province && this.$moment.wxUserInfo.city) {
-      address = this.$moment.wxUserInfo.province + '，' + this.$moment.wxUserInfo.city
-    } else if (this.$moment.wxUserInfo.province) {
-      address = this.$moment.wxUserInfo.province
-    } else if (this.$moment.wxUserInfo.city) {
-      address = this.$moment.wxUserInfo.city
-    }
     this.userInfo = {
-      headImg: this.$moment.wxUserInfo.headimgurl,
-      nickName: this.$moment.wxUserInfo.nickname,
-      sex: this.$moment.wxUserInfo.sex,
-      address: address,
+      headImg: '',
+      nickName: '',
+      sex: '',
+      address: '',
       age: null,
-      constellation: this.$moment.wxUserInfo.constellation,
-      carType: this.$moment.wxUserInfo.carType,
-      intro: this.$moment.wxUserInfo.intro,
+      constellation: '',
+      carType: '',
+      intro: '',
       praiseCount: 0,
       attentionCount: 0,
       fansCount: 0
     }
+    this.$loading('加载用户信息中...')
+    this.$comfun.http_get(this, this.$moment.urls.get_user_info_by_id + '?id=' + this.lookUserId).then((response) => {
+      if (response.body.code === '0000' && response.body.success === true) {
+        var address = ''
+        if (response.body.data.province && response.body.data.city) {
+          address = response.body.data.province + '，' + response.body.data.city
+        } else if (response.body.data.province) {
+          address = response.body.data.province
+        } else if (response.body.data.city) {
+          address = response.body.data.city
+        }
+        this.userInfo = {
+          headImg: response.body.data.headimg,
+          nickName: response.body.data.nickName,
+          sex: response.body.data.sex,
+          address: address,
+          age: null,
+          constellation: response.body.data.constellation,
+          carType: response.body.data.carList,
+          intro: response.body.data.signature,
+          praiseCount: 0,
+          attentionCount: 0,
+          fansCount: 0
+        }
+      } else {
+        this.$toast('获取用户信息失败')
+      }
+    })
     this.videoInfo = {
       videoCount: 0,
       stateCount: 0
     }
-    if (this.$moment.wxUserInfo.accountId !== '') {
-      this.$comfun.http_get(this, this.$moment.urls.heatInfo + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+    if (this.lookUserId !== null) {
+      this.$comfun.http_get(this, this.$moment.urls.heatInfo + '?accountId=' + this.lookUserId).then((response) => {
         if (response.body.code === '0000' && response.body.success === true) {
           this.userInfo.praiseCount = response.body.data.praiseNum
           this.userInfo.attentionCount = response.body.data.focusNum
           this.userInfo.fansCount = response.body.data.fansNum
         }
       })
-      this.$comfun.http_get(this, this.$moment.urls.getnum + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+      this.$comfun.http_get(this, this.$moment.urls.getnum + '?accountId=' + this.lookUserId).then((response) => {
         if (response.body.code === '0000' && response.body.success === true) {
           this.videoInfo.videoCount = response.body.data.videoNum
           this.videoInfo.stateCount = response.body.data.newsNum
@@ -163,6 +214,12 @@ export default {
 </script>
 
 <style scoped>
+#content-wrap {
+  height: 100vh;
+  z-index: 99;
+  background: rgb(30, 20, 54);
+}
+
 .user-info-wrap {
   position: relative;
   overflow: hidden;
@@ -200,7 +257,7 @@ export default {
   background-repeat: repeat-x;
   background-position: center;
   background-size: auto 100%;
-  background-image: url('./../../assets/add.png');
+  background-image: url('./../../../assets/add.png');
 }
 
 .head-wrap>div.do-wrap {
@@ -217,16 +274,6 @@ export default {
   padding: 0 10px;
   background-color: rgba(134, 125, 153, 0.8);
   border-radius: 2px;
-}
-
-.head-wrap>div.do-wrap>span:nth-of-type(n + 2) {
-  margin-left: 6px;
-}
-
-.head-wrap>div.do-wrap>span>img {
-  position: relative;
-  height: 70%;
-  vertical-align: middle;
 }
 
 .name-wrap {
@@ -257,11 +304,11 @@ export default {
 }
 
 .name-wrap>span.sex-lady::after {
-  background-image: url('./../../assets/sex-lady.png');
+  background-image: url('./../../../assets/sex-lady.png');
 }
 
 .name-wrap>span.sex-sir::after {
-  background-image: url('./../../assets/sex-sir.png');
+  background-image: url('./../../../assets/sex-sir.png');
 }
 
 .name-wrap>span.address {

@@ -5,7 +5,7 @@
       <span class="complate" ref="ref-complate"></span>
     </span>
     <div id="video-item-wrap" ref="video-item-wrap">
-      <div class="video-item video-item-current" @click="supportHold">
+      <div class="video-item video-item-current" :id="'video-item-' + videoInfo.videoId" :ref="'video-item-' + videoInfo.videoId" @click="supportHold">
         <template>
           <div class="video-item-page-wrap">
             <div class="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
@@ -16,7 +16,7 @@
               <span :style="videoInfo.userHead ? { 'background-image': 'url(' + videoInfo.userHead + ')' } : ''" @click.stop="doAtt(videoInfo)">
                 <span :ref="'att-user-' + videoInfo.videoId" v-if="!videoInfo.hasAttention" class="attention"></span>
               </span>
-              <span :ref="'video-support-' + videoInfo.videoId" :class="videoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(videoInfo)">
+              <span :id="'video-support-' + videoInfo.videoId" :ref="'video-support-' + videoInfo.videoId" :class="videoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(videoInfo)">
                 <span>{{videoInfo.supportCount}}</span>
               </span>
               <span :ref="'video-comment-' + videoInfo.videoId" @click.stop="lookComment">
@@ -99,9 +99,10 @@ export default {
       this.videoInfoList.push(this.videoInfo)
       this.currentVideoInfo = this.videoInfo
       this.$emit('cut-video-page', this.currentVideoInfo, this.changeData)
+      this.updateAttState()
       setTimeout(() => {
         this.createVideoPlayer()
-      }, 20)
+      }, 10)
       this.getNextVideoInfo().then(() => {
         this.$emit('data-loading', false)
       }, () => {
@@ -145,7 +146,7 @@ export default {
                   // }
                 }
                 this.hasNext = true
-                this.addVideoWrap(isRef, insertIndex)
+                this.addVideoWrap(isRef, insertIndex, videoInfo.videoId)
                 this.addComponentToPage(videoInfo, isRef)
               } else {
                 if (isRef !== true) {
@@ -274,10 +275,10 @@ export default {
       })
       return videpByPagePromise
     },
-    addVideoWrap (isRef, insertIndex) {
+    addVideoWrap (isRef, insertIndex, videoId) {
       var that = this
       var VideoWrapComponent = Vue.extend({
-        template: `<div v-once class="video-item" :style="{ height: 'calc(' + initPageItemHeight + 'px)' }" @click="supportHold">
+        template: `<div class="video-item" id="video-item-${videoId}" ref="video-item-${videoId}" :style="{ height: 'calc(' + initPageItemHeight + 'px)' }" @click="supportHold">
           <div class="video-item-replace"></div>
         </div>`,
         data () {
@@ -315,7 +316,7 @@ export default {
             <span :style="newPageVideoInfo.userHead ? { 'background-image': 'url(' + newPageVideoInfo.userHead + ')' } : ''" @click.stop="doAtt(newPageVideoInfo)">
               <span :ref="'att-user-' + newPageVideoInfo.videoId" v-if="!newPageVideoInfo.hasAttention" class="attention"></span>
             </span>
-            <span :ref="'video-support-' + newPageVideoInfo.videoId" :class="newPageVideoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(newPageVideoInfo)">
+            <span :id="'video-support-' + newPageVideoInfo.videoId" :ref="'video-support-' + newPageVideoInfo.videoId" :class="newPageVideoInfo.ifSupport ? 'support-focus' : ''" @click.stop="support(newPageVideoInfo)">
               <span>{{newPageVideoInfo.supportCount}}</span>
             </span>
             <span :ref="'video-comment-' + newPageVideoInfo.videoId" @click.stop="lookComment">
@@ -382,6 +383,7 @@ export default {
       this.currentVideoInfo = this.videoInfoList[currentIndex]
       this.createVideoPlayer()
       this.$emit('cut-video-page', this.currentVideoInfo, this.changeData)
+      this.updateAttState()
     },
     touchStart () {
       this.$emit('close-comment-pop')
@@ -564,22 +566,13 @@ export default {
       }, 10)
     },
     doAtt (video) {
-      if (!video.hasAttention) {
-        this.$loading('关注...')
-        this.$comfun.http_get(this, this.$moment.urls.attention + '?id=' + this.$moment.wxUserInfo.accountId + '&accountId=' + this.currentVideoInfo.userId).then((response) => {
-          if (response.body.code === '0000' && response.body.success === true) {
-            this.$toast('关注用户成功')
-            video.hasAttention = !video.hasAttention
-            this.$refs['att-user-' + this.currentVideoInfo.videoId].style.display = 'none'
-          } else {
-            this.$toast('关注用户失败')
-          }
-        })
-      } else {
-        if (this.$moment.wxUserInfo.accountId !== this.currentVideoInfo.userId) {
-          this.$toast('您已关注该用户')
+      this.$router.push({
+        name: 'user-info',
+        params: {
+          userId: video.userId,
+          hasAttention: video.hasAttention
         }
-      }
+      })
     },
     support (video) {
       if (!video.ifSupport) {
@@ -591,7 +584,10 @@ export default {
             this.$toast('点赞成功')
             video.ifSupport = !video.ifSupport
             video.supportCount += 1
-            this.$refs['video-support-' + video.videoId].classList.add('support-focus')
+            document.getElementById('video-support-' + video.videoId).classList.add('support-focus')
+            for (var h = 0; h < 3; h++) {
+              this.$pageImg([likeIcon], document.body.clientWidth * 3 / 5, document.body.clientHeight * 3 / 5, document.getElementsByClassName('video-item-current')[0])
+            }
           } else {
             this.$toast('点赞失败')
           }
@@ -605,7 +601,7 @@ export default {
             this.$toast('点赞取消')
             video.ifSupport = !video.ifSupport
             video.supportCount -= 1
-            this.$refs['video-support-' + video.videoId].classList.remove('support-focus')
+            document.getElementById('video-support-' + video.videoId).classList.remove('support-focus')
           } else {
             this.$toast('取消点赞失败')
           }
@@ -613,9 +609,11 @@ export default {
       }
     },
     supportHold () {
+      this.$emit('data-loading', true)
       this.$emit('close-comment-pop')
       this.dblclickCount++
       if (this.dblclickCount > 2) {
+        this.$emit('data-loading', false)
         if (!this.currentVideoInfo.ifSupport) {
           this.support(this.currentVideoInfo)
         }
@@ -636,11 +634,17 @@ export default {
         coverpic: { style: 'cover', src: this.currentVideoInfo.cover },
         controls: 'none'
       }
-      this.currentPlayer = this.$comfun.createVideo(this, 'video-play-' + this.currentVideoInfo.videoId, videoOption, true)
       if (this.$comfun.isAndroidIos().isiOS) {
         document.getElementById('video-play-' + this.currentVideoInfo.videoId).style.display = 'block'
-        console.log(this.currentPlayer)
-        this.currentPlayer.play()
+      }
+      this.currentPlayer = this.$comfun.createVideo(this, 'video-play-' + this.currentVideoInfo.videoId, videoOption, true, () => {
+        this.$emit('data-loading', true)
+      }, () => {
+        this.$emit('data-loading', false)
+      })
+      if (this.$comfun.isAndroidIos().isiOS) {
+        // 自动播放处理在手机端不会触发，必须手动点击才会播放，是为了防止无故浪费流量资费
+        document.getElementById('video-item-' + this.currentVideoInfo.videoId).click()
       }
     },
     playVideo () {
@@ -652,7 +656,7 @@ export default {
           }
         }
         this.dblclickCount = 0
-      }, 400)
+      }, 500)
     },
     lookComment () {
       this.$emit('look-comment')
@@ -663,7 +667,19 @@ export default {
     changeData (videoComments) {
       var commentCountElem = this.$refs['video-comment-' + this.currentVideoInfo.videoId].getElementsByTagName('span')[0]
       commentCountElem.innerText = videoComments.length
+    },
+    updateAttState () {
+      if (this.currentVideoInfo) {
+        this.$comfun.http_get(this, this.$moment.urls.isidol + '?accountId=' + this.$moment.wxUserInfo.accountId + '&otheraccountId=' + this.currentVideoInfo.userId).then((response) => {
+          if (response.body.code === '0000' && response.body.success === true) {
+            this.currentVideoInfo.hasAttention = response.body.data
+          }
+        })
+      }
     }
+  },
+  activated () {
+    this.updateAttState()
   }
 }
 </script>
@@ -743,6 +759,7 @@ export default {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .video-item::before {
@@ -805,7 +822,7 @@ export default {
   bottom: 0;
   display: none;
   overflow: hidden;
-  z-index: 9;
+  z-index: 999;
 }
 
 .video-wrap>div.vertical {

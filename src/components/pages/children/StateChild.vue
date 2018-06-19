@@ -15,7 +15,7 @@
         </span>
       </span>
     </div>
-    <div class="data-loading" ref="data-loading" v-if="!isNextLoading">数据加载中</div>
+    <div class="data-loading" ref="data-loading" :style="lookUserId !== null ? { 'bottom': '0px' } : {}">数据加载中</div>
     <div class="data-empty" v-if="stateDataList.length === 0"></div>
   </div>
 </template>
@@ -25,6 +25,7 @@ export default {
   name: 'child-state',
   data () {
     return {
+      lookUserId: null,
       pageLimit: 10,
       isNextLoading: false,
       currentPageIndex: 1,
@@ -38,6 +39,12 @@ export default {
     })
   },
   activated () {
+    this.attentionList = []
+    this.stateDataList = []
+    if (this.$route.params.lookUserId) {
+      this.lookUserId = this.$route.params.lookUserId
+    }
+
     if (this.attentionList.length === 0) {
       this.getStateByPage(this.currentPageIndex, [ '1', '2' ]).then((issData) => {
         if (issData) {
@@ -132,8 +139,8 @@ export default {
         var dataLoading = this.$refs['data-loading']
         dataLoading.style.transform = 'translateY(0)'
         this.$comfun.http_post(this, this.$moment.urls.get_new_info + `?page=${page}&limit=${this.pageLimit}`, {
-          accountId: this.$moment.wxUserInfo.accountId,
-          searchaccountId: this.$moment.wxUserInfo.accountId,
+          accountId: this.lookUserId || this.$moment.wxUserInfo.accountId,
+          searchaccountId: this.lookUserId || this.$moment.wxUserInfo.accountId,
           type: type
         }).then((response) => {
           this.isNextLoading = false

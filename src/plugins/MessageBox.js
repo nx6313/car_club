@@ -448,7 +448,7 @@ export default {
       imgPopElem.classList.add('img-pop')
       imgPopElem.src = imgSrcs[rd(0, imgSrcs.length - 1)]
       imgPopElem.style.width = (rd(20, 60)) + 'px'
-      imgPopElem.style.position = 'fixed'
+      imgPopElem.style.position = 'absolute'
       imgPopElem.style.top = (clientY + rd(-10, 10) - 20) + 'px'
       imgPopElem.style.left = (clientX + rd(-10, 10) - 20) + 'px'
       imgPopElem.style.zIndex = 99999999
@@ -2064,7 +2064,7 @@ function writeToConsolePanl (contentHtml, jsonObj, vueContext, rootElem) {
             beforePointerElem.classList.remove('close-pointer')
             beforePointerElem.classList.add('open-pointer')
             beforePointerElem.innerHTML = '&#x25bc;'
-            writeJsonContentLevel(this.parentElement, jsonObj, 0, vueContext)
+            writeJsonContentLevel(this.parentElement, jsonObj, 0, vueContext, rootElem)
             this.parentNode.childNodes[1].style.maxHeight = ''
           } else {
             beforePointerElem.classList.remove('open-pointer')
@@ -2094,7 +2094,11 @@ function writeToConsolePanl (contentHtml, jsonObj, vueContext, rootElem) {
 
 // 获取json数据中每一层级的数据，并写入指定区域
 var currentCopyElem = null
-function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
+function writeJsonContentLevel (rootElem, jsonObj, level, vueContext, rootDom) {
+  var consolePanlContentElem = document.getElementById('console-panl-content-elem')
+  if (rootDom) {
+    consolePanlContentElem = rootDom
+  }
   if (rootElem.getElementsByClassName('json-obj-log-' + level).length === 0) {
     var nextLogElem = document.createElement('div')
     nextLogElem.classList.add('json-obj-log-' + level)
@@ -2136,7 +2140,7 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
                 beforePointerElem.classList.remove('close-pointer')
                 beforePointerElem.classList.add('open-pointer')
                 beforePointerElem.innerHTML = '&#x25bc;'
-                writeJsonContentLevel(this.parentElement, jsonObj[j], level + 1, vueContext)
+                writeJsonContentLevel(this.parentElement, jsonObj[j], level + 1, vueContext, rootDom)
                 this.parentNode.childNodes[1].style.maxHeight = ''
               } else {
                 beforePointerElem.classList.remove('open-pointer')
@@ -2228,7 +2232,7 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
                 beforePointerElem.classList.remove('close-pointer')
                 beforePointerElem.classList.add('open-pointer')
                 beforePointerElem.innerHTML = '&#x25bc;'
-                writeJsonContentLevel(this.parentElement, jsonObj[k], level + 1, vueContext)
+                writeJsonContentLevel(this.parentElement, jsonObj[k], level + 1, vueContext, rootDom)
                 this.parentNode.childNodes[1].style.maxHeight = ''
               } else {
                 beforePointerElem.classList.remove('open-pointer')
@@ -2289,6 +2293,10 @@ function writeJsonContentLevel (rootElem, jsonObj, level, vueContext) {
         }
       }
     }
+    setTimeout(() => {
+      var scrollH = consolePanlContentElem.scrollHeight
+      consolePanlContentElem.scrollTo(0, ++scrollH)
+    }, 10)
   }
 }
 
