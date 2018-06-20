@@ -8,9 +8,9 @@
       </div>
     </div>
     <div class="content-wrap">
-      <span v-html="note.uttererContent"></span>
-      <span v-if="note.uttererContent.length > 40 && isOnContentFilter" @click="toggleAllContent">全文</span>
-      <span v-if="note.uttererContent.length > 40 && !isOnContentFilter" @click="toggleAllContent">收起</span>
+      <span ref="note_html_content" :style="isOnContentFilter ? { 'max-height': noteContentMaxHeight + 'px' } : { 'max-height': 'none' }" v-html="note.uttererContent"></span>
+      <span v-if="noteContentHasMore && isOnContentFilter" @click="toggleAllContent">全文</span>
+      <span v-if="noteContentHasMore && !isOnContentFilter" @click="toggleAllContent">收起</span>
     </div>
     <div class="imgs-video-wrap" v-if="note.imgsOrVideos.length > 0">
       <span v-for="imgvideo in note.imgsOrVideos" :key="imgvideo.id" :style="(imgvideo.img || imgvideo.video) ? { 'background-image': 'url(' + (imgvideo.img || imgvideo.video) + ')' } : ''" :class="imgvideo.video ? (['isVideo', imgvideo.width > imgvideo.height ? 'vertical' : '']) : ''"></span>
@@ -43,7 +43,9 @@ export default {
   data () {
     return {
       isOnContentFilter: true,
-      canToggleComment: true
+      canToggleComment: true,
+      noteContentHasMore: false,
+      noteContentMaxHeight: 70
     }
   },
   filters: {
@@ -86,6 +88,9 @@ export default {
       return showStr
     }
   },
+  mounted () {
+    this.noteContentHasMore = this.$refs.note_html_content.scrollHeight > this.noteContentMaxHeight
+  },
   methods: {
     toggleAllContent () {
       this.isOnContentFilter = !this.isOnContentFilter
@@ -127,7 +132,7 @@ export default {
                 break
               }
             }
-            if (inLikeMansIndex > 0) {
+            if (inLikeMansIndex >= 0) {
               this.note.likeMans.splice(inLikeMansIndex, 1)
             }
           } else {
@@ -198,10 +203,10 @@ export default {
   line-height: 23px;
   color: #d0c8e1;
   overflow: hidden;
-  text-overflow: ellipsis;
+  /* text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  -webkit-box-orient: vertical; */
 }
 
 .note-item>div.content-wrap>span:nth-of-type(2) {
@@ -283,7 +288,7 @@ export default {
   right: -10px;
   bottom: 0;
   height: 1px;
-  background: #433a57;
+  background: #33284c;
 }
 
 .note-item>div.like-wrap>div.like-icon-btn-wrap>span {

@@ -152,6 +152,7 @@ export default {
                 if (isRef !== true) {
                   this.hasNext = true
                 } else {
+                  this.createVideoPlayer()
                   if (videoItemWrap.childNodes.length > 1) {
                     this.hasNext = true
                   }
@@ -468,7 +469,7 @@ export default {
       if (this.touchToTop) {
         // 下一个视频
         if (!this.isRefing) {
-          if (Math.abs(this.touchMoveDistanceY) > 200) {
+          if (Math.abs(this.touchMoveDistanceY) > 100) {
             if (!this.hasNext) {
               this.$toast('没有更多视频啦')
               this.videoItemWrapElem.style.transform = `translateY(${this.currentVITsY}px)`
@@ -522,7 +523,7 @@ export default {
           return false
         }
         // 上一个视频
-        if (Math.abs(this.touchMoveDistanceY) > 200) {
+        if (Math.abs(this.touchMoveDistanceY) > 100) {
           this.videoItemWrapElem.style['transition-duration'] = '0.5s'
           this.currentVITsY += this.everyVITsY
           this.videoItemWrapElem.style.transform = `translateY(${this.currentVITsY}px)`

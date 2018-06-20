@@ -35,7 +35,7 @@
       <div class="comment-no-data-wrap" v-if="videoComments.length === 0"></div>
       <div id="face-wrap" ref="face-wrap" class="touchIgnore"></div>
       <div class="comment-input-wrap touchIgnore">
-        <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>{{commentPlaceholder}}</div>
+        <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable="true">{{commentPlaceholder}}</div>
         <span class="touchIgnore" @click.passive="selectFace"></span>
         <span class="comment-send-btn ripple touchIgnore" @click="commentSend">评论</span>
       </div>

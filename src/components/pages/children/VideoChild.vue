@@ -1,7 +1,7 @@
 <template>
   <div class="video-child" ref="me-video-child">
-    <span v-if="videoDataList.length > 0" v-for="(video, index) in videoDataList" :key="index" :style="video.cover ? { 'background-image':'url(' + video.cover + ' ) ' } : ''" @click="toChildPage('/me-state-detail', '/video/' + video.videoId)"></span>
-    <div class="data-loading" ref="data-loading" :style="lookUserId !== null ? { 'bottom': '0px' } : {}">数据加载中</div>
+    <span v-if="videoDataList.length > 0" v-for="(video, index) in videoDataList" :key="index" :style="video.cover ? { 'background-image':'url(' + video.cover + ' ) ' } : ''" :class="video.coverWidth > video.coverHeight ? 'video-vertical' : ''" @click="toChildPage('/me-state-detail', '/video/' + video.videoId)"></span>
+    <div class="data-loading" ref="data-loading" :style="isChild ? { 'bottom': '0px' } : {}">数据加载中</div>
     <div class="data-empty" v-if="videoDataList.length === 0"></div>
   </div>
 </template>
@@ -12,6 +12,7 @@ export default {
   data () {
     return {
       lookUserId: null,
+      isChild: false,
       pageLimit: 10,
       isNextLoading: false,
       currentPageIndex: 1,
@@ -25,12 +26,13 @@ export default {
   },
   activated () {
     this.videoDataList = []
-    if (this.$route.params.lookUserId) {
-      this.lookUserId = this.$route.params.lookUserId
+    this.currentPageIndex = 1
+    this.lookUserId = this.$route.params.lookUserId
+    if (this.$route.params.isChild) {
+      this.isChild = this.$route.params.isChild
     }
-    console.log(this.lookUserId)
 
-    if (this.videoDataList.length === 0) {
+    if (this.lookUserId && this.videoDataList.length === 0) {
       this.getVideoByPage(this.currentPageIndex, [ '3' ]).then((issData) => {
         if (issData) {
           this.videoDataList = this.videoDataList.concat(issData)
@@ -77,7 +79,7 @@ export default {
           this.isNextLoading = false
           setTimeout(() => {
             dataLoading.style.transform = 'translateY(100%)'
-          }, 100)
+          }, 300)
           if (response.body.code === '0000' && response.body.success === true) {
             if (response.body.data.dataList && response.body.data.dataList.length > 0) {
               let videoInfoList = []
@@ -162,7 +164,7 @@ export default {
           this.isNextLoading = false
           setTimeout(() => {
             dataLoading.style.transform = 'translateY(100%)'
-          }, 100)
+          }, 300)
           reject(response)
         })
       })
@@ -189,8 +191,12 @@ export default {
   padding-bottom: calc(100% / 3 + 50px);
   background-repeat: no-repeat;
   background-position: center;
-  background-size: auto 100%;
+  background-size: 100% auto;
   box-shadow: inset 0 0 20px 0px rgba(46, 52, 72, .8)
+}
+
+.video-child>span.video-vertical{
+  background-size: auto 100%;
 }
 
 .data-loading {

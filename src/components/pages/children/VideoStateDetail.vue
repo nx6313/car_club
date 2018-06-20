@@ -57,7 +57,7 @@
     </div>
     <div id="face-wrap" ref="face-wrap" class="touchIgnore"></div>
     <div class="comment-input-wrap touchIgnore close" ref="comment_wrap">
-      <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入评论内容</div>
+      <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable="true">请输入评论内容</div>
       <span class="touchIgnore" @click.passive="selectFace"></span>
       <span class="comment-send-btn ripple touchIgnore" @click="commentSend">评论</span>
     </div>

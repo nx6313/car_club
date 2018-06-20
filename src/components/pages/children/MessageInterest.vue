@@ -15,7 +15,7 @@
           </div>
         </div>
       </div>
-      <span class="attention-state ripple" v-if="!item.attention">+关注</span>
+      <span class="attention-state ripple" v-if="!item.attention" @click="addAttention(item)">+关注</span>
       <span class="attention-state ripple has-attention" v-if="item.attention">已关注</span>
     </div>
     <span class="no-more-data">暂时没有更多了</span>
@@ -30,22 +30,38 @@ export default {
       dataList: []
     }
   },
-  created () {
-    this.dataList = [
-      {
-        head: 'http://img.zhaogexing.com/touxiang/160414/1-1604140H238-51.jpg',
-        name: '@恋东999',
-        address: '乌鲁木齐',
-        carType: '奥迪，雷克萨斯',
-        attention: false
-      }, {
-        head: 'http://img3.duitang.com/uploads/item/201605/20/20160520161456_y5AHJ.jpeg',
-        name: '@恋东999',
-        address: '北京',
-        carType: '奥迪，雷克萨斯',
-        attention: true
+  methods: {
+    addAttention (dataItem) {
+      this.$loading('加关注中...')
+      this.$comfun.http_get(this, this.$moment.urls.attention + '?id=' + this.$moment.wxUserInfo.accountId + '&accountId=' + dataItem.userId).then((response) => {
+        if (response.body.code === '0000' && response.body.success === true) {
+          this.$toast('关注用户成功')
+          dataItem.attention = !dataItem.attention
+        } else {
+          this.$toast('关注用户失败')
+        }
+      })
+    }
+  },
+  activated () {
+    this.$loading('数据加载中...')
+    this.$comfun.http_get(this, this.$moment.urls.interested + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
+      if (response.body.code === '0000' && response.body.success === true) {
+        this.dataList = []
+        for (let a = 0; a < response.body.data.dataList.length; a++) {
+          this.dataList.push({
+            userId: response.body.data.dataList[a].accountId,
+            head: response.body.data.dataList[a].headimg,
+            name: response.body.data.dataList[a].nickName,
+            address: response.body.data.dataList[a].city,
+            carType: response.body.data.dataList[a].carList,
+            attention: response.body.data.dataList[a].isfriend
+          })
+        }
+      } else {
+        this.$toast('数据获取失败')
       }
-    ]
+    })
   }
 }
 </script>
@@ -174,5 +190,6 @@ export default {
   text-align: center;
   color: rgba(255, 255, 255, .4);
   margin-top: 1.4rem;
+  margin-bottom: 1.6rem;
 }
 </style>

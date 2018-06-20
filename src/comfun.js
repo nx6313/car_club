@@ -194,15 +194,17 @@ export default {
           if (msg.type === 'timeupdate' && timeupdateFn && typeof timeupdateFn === 'function' && Object.prototype.toString.call(timeupdateFn).toLowerCase() === '[object function]') {
             timeupdateFn()
           }
-          if (context.$comfun.isAndroidIos().isMobile) {
-            context.$comfun.console(context, '播放视频进度监听', {
-              // src: msg.src,
-              timestamp: msg.timestamp,
-              ts: msg.ts,
-              type: msg.type
-            })
-          } else {
-            console.log(msg)
+          if (context.$moment.wxIsDebug) {
+            if (context.$comfun.isAndroidIos().isMobile) {
+              context.$comfun.console(context, '播放视频进度监听', {
+                // src: msg.src,
+                timestamp: msg.timestamp,
+                ts: msg.ts,
+                type: msg.type
+              })
+            } else {
+              console.log(msg)
+            }
           }
         }
         return player
@@ -321,7 +323,7 @@ export default {
         }
       },
       // 将localStorage中保存的微信相关信息保存到本地
-      getWxUserInfoDataToLocal: function (context, jsApiList) {
+      getWxUserInfoDataToLocal: function (context) {
         var wxUserInfoData = window.localStorage.getItem('wx-user-info')
         if (context.$comfun.isNotNull(wxUserInfoData)) {
           var wxUserInfoDataJson = JSON.parse(wxUserInfoData)
@@ -346,12 +348,12 @@ export default {
         }
       },
       // 微信网页授权oauth2，scope：snsapi_base、snsapi_userinfo
-      wx_oauth2: function (context, scope, jsApiList) {
+      wx_oauth2: function (context, scope) {
         // 显示日志面板
         if (context.$moment.wxIsDebug) {
           context.$consolePopWindow(context)
         }
-        context.$comfun.getWxUserInfoDataToLocal(context, jsApiList)
+        context.$comfun.getWxUserInfoDataToLocal(context)
         if (!context.$comfun.isNotNull(context.$moment.wxUserInfo.openid) || !context.$comfun.isNotNull(context.$moment.wxUserInfo.accountId)) {
           var urlParams = context.$comfun.getRequest()
           if (!context.$comfun.isNotNull(urlParams.code)) {
@@ -373,7 +375,7 @@ export default {
               context.$moment.wxUserInfo.address = context.$comfun.isNotNull(response.body.data.city) ? response.body.data.city : ''
               context.$moment.wxUserInfo.intro = context.$comfun.isNotNull(response.body.data.signature) ? response.body.data.signature : ''
               window.localStorage.setItem('wx-user-info', JSON.stringify(context.$moment.wxUserInfo))
-              context.$comfun.wx_page_signature(context, jsApiList)
+              context.$comfun.wx_page_signature(context)
             } else {
               context.$toast('初始化账号信息失败')
             }
@@ -414,7 +416,7 @@ export default {
         return accessTokenPromise
       },
       // 微信获取页面签名信息
-      wx_page_signature: function (context, jsApiList) {
+      wx_page_signature: function (context) {
         var wxPageSignaturePromise = new Promise((resolve, reject) => {
           if (context.$comfun.isNotNull(context.$moment.wxUserInfo.openid)) {
             context.$loading('初始化签名中...')
@@ -441,7 +443,7 @@ export default {
                   timestamp: response.body.data.timestamp,
                   nonceStr: response.body.data.nonceStr,
                   signature: response.body.data.signature,
-                  jsApiList: jsApiList
+                  jsApiList: context.$moment.jsApiList
                 })
               } else {
                 context.$toast('获取签名信息失败')

@@ -10,7 +10,7 @@
         <div v-html="item.content"></div>
         <div>{{item.time}}</div>
       </div>
-      <span class="about-production" v-if="item.production.img || item.production.cover" :style="(item.production.img || item.production.cover) ? { 'background-image': 'url(' + (item.production.img || item.production.cover) + ')' } : ''"></span>
+      <span :class="['about-production', item.newType === '3' ? 'about-production-is-video' : '']" v-if="item.production.img || item.production.cover" :style="(item.production.img || item.production.cover) ? { 'background-image': 'url(' + (item.production.img || item.production.cover) + ')' } : ''"></span>
     </div>
     <span class="no-more-data">暂时没有更多了</span>
   </div>
@@ -36,6 +36,7 @@ export default {
             newContent: response.body.data.dataList[a].newContent,
             content: response.body.data.dataList[a].content,
             time: this.$comfun.formatDate(new Date(response.body.data.dataList[a].createTime), 'M-d'),
+            newType: response.body.data.dataList[a].newtype,
             production: {
               img: response.body.data.dataList[a].newtype === '2' ? response.body.data.dataList[a].newFace : '',
               cover: response.body.data.dataList[a].newtype === '3' ? response.body.data.dataList[a].newFace : '',
@@ -120,7 +121,7 @@ export default {
   background-size: 100% auto;
 }
 
-.list-item>span.about-production::after {
+.list-item>span.about-production-is-video::after {
   content: '';
   position: absolute;
   display: inline-block;
@@ -140,5 +141,6 @@ export default {
   text-align: center;
   color: rgba(255, 255, 255, .4);
   margin-top: 1.4rem;
+  margin-bottom: 1.6rem;
 }
 </style>

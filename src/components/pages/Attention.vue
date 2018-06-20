@@ -1,10 +1,11 @@
 <template>
-  <div @touchmove="touchMove">
+  <div ref="att-data-wrap" @touchmove="touchMove" @touchend="touchEnd">
     <comm-note v-if="noteList.length > 0" v-for="note in noteList" :key="note.id" :note="note" @to-comment="toComment"></comm-note>
+    <div class="data-loading" ref="data-loading">数据加载中</div>
     <div class="data-empty" v-if="noteList.length == 0"></div>
     <div id="face-wrap" ref="face-wrap" class="touchIgnore"></div>
     <div class="comment-wrap touchIgnore close" ref="comment_wrap">
-      <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入评论内容</div>
+      <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable="true">请输入评论内容</div>
       <span class="touchIgnore" @click.passive="selectFace"></span>
       <span class="comment-send-btn ripple touchIgnore" @click="commentSend">评论</span>
     </div>
@@ -21,12 +22,16 @@ export default {
   },
   data () {
     return {
+      pageLimit: 10,
+      currentPageIndex: 1,
+      isNextLoading: false,
       commentContentInput: '',
       commentContentInputHtml: '',
       noteList: [],
       commentAttentionIndex: -1,
       commentAttentionId: null,
-      commentAttentionAboutAccountId: null
+      commentAttentionAboutAccountId: null,
+      curHasAttIds: []
     }
   },
   methods: {
@@ -68,6 +73,19 @@ export default {
           this.commentAttentionAboutAccountId = null
           this.commentAttentionIndex = -1
         })
+      }
+    },
+    touchEnd () {
+      var attDataWrap = this.$refs['att-data-wrap']
+      if (attDataWrap.scrollTop > attDataWrap.scrollHeight - attDataWrap.clientHeight - 30) {
+        if (!this.isNextLoading && this.noteList.length > 0) {
+          var pageReal = Math.ceil(this.noteList.length / this.pageLimit)
+          if (this.noteList.length % this.pageLimit === 0) {
+            pageReal += 1
+          }
+          this.currentPageIndex = pageReal
+          this.getAttDataByPage(this.currentPageIndex)
+        }
       }
     },
     commentSend () {
@@ -170,79 +188,219 @@ export default {
           }, 100)
         }
       }
+    },
+    getAttDataByPage (page) {
+      var attDataByPagePromise = new Promise((resolve, reject) => {
+        this.isNextLoading = true
+        var dataLoading = this.$refs['data-loading']
+        dataLoading.style.transform = 'translateY(0)'
+        this.$comfun.http_post(this, this.$moment.urls.get_new_info + `?page=${page}&limit=${this.pageLimit}`, {
+          accountId: this.$moment.wxUserInfo.accountId
+        }).then((response) => {
+          this.isNextLoading = false
+          setTimeout(() => {
+            dataLoading.style.transform = 'translateY(100%)'
+          }, 300)
+          if (response.body.code === '0000' && response.body.success === true) {
+            if (response.body.data.dataList && response.body.data.dataList.length > 0) {
+              let curNoteDataList = [].concat(this.noteList)
+              let newDataNoRepeatDataList = []
+              if (!(page === 1 && curNoteDataList.length > 0)) {
+                for (let r = 0; r < response.body.data.dataList.length; r++) {
+                  if (this.curHasAttIds.indexOf(response.body.data.dataList[r].id) < 0) {
+                    this.curHasAttIds.push(response.body.data.dataList[r].id)
+                    newDataNoRepeatDataList.push(response.body.data.dataList[r])
+                  }
+                }
+              } else {
+                for (let r = response.body.data.dataList.length - 1; r >= 0; r--) {
+                  if (this.curHasAttIds.indexOf(response.body.data.dataList[r].id) < 0) {
+                    this.curHasAttIds.push(response.body.data.dataList[r].id)
+                    newDataNoRepeatDataList.push(response.body.data.dataList[r])
+                  }
+                }
+              }
+              if (newDataNoRepeatDataList.length > 0) {
+                this.$toptip(`获取到${newDataNoRepeatDataList.length}条新动态`)
+                for (let d = 0; d < newDataNoRepeatDataList.length; d++) {
+                  let attentionData = newDataNoRepeatDataList[d]
+                  let imgsOrVideos = []
+                  if (attentionData.fileList && attentionData.fileList.length > 0) {
+                    for (let f = 0; f < attentionData.fileList.length; f++) {
+                      if (String(attentionData.fileList[f].type) === '0') { // 图片资源
+                        imgsOrVideos.push({
+                          id: attentionData.fileList[f].id,
+                          img: attentionData.fileList[f].fileAddress
+                        })
+                      } else if (String(attentionData.fileList[f].type) === '1') { // 视频资源
+                        imgsOrVideos.push({
+                          id: attentionData.fileList[f].id,
+                          video: attentionData.fileList[f].face,
+                          resouce: attentionData.fileList[f].fileAddress,
+                          width: Number(attentionData.fileList[f].width),
+                          height: Number(attentionData.fileList[f].height)
+                        })
+                      }
+                    }
+                  }
+                  let ifLike = false
+                  let likeMans = []
+                  if (attentionData.praiseList && attentionData.praiseList.length > 0) {
+                    for (let p = 0; p < attentionData.praiseList.length; p++) {
+                      if (attentionData.praiseList[p].accountId === this.$moment.wxUserInfo.accountId) {
+                        ifLike = true
+                      }
+                      likeMans.push({
+                        accountId: attentionData.praiseList[p].accountId,
+                        time: attentionData.praiseList[p].createTime,
+                        userHeadimg: attentionData.praiseList[p].userHeadimg,
+                        username: attentionData.praiseList[p].username
+                      })
+                    }
+                  }
+                  let comments = []
+                  if (attentionData.commentList && attentionData.commentList.length > 0) {
+                    for (let c = 0; c < attentionData.commentList.length; c++) {
+                      comments.push(attentionData.commentList[c].fromUsername + '：' + attentionData.commentList[c].content)
+                    }
+                  }
+                  if (!(page === 1 && curNoteDataList.length > 0)) {
+                    this.noteList.push({
+                      id: attentionData.id,
+                      accountId: attentionData.accountId,
+                      uttererHead: attentionData.userHeadimg,
+                      uttererNickName: attentionData.username,
+                      uttererTime: attentionData.creationDate,
+                      uttererContent: attentionData.content,
+                      imgsOrVideos: imgsOrVideos,
+                      ifLike: ifLike,
+                      likeMans: likeMans,
+                      comments: comments
+                    })
+                  } else {
+                    this.noteList.unshift({
+                      id: attentionData.id,
+                      accountId: attentionData.accountId,
+                      uttererHead: attentionData.userHeadimg,
+                      uttererNickName: attentionData.username,
+                      uttererTime: attentionData.creationDate,
+                      uttererContent: attentionData.content,
+                      imgsOrVideos: imgsOrVideos,
+                      ifLike: ifLike,
+                      likeMans: likeMans,
+                      comments: comments
+                    })
+                  }
+                }
+                this.$moment.attention_page_data_list = this.noteList
+                if (!(page === 1 && this.noteList.length > 0)) {
+                  this.getAttDataFirst()
+                }
+                resolve(null)
+              } else {
+                this.getAttDataFirst()
+                let contentWrapElem = document.getElementById('content-wrap')
+                contentWrapElem.scrollTop = this.$moment.attention_page_scroll_top
+                resolve(null)
+              }
+            } else {
+              this.getAttDataFirst()
+              let contentWrapElem = document.getElementById('content-wrap')
+              contentWrapElem.scrollTop = this.$moment.attention_page_scroll_top
+              resolve(null)
+            }
+          } else {
+            resolve(null)
+          }
+        }, (response) => {
+          this.isNextLoading = false
+          setTimeout(() => {
+            dataLoading.style.transform = 'translateY(100%)'
+          }, 300)
+          reject(response)
+        })
+      })
+      return attDataByPagePromise
+    },
+    getAttDataFirst () {
+      this.$comfun.http_post(this, this.$moment.urls.get_new_info + `?page=1&limit=${this.pageLimit}`, {
+        accountId: this.$moment.wxUserInfo.accountId
+      }).then((response) => {
+        if (response.body.code === '0000' && response.body.success === true) {
+          if (response.body.data.dataList && response.body.data.dataList.length > 0) {
+            let afterNewDataNoRepeatDataList = []
+            for (let r = response.body.data.dataList.length - 1; r >= 0; r--) {
+              if (this.curHasAttIds.indexOf(response.body.data.dataList[r].id) < 0) {
+                this.curHasAttIds.push(response.body.data.dataList[r].id)
+                afterNewDataNoRepeatDataList.push(response.body.data.dataList[r])
+              }
+            }
+            if (afterNewDataNoRepeatDataList.length > 0) {
+              this.$toptip(`获取到${afterNewDataNoRepeatDataList.length}条新动态`)
+              for (let d = 0; d < afterNewDataNoRepeatDataList.length; d++) {
+                let attentionData = afterNewDataNoRepeatDataList[d]
+                let imgsOrVideos = []
+                if (attentionData.fileList && attentionData.fileList.length > 0) {
+                  for (let f = 0; f < attentionData.fileList.length; f++) {
+                    if (String(attentionData.fileList[f].type) === '0') { // 图片资源
+                      imgsOrVideos.push({
+                        id: attentionData.fileList[f].id,
+                        img: attentionData.fileList[f].fileAddress
+                      })
+                    } else if (String(attentionData.fileList[f].type) === '1') { // 视频资源
+                      imgsOrVideos.push({
+                        id: attentionData.fileList[f].id,
+                        video: attentionData.fileList[f].face,
+                        resouce: attentionData.fileList[f].fileAddress,
+                        width: Number(attentionData.fileList[f].width),
+                        height: Number(attentionData.fileList[f].height)
+                      })
+                    }
+                  }
+                }
+                let ifLike = false
+                let likeMans = []
+                if (attentionData.praiseList && attentionData.praiseList.length > 0) {
+                  for (let p = 0; p < attentionData.praiseList.length; p++) {
+                    if (attentionData.praiseList[p].accountId === this.$moment.wxUserInfo.accountId) {
+                      ifLike = true
+                    }
+                    likeMans.push({
+                      accountId: attentionData.praiseList[p].accountId,
+                      time: attentionData.praiseList[p].createTime,
+                      userHeadimg: attentionData.praiseList[p].userHeadimg,
+                      username: attentionData.praiseList[p].username
+                    })
+                  }
+                }
+                let comments = []
+                if (attentionData.commentList && attentionData.commentList.length > 0) {
+                  for (let c = 0; c < attentionData.commentList.length; c++) {
+                    comments.push(attentionData.commentList[c].fromUsername + '：' + attentionData.commentList[c].content)
+                  }
+                }
+                this.noteList.unshift({
+                  id: attentionData.id,
+                  accountId: attentionData.accountId,
+                  uttererHead: attentionData.userHeadimg,
+                  uttererNickName: attentionData.username,
+                  uttererTime: attentionData.creationDate,
+                  uttererContent: attentionData.content,
+                  imgsOrVideos: imgsOrVideos,
+                  ifLike: ifLike,
+                  likeMans: likeMans,
+                  comments: comments
+                })
+              }
+            }
+          }
+        }
+      })
     }
   },
   activated () {
     this.noteList = this.$moment.attention_page_data_list
-    this.$comfun.http_post(this, this.$moment.urls.get_new_info, {
-      accountId: this.$moment.wxUserInfo.accountId
-    }).then((response) => {
-      if (response.body.code === '0000' && response.body.success === true) {
-        if (response.body.data.dataList.length > 0 && (this.$moment.attention_page_data_list.length === 0 || this.$moment.attention_page_data_list.length !== response.body.data.dataList.length)) {
-          this.$toptip(`更新了${Math.abs(response.body.data.dataList.length - this.$moment.attention_page_data_list.length)}条新动态`)
-          this.noteList = []
-          for (let d = 0; d < response.body.data.dataList.length; d++) {
-            let attentionData = response.body.data.dataList[d]
-            let imgsOrVideos = []
-            if (attentionData.fileList && attentionData.fileList.length > 0) {
-              for (let f = 0; f < attentionData.fileList.length; f++) {
-                if (String(attentionData.fileList[f].type) === '0') { // 图片资源
-                  imgsOrVideos.push({
-                    id: attentionData.fileList[f].id,
-                    img: attentionData.fileList[f].fileAddress
-                  })
-                } else if (String(attentionData.fileList[f].type) === '1') { // 视频资源
-                  imgsOrVideos.push({
-                    id: attentionData.fileList[f].id,
-                    video: attentionData.fileList[f].face,
-                    resouce: attentionData.fileList[f].fileAddress,
-                    width: Number(attentionData.fileList[f].width),
-                    height: Number(attentionData.fileList[f].height)
-                  })
-                }
-              }
-            }
-            let ifLike = false
-            let likeMans = []
-            if (attentionData.praiseList && attentionData.praiseList.length > 0) {
-              for (let p = 0; p < attentionData.praiseList.length; p++) {
-                if (attentionData.praiseList[p].accountId === this.$moment.wxUserInfo.accountId) {
-                  ifLike = true
-                }
-                likeMans.push({
-                  accountId: attentionData.praiseList[p].accountId,
-                  time: attentionData.praiseList[p].createTime,
-                  userHeadimg: attentionData.praiseList[p].userHeadimg,
-                  username: attentionData.praiseList[p].username
-                })
-              }
-            }
-            let comments = []
-            if (attentionData.commentList && attentionData.commentList.length > 0) {
-              for (let c = 0; c < attentionData.commentList.length; c++) {
-                comments.push(attentionData.commentList[c].fromUsername + '：' + attentionData.commentList[c].content)
-              }
-            }
-            this.noteList.push({
-              id: attentionData.id,
-              accountId: attentionData.accountId,
-              uttererHead: attentionData.userHeadimg,
-              uttererNickName: attentionData.username,
-              uttererTime: attentionData.creationDate,
-              uttererContent: attentionData.content,
-              imgsOrVideos: imgsOrVideos,
-              ifLike: ifLike,
-              likeMans: likeMans,
-              comments: comments
-            })
-          }
-          this.$moment.attention_page_data_list = this.noteList
-        } else {
-          var contentWrapElem = document.getElementById('content-wrap')
-          contentWrapElem.scrollTop = this.$moment.attention_page_scroll_top
-        }
-      }
-    })
+    this.getAttDataByPage(this.currentPageIndex)
   },
   deactivated () {
     var contentWrapElem = document.getElementById('content-wrap')
@@ -358,5 +516,20 @@ export default {
   left: 0;
   background: #443763;
   font-size: 0;
+}
+
+.data-loading {
+  position: fixed;
+  left: 0;
+  bottom: 3.2rem;
+  width: 100%;
+  padding: 0.5rem 0;
+  font-size: 0.6rem;
+  text-align: center;
+  background: #2c294e;
+  color: rgb(213, 223, 245);
+  transition: all 0.3s ease 0s;
+  transform: translateY(100%);
+  z-index: 1;
 }
 </style>

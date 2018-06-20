@@ -27,7 +27,7 @@ export default {
   methods: {
     addAttention (dataItem) {
       this.$loading('加关注中...')
-      this.$comfun.http_get(this, this.$moment.urls.attention + '?id=' + this.$moment.wxUserInfo.accountId + '&accountId=' + this.currentVideoInfo.userId).then((response) => {
+      this.$comfun.http_get(this, this.$moment.urls.attention + '?id=' + this.$moment.wxUserInfo.accountId + '&accountId=' + dataItem.userId).then((response) => {
         if (response.body.code === '0000' && response.body.success === true) {
           this.$toast('关注用户成功')
           dataItem.attention = !dataItem.attention
@@ -44,6 +44,7 @@ export default {
         this.dataList = []
         for (let f = 0; f < response.body.data.length; f++) {
           this.dataList.push({
+            userId: response.body.data[f].accountId,
             head: response.body.data[f].headimg,
             name: response.body.data[f].nickName,
             time: this.$comfun.formatDate(new Date(response.body.data[f].creationDate), 'M-d'),
@@ -138,5 +139,6 @@ export default {
   text-align: center;
   color: rgba(255, 255, 255, .4);
   margin-top: 1.4rem;
+  margin-bottom: 1.6rem;
 }
 </style>

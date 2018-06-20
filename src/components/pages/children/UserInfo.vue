@@ -35,8 +35,8 @@
       </div>
     </div>
     <div class="video-tabs flex-r flex-b" ref="video-tabs">
-      <span class="tab-item selected" v-on:click="toPage('child-video', $event.target)">视频 {{videoInfo.videoCount}}</span>
-      <span class="tab-item" v-on:click="toPage('child-state', $event.target)">动态 {{videoInfo.stateCount}}</span>
+      <span class="tab-item selected" v-on:click="toPage('userinfo-child-video', $event.target)">视频 {{videoInfo.videoCount}}</span>
+      <span class="tab-item" v-on:click="toPage('userinfo-child-state', $event.target)">动态 {{videoInfo.stateCount}}</span>
     </div>
     <transition name="fade" mode="out-in">
       <keep-alive>
@@ -95,7 +95,8 @@ export default {
       this.$router.replace({
         name: pageTo,
         params: {
-          lookUserId: this.lookUserId
+          lookUserId: this.lookUserId,
+          isChild: true
         }
       })
       var tabs = this.$refs['video-tabs'].getElementsByTagName('span')
@@ -136,7 +137,9 @@ export default {
       this.hasAttention = this.$route.params.hasAttention
     }
 
-    this.toPage('child-video', this.$refs['video-tabs'].getElementsByClassName('selected')[0])
+    setTimeout(() => {
+      this.toPage('userinfo-child-video', this.$refs['video-tabs'].getElementsByClassName('selected')[0])
+    }, 10)
 
     var currentRouterPath = this.$router.currentRoute.path
     var tabElems = this.$refs['video-tabs'].getElementsByClassName('tab-item')

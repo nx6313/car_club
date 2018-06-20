@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="action-wrap">
-      <div id="edit" ref="edit" class="placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入发布内容</div>
+      <div id="edit" ref="edit" class="placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable="true">请输入发布内容</div>
       <div class="word-count">
         <span>{{issueContentInput.length}}</span>
         <span>/</span>

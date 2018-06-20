@@ -18,7 +18,7 @@
     </transition-group>
     <div id="face-wrap" ref="face-wrap" class="touchIgnore"></div>
     <div class="chat-input-wrap touchIgnore">
-      <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable=“true”>请输入消息内容</div>
+      <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable="true">请输入消息内容</div>
       <span class="touchIgnore" @click="selectFace"></span>
       <span class="chat-add-btn touchIgnore" style="display: block;" ref="chat-add-btn"></span>
       <span class="chat-send-btn ripple touchIgnore" style="display: none;" ref="chat-send-btn" @click="chatSend($event)">发送</span>
