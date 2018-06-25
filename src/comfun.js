@@ -311,6 +311,41 @@ export default {
         }
         return theRequest
       },
+      // 初始化webSocket
+      webSocket: function (context, webSocketUrl, userId) {
+        context.$moment.ws = new WebSocket(webSocketUrl)
+        context.$moment.ws.onopen = () => {
+          context.$comfun.console(context, 'webSocket 开启，开始登陆')
+          var socketLoginUserId = context.$moment.wxUserInfo.accountId || userId
+          context.$comfun.webSend(context, {
+            wsOpCode: context.$moment.wsCHatCode.LOGIN_CHAT_SERVER_C,
+            token: socketLoginUserId
+          })
+        }
+        context.$moment.ws.onmessage = (evt) => {
+          context.$comfun.console(context, 'webSocket 接收到数据', JSON.stringify(evt))
+          if (evt && evt.data) {
+            var receiveData = JSON.parse(evt.data)
+            context.$root.eventHub.$emit('ws-get-msg', receiveData)
+          }
+        }
+        context.$moment.ws.onclose = (evt) => {
+          context.$comfun.console(context, 'webSocket 已关闭', JSON.stringify(evt))
+        }
+        context.$moment.ws.onerror = (evt) => {
+          context.$comfun.console(context, 'webSocket 出错', JSON.stringify(evt))
+        }
+      },
+      // webSocket发送聊天信息
+      webSend (context, data) {
+        if (context.$moment.ws !== null) {
+          context.$comfun.console(context, 'webSocket 准备发送数据', data)
+          var blob = new Blob([JSON.stringify(data)])
+          context.$moment.ws.send(blob)
+        } else {
+          context.$comfun.console(context, 'webSocket 对象为 null')
+        }
+      },
       // 更新localstorge中的用户信息
       updateUserInfo: function (context, updateUserInfo) {
         if (updateUserInfo) {
@@ -348,7 +383,7 @@ export default {
         }
       },
       // 微信网页授权oauth2，scope：snsapi_base、snsapi_userinfo
-      wx_oauth2: function (context, scope) {
+      wx_oauth2: function (context, scope, callback) {
         // 显示日志面板
         if (context.$moment.wxIsDebug) {
           context.$consolePopWindow(context)
@@ -375,6 +410,9 @@ export default {
               context.$moment.wxUserInfo.address = context.$comfun.isNotNull(response.body.data.city) ? response.body.data.city : ''
               context.$moment.wxUserInfo.intro = context.$comfun.isNotNull(response.body.data.signature) ? response.body.data.signature : ''
               window.localStorage.setItem('wx-user-info', JSON.stringify(context.$moment.wxUserInfo))
+              if (callback !== undefined && typeof callback === 'function') {
+                callback()
+              }
               context.$comfun.wx_page_signature(context)
             } else {
               context.$toast('初始化账号信息失败')

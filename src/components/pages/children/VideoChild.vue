@@ -27,10 +27,8 @@ export default {
   activated () {
     this.videoDataList = []
     this.currentPageIndex = 1
-    this.lookUserId = this.$route.params.lookUserId
-    if (this.$route.params.isChild) {
-      this.isChild = this.$route.params.isChild
-    }
+    this.lookUserId = this.$moment.lookUserInfo.userId !== undefined ? this.$moment.lookUserInfo.userId : this.$moment.wxUserInfo.accountId
+    this.isChild = this.$moment.lookUserInfo.isChild !== undefined ? this.$moment.lookUserInfo.isChild : false
 
     if (this.lookUserId && this.videoDataList.length === 0) {
       this.getVideoByPage(this.currentPageIndex, [ '3' ]).then((issData) => {

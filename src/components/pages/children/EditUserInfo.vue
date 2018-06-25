@@ -164,6 +164,13 @@ export default {
       }).then((response) => {
         if (response.body && response.body.code === '0000' && response.body.success === true) {
           this.$toast('保存资料成功')
+          this.$moment.wxUserInfo.headimgurl = this.userInfo.headImg
+          this.$moment.wxUserInfo.nickname = this.userInfo.nikeName
+          this.$moment.wxUserInfo.sex = this.userInfo.sexVal
+          this.$moment.wxUserInfo.constellation = this.userInfo.constellation
+          this.$moment.wxUserInfo.carType = this.userInfo.carType
+          this.$moment.wxUserInfo.intro = this.userInfo.intro
+          this.$moment.wxUserInfo.address = this.userInfo.address.trim()
         } else {
           this.$toast('保存资料失败')
         }

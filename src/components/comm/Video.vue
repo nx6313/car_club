@@ -567,13 +567,12 @@ export default {
       }, 10)
     },
     doAtt (video) {
-      this.$router.push({
-        name: 'user-info',
-        params: {
-          userId: video.userId,
-          hasAttention: video.hasAttention
-        }
-      })
+      this.$moment.lookUserInfo = {
+        userId: video.userId,
+        hasAttention: video.hasAttention,
+        isChild: true
+      }
+      this.$router.push('/user-info')
     },
     support (video) {
       if (!video.ifSupport) {
@@ -681,6 +680,7 @@ export default {
   },
   activated () {
     this.updateAttState()
+    this.$moment.lookUserInfo = {}
   }
 }
 </script>

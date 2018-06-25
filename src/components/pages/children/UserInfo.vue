@@ -93,11 +93,7 @@ export default {
     },
     toPage: function (pageTo, selectElem) {
       this.$router.replace({
-        name: pageTo,
-        params: {
-          lookUserId: this.lookUserId,
-          isChild: true
-        }
+        name: pageTo
       })
       var tabs = this.$refs['video-tabs'].getElementsByTagName('span')
       for (var t = 0; t < tabs.length; t++) {
@@ -130,18 +126,16 @@ export default {
     }
   },
   activated () {
-    if (this.$route.params.userId) {
-      this.lookUserId = this.$route.params.userId
-    }
-    if (this.$route.params.hasAttention) {
-      this.hasAttention = this.$route.params.hasAttention
-    }
-
-    setTimeout(() => {
-      this.toPage('userinfo-child-video', this.$refs['video-tabs'].getElementsByClassName('selected')[0])
-    }, 10)
+    this.lookUserId = this.$moment.lookUserInfo.userId
+    this.hasAttention = this.$moment.lookUserInfo.hasAttention
 
     var currentRouterPath = this.$router.currentRoute.path
+    // if (currentRouterPath === '/user-info' || currentRouterPath === '/user-info/') {
+    //   setTimeout(() => {
+    //     this.toPage('userinfo-child-video', this.$refs['video-tabs'].getElementsByClassName('selected')[0])
+    //   }, 10)
+    // }
+
     var tabElems = this.$refs['video-tabs'].getElementsByClassName('tab-item')
     for (var t = 0; t < tabElems.length; t++) {
       tabElems[t].classList.remove('selected')

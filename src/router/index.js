@@ -99,7 +99,7 @@ var router = new Router({
       component: Me,
       children: [
         {
-          path: 'child-video',
+          path: '',
           name: 'me-child-video',
           component: VideoChild
         }, {
@@ -111,11 +111,10 @@ var router = new Router({
     },
     {
       path: '/user-info',
-      name: 'user-info',
       component: UserInfo,
       children: [
         {
-          path: 'child-video',
+          path: '',
           name: 'userinfo-child-video',
           component: VideoChild
         }, {

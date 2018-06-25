@@ -11,12 +11,13 @@
           </div>
           <div>
             <span></span>
-            <span>{{item.carType}}</span>
+            <span v-if="item.carType">{{item.carType}}</span>
+            <span v-if="!item.carType">未填写</span>
           </div>
         </div>
       </div>
-      <span class="attention-state ripple" v-if="!item.attention" @click="addAttention(item)">+关注</span>
-      <span class="attention-state ripple has-attention" v-if="item.attention">已关注</span>
+      <span class="attention-state ripple" v-if="!item.isfans" @click="addAttention(item)">+关注</span>
+      <span class="attention-state ripple has-attention" v-if="item.isfans">+关注，对方也关注</span>
     </div>
     <span class="no-more-data">暂时没有更多了</span>
   </div>
@@ -55,7 +56,7 @@ export default {
             name: response.body.data.dataList[a].nickName,
             address: response.body.data.dataList[a].city,
             carType: response.body.data.dataList[a].carList,
-            attention: response.body.data.dataList[a].isfriend
+            isfans: response.body.data.dataList[a].isfans
           })
         }
       } else {

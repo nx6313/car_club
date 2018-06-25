@@ -20,7 +20,7 @@
     <div class="chat-input-wrap touchIgnore">
       <div id="edit" ref="edit" class="touchIgnore placeholder" @focus="focusInput" @blur="blurInput" @input="contentInput" contenteditable="true">请输入消息内容</div>
       <span class="touchIgnore" @click="selectFace"></span>
-      <span class="chat-add-btn touchIgnore" style="display: block;" ref="chat-add-btn"></span>
+      <span class="chat-add-btn touchIgnore" style="display: block;" ref="chat-add-btn" @click="chatSendImg($event)"></span>
       <span class="chat-send-btn ripple touchIgnore" style="display: none;" ref="chat-send-btn" @click="chatSend($event)">发送</span>
     </div>
   </div>
@@ -31,7 +31,7 @@ export default {
   name: 'message-chat',
   data () {
     return {
-      friendResiveTimer: null,
+      chatFriendInfo: null,
       chatContentListTrsName: 'me-chat',
       chatContentInput: '',
       chatContentInputHtml: '',
@@ -39,11 +39,32 @@ export default {
     }
   },
   activated () {
+    this.$comfun.http_get(this, this.$moment.urls.get_user_info_by_id + '?id=' + this.$route.params.chatid).then((response) => {
+      if (response.body.code === '0000' && response.body.success === true) {
+        this.chatFriendInfo = {
+          userId: this.$route.params.accountId,
+          nickName: this.$route.params.nickName,
+          headimgurl: response.body.data.headimg,
+          birthday: response.body.data.birthday,
+          carType: response.body.data.carType,
+          constellation: response.body.data.constellation,
+          phoneNum: response.body.data.phoneNum,
+          address: response.body.data.address,
+          intro: response.body.data.signature
+        }
+      } else {
+        this.$toast('初始化聊天对象信息失败')
+      }
+    })
     this.chatList = this.$moment.message_chat_content[this.$route.params.chatid] || []
     this.scrollTobottom()
+    this.$root.eventHub.$on('ws-get-msg', (receiveMsg) => {
+      if (receiveMsg.wsOpCode === this.$moment.wsCHatCode.USER_MESSAGE_S) {
+        this.friendResive(receiveMsg.message[0].chatContent, receiveMsg.message[0].chatCreateTime)
+      }
+    })
   },
   deactivated () {
-    clearTimeout(this.friendResiveTimer)
     this.chatList = []
   },
   methods: {
@@ -92,33 +113,37 @@ export default {
         this.$refs['chat-content-wrap'].$el.scrollTop = currentpos
       }, 100)
     },
-    friendResive () {
-      this.friendResiveTimer = setTimeout(() => {
-        this.chatContentListTrsName = 'friend-chat'
-        var newResiveData = {
-          head: 'http://img01.store.sogou.com/app/a/10010016/80f52439c4ed48b974a3a756cb5b9bfe',
-          nikeName: '刘德华',
-          time: '2/18 16:23:30',
-          content: this.chatList[this.chatList.length - 1].content,
-          isMe: false,
-          isBig: this.chatList[this.chatList.length - 1].isBig
-        }
-        this.chatList.push(newResiveData)
-        this.$moment.message_chat_content[this.$route.params.chatid] = this.chatList
-        this.scrollTobottom()
-      }, 3000)
+    friendResive (msg, time, isBig) {
+      this.chatContentListTrsName = 'friend-chat'
+      var newResiveData = {
+        head: this.chatFriendInfo.headimgurl,
+        nikeName: this.chatFriendInfo.nickName,
+        time: this.$comfun.formatDate(new Date(time), 'M/d hh:mm:ss'),
+        content: msg,
+        isMe: false,
+        isBig: isBig === undefined ? false : isBig
+      }
+      this.chatList.push(newResiveData)
+      this.$moment.message_chat_content[this.$route.params.chatid] = this.chatList
+      this.scrollTobottom()
     },
     chatSend (event, chatContent, isBig) {
       var thisChatContent = chatContent || this.chatContentInputHtml.trim()
       this.chatContentListTrsName = 'me-chat'
       var newSendData = {
-        head: 'http://img01.store.sogou.com/app/a/10010016/80f52439c4ed48b974a3a756cb5b9bfe',
-        nikeName: '刘德华',
-        time: '2/18 16:23:30',
+        head: this.$moment.wxUserInfo.headimgurl,
+        nikeName: this.$moment.wxUserInfo.nickname,
+        time: this.$comfun.formatDate(new Date(), 'M/d hh:mm:ss'),
         content: thisChatContent,
         isMe: true,
         isBig: isBig === undefined ? false : isBig
       }
+      this.$comfun.webSend(this, {
+        wsOpCode: this.$moment.wsCHatCode.SEND_MESSAGE_C,
+        chatContent: thisChatContent,
+        toType: 1,
+        toTypeId: this.$route.params.chatid
+      })
       this.chatList.push(newSendData)
       this.$moment.message_chat_content[this.$route.params.chatid] = this.chatList
       this.scrollTobottom()
@@ -131,7 +156,27 @@ export default {
         this.$refs.edit.innerHTML = '请输入消息内容'
       }
       this.$face_close()
-      this.friendResive()
+    },
+    chatSendImg (event) {
+      this.$face_close()
+      this.$comfun.wxChooseImage(this, 1).then((data) => {
+        var localIds = data.localIds
+        if (localIds && localIds.length > 0) {
+          for (var l = 0; l < localIds.length; l++) {
+            let uploadImgLocalId = localIds[l]
+            this.$comfun.wxUploadImage(this, uploadImgLocalId).then((data) => {
+              var serverId = data.serverId
+              this.$comfun.saveWxImg(this, serverId).then((response) => {
+                if (response.body.code === '0000' && response.body.success === true) {
+                  this.chatSend(event, `<img src="${uploadImgLocalId}" style="width: 7rem; height: 8rem;">`, true)
+                } else {
+                  this.$toast('图片保存至服务器失败')
+                }
+              })
+            })
+          }
+        }
+      })
     },
     selectFace () {
       this.$face(this, {

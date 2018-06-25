@@ -1,7 +1,6 @@
 <template>
   <div id="app">
-    <div id="log-pointer-handle" v-show="showLogPointerFlag" @touchstart="holdToShowLog(true)" @touchend="holdToShowLog(false)"></div>
-    <div id="log-pointer-time-show-handle" v-show="showLogTimeFlag">{{holdLogTime}}</div>
+    <div id="log-pointer-handle" v-show="showLogPointerFlag" @click="holdToShowLog"></div>
     <div id="log-pointer-show-handle" @click="showLogPointer"></div>
     <transition name="fade" mode="out-in">
       <keep-alive>
@@ -22,32 +21,17 @@ export default {
   },
   data () {
     return {
-      showLogPointerFlag: false,
-      showLogTimeFlag: false,
-      holdLogTimer: null,
-      holdLogTime: 0
+      showLogPointerFlag: false
     }
   },
   beforeCreate () {
-    this.$comfun.wx_oauth2(this, 'snsapi_userinfo')
+    this.$comfun.wx_oauth2(this, 'snsapi_userinfo', () => {
+      this.$comfun.webSocket(this, 'ws://172.18.168.222:8080/AnychatServer/ws')
+    })
   },
   methods: {
-    holdToShowLog (holdFlag) {
-      if (holdFlag) {
-        clearInterval(this.holdLogTimer)
-        this.showLogTimeFlag = !this.showLogTimeFlag
-        this.holdLogTimer = setInterval(() => {
-          this.holdLogTime += 1
-        }, 1000)
-      } else {
-        this.showLogPointerFlag = !this.showLogPointerFlag
-        this.showLogTimeFlag = !this.showLogTimeFlag
-        if (this.holdLogTime > 10) {
-          this.$consolePopWindow(this)
-        }
-        clearInterval(this.holdLogTimer)
-        this.holdLogTime = 0
-      }
+    holdToShowLog () {
+      this.$consolePopWindow(this)
     },
     showLogPointer () {
       this.showLogPointerFlag = !this.showLogPointerFlag

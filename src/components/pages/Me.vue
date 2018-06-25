@@ -91,10 +91,7 @@ export default {
     },
     toPage: function (pageTo, selectElem) {
       this.$router.replace({
-        name: pageTo,
-        params: {
-          lookUserId: this.$moment.wxUserInfo.accountId
-        }
+        name: pageTo
       })
       var tabs = this.$refs['video-tabs'].getElementsByTagName('span')
       for (var t = 0; t < tabs.length; t++) {
@@ -108,11 +105,17 @@ export default {
     }
   },
   activated () {
-    setTimeout(() => {
-      this.toPage('me-child-video', this.$refs['video-tabs'].getElementsByClassName('selected')[0])
-    }, 10)
-
+    this.$moment.lookUserInfo = {
+      userId: this.$moment.wxUserInfo.accountId,
+      isChild: false
+    }
     var currentRouterPath = this.$router.currentRoute.path
+    // if (currentRouterPath === '/me' || currentRouterPath === '/me/') {
+    //   setTimeout(() => {
+    //     this.toPage('me-child-video', this.$refs['video-tabs'].getElementsByClassName('selected')[0])
+    //   }, 10)
+    // }
+
     var tabElems = this.$refs['video-tabs'].getElementsByClassName('tab-item')
     for (var t = 0; t < tabElems.length; t++) {
       tabElems[t].classList.remove('selected')
@@ -136,7 +139,7 @@ export default {
     this.userInfo = {
       headImg: this.$moment.wxUserInfo.headimgurl,
       nickName: this.$moment.wxUserInfo.nickname,
-      sex: this.$moment.wxUserInfo.sex,
+      sex: Number(this.$moment.wxUserInfo.sex),
       address: address,
       age: null,
       constellation: this.$moment.wxUserInfo.constellation,

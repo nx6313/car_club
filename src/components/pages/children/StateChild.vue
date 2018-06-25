@@ -43,10 +43,8 @@ export default {
     this.attentionList = []
     this.stateDataList = []
     this.currentPageIndex = 1
-    this.lookUserId = this.$route.params.lookUserId
-    if (this.$route.params.isChild) {
-      this.isChild = this.$route.params.isChild
-    }
+    this.lookUserId = this.$moment.lookUserInfo.userId
+    this.isChild = this.$moment.lookUserInfo.isChild
 
     if (this.lookUserId && this.attentionList.length === 0) {
       this.getStateByPage(this.currentPageIndex, [ '1', '2' ]).then((issData) => {
