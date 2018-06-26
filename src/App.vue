@@ -26,7 +26,7 @@ export default {
   },
   beforeCreate () {
     this.$comfun.wx_oauth2(this, 'snsapi_userinfo', () => {
-      this.$comfun.webSocket(this, 'ws://172.18.168.222:8080/AnychatServer/ws')
+      this.$comfun.webSocket(this, 'ws://47.93.201.234:8080/AnychatServer/ws')
     })
   },
   methods: {

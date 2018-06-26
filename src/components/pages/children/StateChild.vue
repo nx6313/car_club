@@ -87,7 +87,7 @@ export default {
       var tempDateKeyArr = {}
       this.stateDataList = []
       for (let a = 0; a < this.attentionList.length; a++) {
-        let date = this.$comfun.formatDate(new Date(this.attentionList[a].creationDate), 'yyyy-MM-dd')
+        let date = this.$comfun.formatDate(new Date(this.attentionList[a].creationDate.replace(/-/g, '/')), 'yyyy-MM-dd')
         if (tempDateKeyArr[date] !== undefined) {
           let attenImgs = []
           if (this.attentionList[a].fileList && this.attentionList[a].fileList.length > 0) {
@@ -125,8 +125,8 @@ export default {
         }
       }
       for (let key in tempDateKeyArr) {
-        let month = this.$comfun.formatDate(new Date(key), 'M')
-        let day = this.$comfun.formatDate(new Date(key), 'dd')
+        let month = this.$comfun.formatDate(new Date(key.replace(/-/g, '/')), 'M')
+        let day = this.$comfun.formatDate(new Date(key.replace(/-/g, '/')), 'dd')
         this.stateDataList.push({
           date: day,
           month: month,

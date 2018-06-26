@@ -35,7 +35,8 @@
             </span>
             <span>
               <span v-if="friend.lastMsg !== ''">{{friend.lastMsg}}</span>
-              <span v-if="friend.lastMsg === ''">座驾：{{friend.carType}}</span>
+              <span v-if="friend.lastMsg === '' && friend.carType">座驾：{{friend.carType}}</span>
+              <span v-if="friend.lastMsg === '' && !friend.carType">座驾：未填写</span>
             </span>
           </div>
         </div>
@@ -159,6 +160,22 @@ export default {
               lastMsg: '',
               carType: response.body.data[f].carList
             })
+          }
+          if (this.attentionFriends.length > 0) {
+            // this.$comfun.webSend(this, {
+            //   wsOpCode: this.$moment.wsChatCode.LOGIN_CHAT_SERVER_C,
+            //   token: this.$moment.wxUserInfo.accountId
+            // })
+            for (let f = 0; f < this.attentionFriends.length; f++) {
+              this.$comfun.webSend(this, {
+                wsOpCode: this.$moment.wsChatCode.GET_CHAT_LIST_C,
+                currentPage: 1,
+                pageSize: 99999,
+                toType: 1,
+                toTypeId: this.attentionFriends[f].id,
+                chatCreateTime: ''
+              })
+            }
           }
         }
       } else {

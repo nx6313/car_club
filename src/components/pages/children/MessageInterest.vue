@@ -37,7 +37,7 @@ export default {
       this.$comfun.http_get(this, this.$moment.urls.attention + '?id=' + this.$moment.wxUserInfo.accountId + '&accountId=' + dataItem.userId).then((response) => {
         if (response.body.code === '0000' && response.body.success === true) {
           this.$toast('关注用户成功')
-          dataItem.attention = !dataItem.attention
+          dataItem.isfans = !dataItem.isfans
         } else {
           this.$toast('关注用户失败')
         }

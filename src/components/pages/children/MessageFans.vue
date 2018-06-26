@@ -47,7 +47,7 @@ export default {
             userId: response.body.data[f].accountId,
             head: response.body.data[f].headimg,
             name: response.body.data[f].nickName,
-            time: this.$comfun.formatDate(new Date(response.body.data[f].creationDate), 'M-d'),
+            time: this.$comfun.formatDate(new Date(response.body.data[f].creationDate.replace(/-/g, '/')), 'M-d'),
             attention: response.body.data[f].isfriend
           })
         }

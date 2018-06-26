@@ -98,17 +98,17 @@ export default {
     },
     dateToCur (value, maxDiff) {
       let maxDiffVal = maxDiff === undefined ? 0 : maxDiff
-      let date = new Date(value).getTime()
+      let date = new Date(value.replace(/-/g, '/')).getTime()
       let cur = Date.now()
       let diff = cur - date
       if (maxDiffVal > 0) {
         if (diff > maxDiffVal) {
-          return this.$comfun.formatDate(new Date(value), 'yy-MM-dd hh:mm:ss')
+          return this.$comfun.formatDate(new Date(value.replace(/-/g, '/')), 'yy-MM-dd hh:mm:ss')
         } else {
           return this.$comfun.formatDiffMilliseconds(diff) + ' 前'
         }
       } else {
-        return this.$comfun.formatDate(new Date(value), 'yy-MM-dd hh:mm:ss')
+        return this.$comfun.formatDate(new Date(value.replace(/-/g, '/')), 'yy-MM-dd hh:mm:ss')
       }
     },
     touchMoveCommentPop () {

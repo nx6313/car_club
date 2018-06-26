@@ -43,7 +43,7 @@ export default {
       if (response.body.code === '0000' && response.body.success === true) {
         this.chatFriendInfo = {
           userId: this.$route.params.accountId,
-          nickName: this.$route.params.nickName,
+          nickName: response.body.data.nickName,
           headimgurl: response.body.data.headimg,
           birthday: response.body.data.birthday,
           carType: response.body.data.carType,
@@ -59,8 +59,14 @@ export default {
     this.chatList = this.$moment.message_chat_content[this.$route.params.chatid] || []
     this.scrollTobottom()
     this.$root.eventHub.$on('ws-get-msg', (receiveMsg) => {
-      if (receiveMsg.wsOpCode === this.$moment.wsCHatCode.USER_MESSAGE_S) {
-        this.friendResive(receiveMsg.message[0].chatContent, receiveMsg.message[0].chatCreateTime)
+      if (receiveMsg.wsOpCode === this.$moment.wsChatCode.USER_MESSAGE_S) {
+        for (let m = 0; m < receiveMsg.message.length; m++) {
+          let chatContent = receiveMsg.message[m].chatContent
+          if (chatContent) {
+            let chatContentJson = JSON.parse(chatContent)
+            this.friendResive(this.$comfun.HTMLDecode(chatContentJson.content), receiveMsg.message[m].chatCreateTime, chatContentJson.isBig)
+          }
+        }
       }
     })
   },
@@ -118,7 +124,7 @@ export default {
       var newResiveData = {
         head: this.chatFriendInfo.headimgurl,
         nikeName: this.chatFriendInfo.nickName,
-        time: this.$comfun.formatDate(new Date(time), 'M/d hh:mm:ss'),
+        time: this.$comfun.formatDate(new Date(time.replace(/-/g, '/')), 'M/d hh:mm:ss'),
         content: msg,
         isMe: false,
         isBig: isBig === undefined ? false : isBig
@@ -138,14 +144,18 @@ export default {
         isMe: true,
         isBig: isBig === undefined ? false : isBig
       }
+      this.chatList.push(newSendData)
+      this.$moment.message_chat_content[this.$route.params.chatid] = this.chatList
+      var chatSendContent = {
+        isBig: isBig === undefined ? false : isBig,
+        content: this.$comfun.HTMLEncode(thisChatContent)
+      }
       this.$comfun.webSend(this, {
-        wsOpCode: this.$moment.wsCHatCode.SEND_MESSAGE_C,
-        chatContent: thisChatContent,
+        wsOpCode: this.$moment.wsChatCode.SEND_MESSAGE_C,
+        chatContent: JSON.stringify(chatSendContent),
         toType: 1,
         toTypeId: this.$route.params.chatid
       })
-      this.chatList.push(newSendData)
-      this.$moment.message_chat_content[this.$route.params.chatid] = this.chatList
       this.scrollTobottom()
       this.$refs.edit.innerHTML = ''
       this.chatContentInput = ''
@@ -168,7 +178,7 @@ export default {
               var serverId = data.serverId
               this.$comfun.saveWxImg(this, serverId).then((response) => {
                 if (response.body.code === '0000' && response.body.success === true) {
-                  this.chatSend(event, `<img src="${uploadImgLocalId}" style="width: 7rem; height: 8rem;">`, true)
+                  this.chatSend(event, `<img src="${response.body.data.path}" style="width: 7rem; height: 8rem;">`, true)
                 } else {
                   this.$toast('图片保存至服务器失败')
                 }

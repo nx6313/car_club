@@ -1,4 +1,5 @@
 var wx = require('weixin-js-sdk')
+var localforage = require('localforage')
 
 var projectAddress = 'http://l.dachangjr.com'
 // var HttpIp = '172.18.168.44'
@@ -15,6 +16,8 @@ export default {
       player: TcPlayer, // 腾讯视频播放器对象
       // 微信包
       wx: wx,
+      // localForage
+      localforage: localforage,
       // 域名地址
       realm: projectAddress,
       // 服务器地址
@@ -134,7 +137,7 @@ export default {
         }
       ],
       // webSocket 聊天请求协议编码
-      wsCHatCode: {
+      wsChatCode: {
         LOGIN_CHAT_SERVER_C: '1', // 登录请求
         LOGIN_CHAT_SERVER_S: '2', // 登录成功后返回数据
         USER_ONLINE_S: '3', // 用户上线

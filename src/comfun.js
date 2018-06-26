@@ -313,27 +313,41 @@ export default {
       },
       // 初始化webSocket
       webSocket: function (context, webSocketUrl, userId) {
+        var socketLoginUserId = context.$moment.wxUserInfo.accountId || userId
         context.$moment.ws = new WebSocket(webSocketUrl)
         context.$moment.ws.onopen = () => {
           context.$comfun.console(context, 'webSocket 开启，开始登陆')
-          var socketLoginUserId = context.$moment.wxUserInfo.accountId || userId
           context.$comfun.webSend(context, {
-            wsOpCode: context.$moment.wsCHatCode.LOGIN_CHAT_SERVER_C,
+            wsOpCode: context.$moment.wsChatCode.LOGIN_CHAT_SERVER_C,
             token: socketLoginUserId
           })
         }
         context.$moment.ws.onmessage = (evt) => {
-          context.$comfun.console(context, 'webSocket 接收到数据', JSON.stringify(evt))
           if (evt && evt.data) {
             var receiveData = JSON.parse(evt.data)
+            context.$comfun.console(context, 'webSocket 接收到数据 code - ' + receiveData.wsOpCode, evt)
             context.$root.eventHub.$emit('ws-get-msg', receiveData)
+            switch (receiveData.wsOpCode) {
+              case context.$moment.wsChatCode.USER_KICK_S:
+                context.$comfun.console(context, '用户 webSocket 掉线，尝试重更新登陆')
+                context.$comfun.webSend(context, {
+                  wsOpCode: context.$moment.wsChatCode.LOGIN_CHAT_SERVER_C,
+                  token: socketLoginUserId
+                })
+                break
+              case context.$moment.wsChatCode.AGAIN_CONNECT_S:
+                context.$toast('您已在别处登陆，请尝试重新登陆')
+                break
+            }
+          } else {
+            context.$comfun.console(context, 'webSocket 接收到数据', evt)
           }
         }
         context.$moment.ws.onclose = (evt) => {
-          context.$comfun.console(context, 'webSocket 已关闭', JSON.stringify(evt))
+          context.$comfun.console(context, 'webSocket 已关闭', evt)
         }
         context.$moment.ws.onerror = (evt) => {
-          context.$comfun.console(context, 'webSocket 出错', JSON.stringify(evt))
+          context.$comfun.console(context, 'webSocket 出错', evt)
         }
       },
       // webSocket发送聊天信息
@@ -345,6 +359,22 @@ export default {
         } else {
           context.$comfun.console(context, 'webSocket 对象为 null')
         }
+      },
+      // 转义 html 标签代码
+      HTMLEncode (html) {
+        var temp = document.createElement('div')
+        temp.textContent != null ? (temp.textContent = html) : (temp.innerText = html)
+        var output = temp.innerHTML
+        temp = null
+        return output
+      },
+      // 反转义 html 标签代码
+      HTMLDecode (text) {
+        var temp = document.createElement('div')
+        temp.innerHTML = text
+        var output = temp.innerText || temp.textContent
+        temp = null
+        return output
       },
       // 更新localstorge中的用户信息
       updateUserInfo: function (context, updateUserInfo) {

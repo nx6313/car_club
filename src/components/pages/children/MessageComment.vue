@@ -35,7 +35,7 @@ export default {
             name: response.body.data.dataList[a].fromUsername,
             newContent: response.body.data.dataList[a].newContent,
             content: response.body.data.dataList[a].content,
-            time: this.$comfun.formatDate(new Date(response.body.data.dataList[a].createTime), 'M-d'),
+            time: this.$comfun.formatDate(new Date(response.body.data.dataList[a].createTime.replace(/-/g, '/')), 'M-d'),
             newType: response.body.data.dataList[a].newtype,
             production: {
               img: response.body.data.dataList[a].newtype === '2' ? response.body.data.dataList[a].newFace : '',

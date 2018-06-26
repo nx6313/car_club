@@ -1041,6 +1041,15 @@ export default {
           consolePanlTipElem.innerHTML = '面板虚化'
         }
       }
+      // 判断离线日志库中是否保存有日志信息
+      context.$moment.localforage.getItem('car_culb_log_record').then((forageValue) => {
+        if (forageValue) {
+          for (let r = 0; r < forageValue.length; r++) {
+            writeToConsolePanl(forageValue[r].contentHtml, forageValue[r].jsonObj, context, forageValue[r].rootElem)
+          }
+          context.$moment.localforage.removeItem('car_culb_log_record')
+        }
+      })
     }
 
     // 将日志内容写入日志面板进行显示
@@ -2089,6 +2098,19 @@ function writeToConsolePanl (contentHtml, jsonObj, vueContext, rootElem) {
       var scrollH = consolePanlContentElem.scrollHeight
       consolePanlContentElem.scrollTo(0, ++scrollH)
     }, 10)
+  } else {
+    vueContext.$moment.localforage.getItem('car_culb_log_record').then((forageValue) => {
+      var logRecord = []
+      if (forageValue) {
+        logRecord = forageValue
+      }
+      logRecord.push({
+        contentHtml: contentHtml,
+        jsonObj: jsonObj ? deepClone(jsonObj) : null,
+        rootElem: rootElem
+      })
+      vueContext.$moment.localforage.setItem('car_culb_log_record', logRecord)
+    })
   }
 }
 
@@ -2327,9 +2349,89 @@ function getLoadingHtml (scale, parentWidth, parentHeight) {
   return loadsterHtml
 }
 
+// 数据深拷贝
+function deepClone (data) {
+  var type = getType(data)
+  var obj = null
+  if (type === 'array') {
+    obj = []
+  } else if (type === 'object') {
+    obj = {}
+    var originQueue = [data]
+    var copyQueue = [obj]
+    // 以下两个队列用来保存复制过程中访问过的对象，以此来避免对象环的问题（对象的某个属性值是对象本身）
+    var visitQueue = []
+    var copyVisitQueue = []
+    while (originQueue.length > 0) {
+      var _data = originQueue.shift()
+      var _obj = copyQueue.shift()
+      visitQueue.push(_data)
+      copyVisitQueue.push(_obj)
+      for (let key in _data) {
+        var _value = _data[key]
+        if (getType(_value) !== 'object') {
+          if (getType(_value) === 'function') {
+            _obj[key] = 'function () { ~ }'
+          } else if (getType(_value).indexOf('[object ') === 0) {
+            _obj[key] = getType(_value)
+          } else {
+            _obj[key] = _value
+          }
+        } else {
+          var index = visitQueue.indexOf(_value)
+          if (index >= 0) {
+            // 出现环的情况不需要再取出遍历
+            _obj[key] = copyVisitQueue[index]
+          } else {
+            originQueue.push(_value)
+            _obj[key] = {}
+            copyQueue.push(_obj[key])
+          }
+        }
+      }
+    }
+  } else {
+    return data
+  }
+  if (type === 'array') {
+    for (let i = 0, len = data.length; i < len; i++) {
+      obj.push(deepClone(data[i]))
+    }
+  }
+  return obj
+}
+
+// 获取数据类型
+function getType (obj) {
+  var toString = Object.prototype.toString
+  var map = {
+    '[object Boolean]': 'boolean',
+    '[object Number]': 'number',
+    '[object String]': 'string',
+    '[object Function]': 'function',
+    '[object Array]': 'array',
+    '[object Date]': 'date',
+    '[object RegExp]': 'regExp',
+    '[object Undefined]': 'undefined',
+    '[object Null]': 'null',
+    '[object Object]': 'object',
+    '[object MessageEvent]': 'object',
+    '[object CloseEvent]': 'object'
+  }
+  if (obj instanceof Element) {
+    return 'element'
+  }
+  return map[toString.call(obj)] || toString.call(obj)
+}
+
 // 判断obj是否为json对象或数组
 function isJsonOrArr (obj) {
-  var isjson = typeof obj === 'object' && (Object.prototype.toString.call(obj).toLowerCase() === '[object object]' || Object.prototype.toString.call(obj).toLowerCase() === '[object array]' || Object.prototype.toString.call(obj).toLowerCase() === '[object file]')
+  var isjson = typeof obj === 'object' &&
+  (Object.prototype.toString.call(obj).toLowerCase() === '[object object]' ||
+  Object.prototype.toString.call(obj).toLowerCase() === '[object array]' ||
+  Object.prototype.toString.call(obj).toLowerCase() === '[object file]' ||
+  Object.prototype.toString.call(obj).toLowerCase() === '[object messageevent]' ||
+  Object.prototype.toString.call(obj).toLowerCase() === '[object closeevent]')
   return isjson
 }
 
