@@ -148,6 +148,12 @@ export default {
       if (type === 'camcorder') {
         if (finish === true) {
           let file = event.target.files[0]
+          let fileSize = Number(file.size) / 1024 / 1024
+          if (fileSize > 10) {
+            this.$toast('视频不能大于10M')
+            this.clearShowPhotos = false
+            return false
+          }
           this.clearShowCamcorder = false
           let videoProgress = this.$loading('视频正在上传中', {
             context: this,
@@ -199,6 +205,12 @@ export default {
       } else if (type === 'photos') {
         if (finish === true) {
           let file = event.target.files[0]
+          let fileSize = Number(file.size) / 1024 / 1024
+          if (fileSize > 10) {
+            this.$toast('视频不能大于10M')
+            this.clearShowPhotos = false
+            return false
+          }
           this.clearShowPhotos = false
           let videoProgress = this.$loading('视频正在上传中', {
             context: this,

@@ -694,6 +694,10 @@ export default {
     }
   },
   activated () {
+    if (this.$comfun.isAndroidIos().isiOS && this.currentVideoInfo) {
+      // 自动播放处理在手机端不会触发，必须手动点击才会播放，是为了防止无故浪费流量资费
+      document.getElementById('video-item-' + this.currentVideoInfo.videoId).click()
+    }
     this.updateAttState()
     this.$moment.lookUserInfo = {}
   }

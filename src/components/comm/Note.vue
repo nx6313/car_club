@@ -19,7 +19,7 @@
       <div class="like-icon-btn-wrap">
         <span :class="note.ifLike ? 'hasLike' : ''" @click="support"></span>
         <span @click="toComment"></span>
-        <span></span>
+        <span v-show="false"></span>
       </div>
       <div class="like-tip-wrap">
         <span>{{note.likeMans.length}}个点赞</span>
