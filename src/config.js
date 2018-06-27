@@ -6,8 +6,8 @@ var projectAddress = 'http://l.dachangjr.com'
 var HttpIp = '47.93.201.234'
 var HttpPort = '9007'
 
-var WxAppId = 'wxb50ca85248d03eaa'
-var WxSecret = '6c11623d913f9f030bb4a09e6765d360'
+var WxAppId = 'wxd0a5ae3f571b89d0'
+var WxSecret = '9e7df4159c02770c39b076c02b8f5103'
 
 export default {
   install: function (Vue, options) {
@@ -136,6 +136,8 @@ export default {
           ]
         }
       ],
+      // webSocket 是否打开
+      wsIsOpen: false,
       // webSocket 聊天请求协议编码
       wsChatCode: {
         LOGIN_CHAT_SERVER_C: '1', // 登录请求

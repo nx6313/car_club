@@ -209,13 +209,15 @@ export default {
       }
     },
     cutVideoPage (videoInfo, changeDataFn) {
-      this.$comfun.consoleBeautiful(this, '切换到的页面视频信息', null, null, videoInfo, 'info')
-      this.currentVideo = videoInfo
-      this.videoComments = videoInfo.comments
-      this.replyUserId = videoInfo.userId
-      this.replyType = '0'
-      this.replyAboutId = null
-      this.changeDataFn = changeDataFn
+      if (videoInfo) {
+        this.$comfun.consoleBeautiful(this, '切换到的页面视频信息', null, null, videoInfo, 'info')
+        this.currentVideo = videoInfo
+        this.videoComments = videoInfo.comments
+        this.replyUserId = videoInfo.userId
+        this.replyType = '0'
+        this.replyAboutId = null
+        this.changeDataFn = changeDataFn
+      }
     },
     closeCommentPop () {
       if (this.$refs['comment-pop-wrap'].classList.contains('open')) {

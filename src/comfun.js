@@ -312,9 +312,9 @@ export default {
         return theRequest
       },
       // 初始化webSocket
-      webSocket: function (context, webSocketUrl, userId) {
+      webSocketInit: function (context, userId) {
         var socketLoginUserId = context.$moment.wxUserInfo.accountId || userId
-        context.$moment.ws = new WebSocket(webSocketUrl)
+        context.$moment.ws = new WebSocket('ws://47.93.201.234:8080/AnychatServer/ws')
         context.$moment.ws.onopen = () => {
           context.$comfun.console(context, 'webSocket 开启，开始登陆')
           context.$comfun.webSend(context, {
@@ -328,15 +328,27 @@ export default {
             context.$comfun.console(context, 'webSocket 接收到数据 code - ' + receiveData.wsOpCode, evt)
             context.$root.eventHub.$emit('ws-get-msg', receiveData)
             switch (receiveData.wsOpCode) {
+              case context.$moment.wsChatCode.LOGIN_CHAT_SERVER_S:
+                context.$comfun.console(context, '用户 webSocket 登陆成功')
+                context.$moment.wsIsOpen = true
+                break
               case context.$moment.wsChatCode.USER_KICK_S:
-                context.$comfun.console(context, '用户 webSocket 掉线，尝试重更新登陆')
+                context.$comfun.console(context, '用户 webSocket 被踢下线，尝试重新登陆')
+                context.$moment.wsIsOpen = false
+                context.$comfun.console(context, '重新调用登陆')
                 context.$comfun.webSend(context, {
                   wsOpCode: context.$moment.wsChatCode.LOGIN_CHAT_SERVER_C,
                   token: socketLoginUserId
                 })
                 break
               case context.$moment.wsChatCode.AGAIN_CONNECT_S:
-                context.$toast('您已在别处登陆，请尝试重新登陆')
+                context.$comfun.console(context, 'webSocket 通知用户重连，尝试重新登陆')
+                context.$moment.wsIsOpen = false
+                context.$comfun.console(context, '重新调用登陆')
+                context.$comfun.webSend(context, {
+                  wsOpCode: context.$moment.wsChatCode.LOGIN_CHAT_SERVER_C,
+                  token: socketLoginUserId
+                })
                 break
             }
           } else {
@@ -344,7 +356,10 @@ export default {
           }
         }
         context.$moment.ws.onclose = (evt) => {
+          context.$moment.wsIsOpen = false
           context.$comfun.console(context, 'webSocket 已关闭', evt)
+          context.$comfun.console(context, '重新初始化 webSocket')
+          context.$comfun.webSocketInit(context)
         }
         context.$moment.ws.onerror = (evt) => {
           context.$comfun.console(context, 'webSocket 出错', evt)
@@ -358,6 +373,12 @@ export default {
           context.$moment.ws.send(blob)
         } else {
           context.$comfun.console(context, 'webSocket 对象为 null')
+        }
+      },
+      // 断开 socket
+      webClose (context) {
+        if (context.$moment.ws !== null) {
+          context.$moment.ws.close()
         }
       },
       // 转义 html 标签代码

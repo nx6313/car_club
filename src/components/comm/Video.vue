@@ -10,7 +10,7 @@
           <div class="video-item-page-wrap">
             <div class="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
               <div :style="videoInfo.cover ? { 'background-image': 'url(' + videoInfo.cover + ')' } : ''" :class="['video-shade', videoInfo.coverWidth > videoInfo.coverHeight ? 'vertical' : '']"></div>
-              <div class="video-play-show" :id="'video-play-' + videoInfo.videoId" :ref="'video-play-' + videoInfo.videoId"></div>
+              <div class="video-play-show" :id="'video-play-' + videoInfo.videoId" :ref="'video-play-' + videoInfo.videoId" :style="isIos ? { 'display': 'block' } : ''"></div>
             </div>
             <div :class="['videoDo', full ? 'videoDoFull' : 'videoDoNotFull']">
               <span :style="videoInfo.userHead ? { 'background-image': 'url(' + videoInfo.userHead + ')' } : ''" @click.stop="doAtt(videoInfo)">
@@ -22,7 +22,10 @@
               <span :ref="'video-comment-' + videoInfo.videoId" @click.stop="lookComment">
                 <span>{{videoInfo.commentCount}}</span>
               </span>
-              <span @click.stop="shareVideo"></span>
+              <span @click.stop="shareVideo" v-show="false"></span>
+            </div>
+            <div :class="['videoDes', full ? 'videoDesFull' : 'videoDesNotFull']">
+              <span v-html="videoInfo.content"></span>
             </div>
           </div>
         </template>
@@ -71,29 +74,34 @@ export default {
       isRefing: false,
       currentVideoInfo: null,
       videoInfoList: [],
-      currentPlayer: null
+      currentPlayer: null,
+      isIos: false
     }
   },
   mounted () {
+    this.isIos = this.$comfun.isAndroidIos().isiOS
     this.videoDataRefElem = this.$refs['ref-data-wrap']
     this.refingElem = this.$refs['ref-ing']
     this.refComplateElem = this.$refs['ref-complate']
     this.refingElem.style.opacity = 1
     this.refComplateElem.style.opacity = 0
     this.videoItemWrapElem = this.$refs['video-item-wrap']
-    this.videoItemPageHeight = this.videoItemWrapElem.offsetHeight
-    this.videoItemWrapElem.style.height = `calc(${this.videoItemPageHeight * 1}px)`
-    for (var i = 0; i < this.videoItemWrapElem.children.length; i++) {
-      if (this.videoItemWrapElem.children[i].classList.contains('video-item')) {
-        this.videoItemWrapElem.children[i].style.height = `calc(${this.videoItemPageHeight}px)`
+    var currentIndex = 1
+    if (this.videoItemWrapElem) {
+      this.videoItemPageHeight = this.videoItemWrapElem.offsetHeight
+      this.videoItemWrapElem.style.height = `calc(${this.videoItemPageHeight * 1}px)`
+      for (var i = 0; i < this.videoItemWrapElem.children.length; i++) {
+        if (this.videoItemWrapElem.children[i].classList.contains('video-item')) {
+          this.videoItemWrapElem.children[i].style.height = `calc(${this.videoItemPageHeight}px)`
+        }
       }
+      this.everyVITsY = this.videoItemWrapElem.offsetHeight * (1 / 1)
+      this.videoDataRefElem.style.transform = `translateY(${-this.videoDataRefElem.offsetHeight - 2}px)`
+      this.currentRefTsY = Number(this.videoDataRefElem.style.transform.match(this.reg)[0])
+      this.videoItemWrapElem.style.transform = `translateY(0px)`
+      this.currentVITsY = Number(this.videoItemWrapElem.style.transform.match(this.reg)[0])
+      currentIndex = Array.prototype.indexOf.call(this.videoItemWrapElem.children, this.videoItemWrapElem.getElementsByClassName('video-item-current')[0]) + 1
     }
-    this.everyVITsY = this.videoItemWrapElem.offsetHeight * (1 / 1)
-    this.videoDataRefElem.style.transform = `translateY(${-this.videoDataRefElem.offsetHeight - 2}px)`
-    this.currentRefTsY = Number(this.videoDataRefElem.style.transform.match(this.reg)[0])
-    this.videoItemWrapElem.style.transform = `translateY(0px)`
-    this.currentVITsY = Number(this.videoItemWrapElem.style.transform.match(this.reg)[0])
-    var currentIndex = Array.prototype.indexOf.call(this.videoItemWrapElem.children, this.videoItemWrapElem.getElementsByClassName('video-item-current')[0]) + 1
     this.getVideoByPage(true, currentIndex).then((videoInfo) => {
       this.videoInfo = videoInfo
       this.videoInfoList.push(this.videoInfo)
@@ -140,10 +148,6 @@ export default {
                   if (currentIndex === videoItemWrap.childNodes.length - 1) {
                     this.videoInfoList.push(videoInfo)
                   }
-                  //  else {
-                  //   insertIndex = currentIndex + 1
-                  //   this.videoInfoList.splice(currentIndex + 1, 0, videoInfo)
-                  // }
                 }
                 this.hasNext = true
                 this.addVideoWrap(isRef, insertIndex, videoInfo.videoId)
@@ -249,6 +253,7 @@ export default {
               let videoInfo = {
                 videoId: response.body.data.dataList[0].id,
                 userId: response.body.data.dataList[0].accountId,
+                content: response.body.data.dataList[0].content,
                 src: response.body.data.dataList[0].fileList[0].fileAddress,
                 cover: response.body.data.dataList[0].fileList[0].face,
                 coverWidth: Number(response.body.data.dataList[0].fileList[0].width),
@@ -311,7 +316,7 @@ export default {
         template: `<div class="video-item-page-wrap">
           <div class="video-wrap" @touchstart="touchStart" @touchmove="touchMove" @touchend="touchEnd">
             <div :style="newPageVideoInfo.cover ? { 'background-image': 'url(' + newPageVideoInfo.cover + ')' } : ''" :class="['video-shade', newPageVideoInfo.coverWidth > newPageVideoInfo.coverHeight ? 'vertical' : '']"></div>
-            <div class="video-play-show" :id="'video-play-' + newPageVideoInfo.videoId" :ref="'video-play-' + newPageVideoInfo.videoId"></div>
+            <div class="video-play-show" :id="'video-play-' + newPageVideoInfo.videoId" :ref="'video-play-' + newPageVideoInfo.videoId" :style="sisIos ? { 'display': 'block' } : ''"></div>
           </div>
           <div :class="['videoDo', sfull ? 'videoDoFull' : 'videoDoNotFull']">
             <span :style="newPageVideoInfo.userHead ? { 'background-image': 'url(' + newPageVideoInfo.userHead + ')' } : ''" @click.stop="doAtt(newPageVideoInfo)">
@@ -323,12 +328,16 @@ export default {
             <span :ref="'video-comment-' + newPageVideoInfo.videoId" @click.stop="lookComment">
               <span>{{newPageVideoInfo.commentCount}}</span>
             </span>
-            <span @click.stop="shareVideo"></span>
+            <span @click.stop="shareVideo" v-show="false"></span>
+          </div>
+          <div :class="['videoDes', sfull ? 'videoDesFull' : 'videoDesNotFull']">
+            <span v-html="newPageVideoInfo.content"></span>
           </div>
         </div>`,
         data () {
           return {
             sfull: that.full,
+            sisIos: that.isIos,
             newPageVideoInfo: videoInfo
           }
         },
@@ -360,7 +369,7 @@ export default {
       }
     },
     toggleCurrentPage (direction) {
-      if (this.currentPlayer !== null) {
+      if (this.currentVideoInfo && this.currentPlayer !== null) {
         if (this.$comfun.isAndroidIos().isiOS && this.currentPlayer && this.currentPlayer.playing()) {
           document.getElementById('video-play-' + this.currentVideoInfo.videoId).style.display = 'none'
         }
@@ -567,6 +576,9 @@ export default {
       }, 10)
     },
     doAtt (video) {
+      if (!video) {
+        return false
+      }
       this.$moment.lookUserInfo = {
         userId: video.userId,
         hasAttention: video.hasAttention,
@@ -575,7 +587,7 @@ export default {
       this.$router.push('/user-info')
     },
     support (video) {
-      if (!video.ifSupport) {
+      if (video && !video.ifSupport) {
         this.$loading('点赞中...')
         this.$comfun.http_post(this, this.$moment.urls.praise + '?id=' + this.currentVideoInfo.videoId, {
           accountId: this.$moment.wxUserInfo.accountId
@@ -622,10 +634,13 @@ export default {
       this.playVideo()
     },
     createVideoPlayer () {
+      if (!this.currentVideoInfo) {
+        return false
+      }
       if (this.currentPlayer !== null) {
-        if (this.$comfun.isAndroidIos().isiOS && this.currentPlayer && this.currentPlayer.playing()) {
-          document.getElementById('video-play-' + this.currentVideoInfo.videoId).style.display = 'none'
-        }
+        // if (this.$comfun.isAndroidIos().isiOS && this.currentPlayer && this.currentPlayer.playing()) {
+        //   document.getElementById('video-play-' + this.currentVideoInfo.videoId).style.display = 'none'
+        // }
         this.currentPlayer.destroy()
         this.currentPlayer = null
       }
@@ -841,16 +856,16 @@ video-player {
 
 .videoDo {
   position: absolute;
-  right: 8px;
+  right: 0.8rem;
   z-index: 999;
 }
 
 .videoDoFull {
-  bottom: calc(3.2rem + 16px);
+  bottom: calc(3.2rem + 4.2rem);
 }
 
 .videoDoNotFull {
-  bottom: 16px;
+  bottom: 4.2rem;
 }
 
 .videoDo>span {
@@ -935,6 +950,27 @@ video-player {
   background-image: url('./../../assets/transpond.png');
   margin-bottom: 20px;
   opacity: .8;
+}
+
+.videoDes {
+  position: absolute;
+  width: calc(100vw - 8rem);
+  overflow: hidden;
+  left: 1.2rem;
+  z-index: 999;
+}
+
+.videoDesFull {
+  bottom: calc(3.2rem + 1.8rem);
+}
+
+.videoDesNotFull {
+  bottom: 1.8rem;
+}
+
+.videoDes > span {
+  font-size: 0.8rem;
+  color: #efefef;
 }
 
 @-webkit-keyframes rotating {

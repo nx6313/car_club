@@ -1,5 +1,5 @@
 <template>
-  <div @touchstart="touchStart" @touchmove="touchMove">
+  <div @touchstart="touchStart" @touchmove.prevent="touchMove">
     <transition-group :name="chatContentListTrsName" tag="div" class="chat-content-wrap" ref="chat-content-wrap">
       <div v-for="(chat, index) in chatList" :key="index" :class="['chat-item', chat.isMe ? 'right' : 'left']">
         <span class="head" :style="chat.head ? { 'background-image': 'url(' + chat.head + ')' } : ''"></span>
@@ -72,6 +72,7 @@ export default {
   },
   deactivated () {
     this.chatList = []
+    this.$root.eventHub.$off('ws-get-msg')
   },
   methods: {
     focusInput () {

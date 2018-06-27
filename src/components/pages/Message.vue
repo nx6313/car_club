@@ -146,6 +146,22 @@ export default {
     }
   },
   activated () {
+    this.$root.eventHub.$on('ws-get-msg', (receiveMsg) => {
+      if (receiveMsg.wsOpCode === this.$moment.wsChatCode.LOGIN_CHAT_SERVER_S) {
+        if (this.attentionFriends.length > 0) {
+          for (let f = 0; f < this.attentionFriends.length; f++) {
+            this.$comfun.webSend(this, {
+              wsOpCode: this.$moment.wsChatCode.GET_CHAT_LIST_C,
+              currentPage: 1,
+              pageSize: 99999,
+              toType: 1,
+              toTypeId: this.attentionFriends[f].id,
+              chatCreateTime: ''
+            })
+          }
+        }
+      }
+    })
     this.$loading('加载好友列表中...')
     this.$comfun.http_get(this, this.$moment.urls.friend + '?accountId=' + this.$moment.wxUserInfo.accountId).then((response) => {
       if (response.body.code === '0000' && response.body.success === true) {
@@ -162,26 +178,21 @@ export default {
             })
           }
           if (this.attentionFriends.length > 0) {
+            this.$moment.wsIsOpen = false
+            this.$comfun.webClose(this)
             // this.$comfun.webSend(this, {
             //   wsOpCode: this.$moment.wsChatCode.LOGIN_CHAT_SERVER_C,
             //   token: this.$moment.wxUserInfo.accountId
             // })
-            for (let f = 0; f < this.attentionFriends.length; f++) {
-              this.$comfun.webSend(this, {
-                wsOpCode: this.$moment.wsChatCode.GET_CHAT_LIST_C,
-                currentPage: 1,
-                pageSize: 99999,
-                toType: 1,
-                toTypeId: this.attentionFriends[f].id,
-                chatCreateTime: ''
-              })
-            }
           }
         }
       } else {
         this.$toast('好友列表数据获取失败')
       }
     })
+  },
+  deactivated () {
+    this.$root.eventHub.$off('ws-get-msg')
   }
 }
 </script>

@@ -34,12 +34,10 @@ export default {
       stateDataList: []
     }
   },
-  created () {
+  activated () {
     this.$root.eventHub.$on('stateDataNext', () => {
       this.getNextData()
     })
-  },
-  activated () {
     this.attentionList = []
     this.stateDataList = []
     this.currentPageIndex = 1
@@ -54,6 +52,9 @@ export default {
         }
       })
     }
+  },
+  deactivated () {
+    this.$root.eventHub.$off('stateDataNext')
   },
   methods: {
     toChildPage (childPageRouter, params) {

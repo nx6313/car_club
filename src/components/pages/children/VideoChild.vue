@@ -19,12 +19,10 @@ export default {
       videoDataList: []
     }
   },
-  created () {
+  activated () {
     this.$root.eventHub.$on('videoDataNext', () => {
       this.getNextData()
     })
-  },
-  activated () {
     this.videoDataList = []
     this.currentPageIndex = 1
     this.lookUserId = this.$moment.lookUserInfo.userId !== undefined ? this.$moment.lookUserInfo.userId : this.$moment.wxUserInfo.accountId
@@ -37,6 +35,9 @@ export default {
         }
       })
     }
+  },
+  deactivated () {
+    this.$root.eventHub.$off('videoDataNext')
   },
   methods: {
     toChildPage (childPageRouter, params) {
